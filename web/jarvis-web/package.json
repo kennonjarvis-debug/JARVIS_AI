@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "postbuild": "node scripts/shortcuts/auto-update-shortcut.js",
     "start": "next start",
     "lint": "echo 'no lint configured'",
     "deploy:vercel": "vercel --prod --confirm --yes"

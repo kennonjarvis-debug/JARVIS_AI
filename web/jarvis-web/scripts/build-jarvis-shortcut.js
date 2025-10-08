@@ -25,14 +25,18 @@ const inputPath = process.argv[2] || '/Users/benkennon/ai-dawg-v0.1/docs/integra
 const outputPath = process.argv[3] || path.join(__dirname, '..', 'public', 'Jarvis.shortcut');
 
 function main() {
-  const spec = JSON.parse(fs.readFileSync(inputPath, 'utf8'));
+  let spec = null;
+  try { spec = JSON.parse(fs.readFileSync(inputPath, 'utf8')); } catch (_) {}
 
   // Extract from simple spec
-  const prompt = (spec.actions?.find(a => a.type === 'DictateText')?.prompt) || 'What do you want to ask Jarvis?';
-  const apiUrl = (spec.actions?.find(a => a.type === 'PostContentsOfURL')?.url) || 'https://example.com/api/ask';
-  const headers = (spec.actions?.find(a => a.type === 'PostContentsOfURL')?.headers) || { 'Content-Type': 'application/json' };
+  const prompt = (spec?.actions?.find(a => a.type === 'DictateText')?.prompt)
+    || 'What would you like to ask Jarvis?';
+  const apiUrl = process.env.NEXT_PUBLIC_JARVIS_API_URL
+    || (spec?.actions?.find(a => a.type === 'PostContentsOfURL')?.url)
+    || 'https://jarvis-ai-backend.onrender.com/api/ask';
+  const headers = (spec?.actions?.find(a => a.type === 'PostContentsOfURL')?.headers) || { 'Content-Type': 'application/json' };
   const bodyKey = 'message';
-  const responseKey = (spec.actions?.find(a => a.type === 'GetDictionaryValue')?.key) || 'response';
+  const responseKey = (spec?.actions?.find(a => a.type === 'GetDictionaryValue')?.key) || 'response';
 
   // Outputs
   const queryVar = actionOutput();
@@ -64,4 +68,3 @@ function main() {
 }
 
 main();
-
