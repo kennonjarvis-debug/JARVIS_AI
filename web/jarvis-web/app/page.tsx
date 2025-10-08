@@ -7,7 +7,7 @@ type Msg = { role: "user" | "jarvis"; content: string };
 export default function Home() {
   const API_URL =
     process.env.NEXT_PUBLIC_JARVIS_API_URL ||
-    "https://jarvis-ai-backend.onrender.com/api/ask";
+    "https://jarvis-ai-backend.onrender.com/api/chat";
 
   const [messages, setMessages] = React.useState<Msg[]>([
     {
@@ -32,16 +32,19 @@ export default function Home() {
       const res = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text }),
+        body: JSON.stringify({ text }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      const reply = String(data?.response ?? "(No response)");
+      const reply = String(
+        data?.response ?? data?.data?.response ?? "(No response)"
+      );
 
       // Simple streaming typing effect
       await typeIn(reply);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
+      console.error('Jarvis chat error:', err);
       setMessages((cur) => [
         ...cur,
         { role: "jarvis", content: `Sorry — request failed: ${msg}` },

@@ -33,9 +33,9 @@ function main() {
     || 'What would you like to ask Jarvis?';
   const apiUrl = process.env.NEXT_PUBLIC_JARVIS_API_URL
     || (spec?.actions?.find(a => a.type === 'PostContentsOfURL')?.url)
-    || 'https://jarvis-ai-backend.onrender.com/api/ask';
+    || 'https://jarvis-ai-backend.onrender.com/api/chat';
   const headers = (spec?.actions?.find(a => a.type === 'PostContentsOfURL')?.headers) || { 'Content-Type': 'application/json' };
-  const bodyKey = 'message';
+  const bodyKey = 'text';
   const responseKey = (spec?.actions?.find(a => a.type === 'GetDictionaryValue')?.key) || 'response';
 
   // Outputs
@@ -55,8 +55,9 @@ function main() {
     }, respRawVar),
     // Parse JSON response into a dictionary
     getDictionaryFromInput({}, respDictVar),
-    // Extract the 'response' field
-    getDictionaryValue({ key: responseKey, get: 'Value' }),
+    // Extract nested response: data -> response
+    getDictionaryValue({ key: 'data', get: 'Value' }),
+    getDictionaryValue({ key: 'response', get: 'Value' }),
     // Speak the extracted text (consumes previous output as input)
     speakText({ voice: 'Default', rate: 0.5, waitUntilFinished: true }),
   ];
