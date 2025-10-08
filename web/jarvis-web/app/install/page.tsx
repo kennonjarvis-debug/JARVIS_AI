@@ -41,13 +41,20 @@ const InstallPage: React.FC = () => {
           Add to Shortcuts
         </a>
 
-        <p style={{ marginTop: 16, fontSize: 12, opacity: 0.65 }}>
-          Deep link target: {installUrl}
-        </p>
+        <div style={{ marginTop: 16 }}>
+          <a
+            href={installUrl}
+            style={{ color: "#a5b4fc", textDecoration: "underline" }}
+          >
+            Having trouble? Tap here to open Shortcuts
+          </a>
+          <p style={{ marginTop: 8, fontSize: 12, opacity: 0.65 }}>
+            Deep link target: {installUrl}
+          </p>
+        </div>
       </div>
     </main>
   );
 };
 
 export default InstallPage;
-
