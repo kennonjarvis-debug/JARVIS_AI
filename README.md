@@ -1,422 +1,258 @@
-# Jarvis Desktop App
+# Jarvis Control Plane v2.0
 
-> **AI DAWG Controller** - Native desktop application for Jarvis AI system
+Central orchestration layer for AI Dawg execution engine. Provides API gateway, module routing, health aggregation, and integration points for external AI assistants.
 
-A cross-platform desktop application built with Electron, React, and TypeScript that provides a powerful interface for managing and monitoring the Jarvis AI system.
+## Architecture
 
----
+```
+┌─────────────────────────────────────────────────────┐
+│                 External Clients                    │
+│  (ChatGPT, Claude, Web UI, Mobile Apps, etc.)      │
+└────────────────┬────────────────────────────────────┘
+                 │
+                 ▼
+┌─────────────────────────────────────────────────────┐
+│          JARVIS CONTROL PLANE (Port 4000)           │
+│  ┌──────────────────────────────────────────────┐  │
+│  │          API Gateway & Router                 │  │
+│  │  - Authentication                             │  │
+│  │  - Rate Limiting                              │  │
+│  │  - Request Routing                            │  │
+│  │  - Health Monitoring                          │  │
+│  └──────────────────────────────────────────────┘  │
+│  ┌──────────────────────────────────────────────┐  │
+│  │        Integration Layer                      │  │
+│  │  - ChatGPT Webhooks                          │  │
+│  │  - Claude MCP Server                          │  │
+│  │  - Siri Shortcuts                             │  │
+│  └──────────────────────────────────────────────┘  │
+└────────────────┬────────────────────────────────────┘
+                 │
+                 ▼
+┌─────────────────────────────────────────────────────┐
+│        AI DAWG EXECUTION ENGINE (Port 3001)         │
+│  - Music Production Modules                         │
+│  - Voice Processing                                 │
+│  - AI Brain (GPT-4o)                                │
+│  - Database & Storage                               │
+└─────────────────────────────────────────────────────┘
+```
 
-## 🎯 Overview
+## Quick Start
 
-Jarvis Desktop App is an autonomous AI operator that handles:
-- 🎵 **Music Generation** - AI-powered music synthesis and model management
-- 📈 **Marketing Automation** - Social media, SEO, and campaign optimization
-- 💬 **User Engagement** - Chatbot, sentiment analysis, and proactive retention
-- 🔄 **Workflow Automation** - CI/CD, testing, deployment, and scaling
-- 🧠 **Business Intelligence** - Data aggregation, insights, and predictive planning
-
----
-
-## 🚀 Quick Start
-
-### Prerequisites
-- Node.js v18+ ([Download](https://nodejs.org/))
-- npm v9+
-- Git
-
-### Installation
+### 1. Install Dependencies
 
 ```bash
-# Clone or navigate to this directory
-cd /Users/benkennon/Jarvis
-
-# Run initialization script
-./init-project.sh
-
-# This creates the directory structure and git branches
+npm install
 ```
 
----
+### 2. Configure Environment
 
-## 🏗️ Multi-Instance Build Strategy
+```bash
+cp .env.example .env
+# Edit .env with your configuration
+```
 
-This project is designed to be built by **5 parallel Claude Code instances** for maximum efficiency.
+### 3. Start the Control Plane
 
-### 📖 Read These First
+```bash
+npm run dev
+```
 
-1. **[QUICK_START.md](./QUICK_START.md)** - Copy-paste prompts for each instance
-2. **[BUILD_GUIDE.md](./BUILD_GUIDE.md)** - Detailed build instructions
-3. **[INTEGRATION.md](./INTEGRATION.md)** - Track progress across instances
+The gateway will start on port 4000.
 
-### Instance Breakdown
+### 4. Test Health Check
 
-| Instance | Focus | Branch | Est. Time |
-|----------|-------|--------|-----------|
-| **1** | Backend Core & API | `instance-1-backend` | 1-2h |
-| **2** | Frontend UI | `instance-2-frontend` | 2-3h |
-| **3** | Music + Marketing Modules | `instance-3-modules-music-marketing` | 2-3h |
-| **4** | Engagement + Intelligence | `instance-4-modules-engagement-intelligence` | 2-3h |
-| **5** | Jobs, Tests, Docs | `instance-5-jobs-tests` | 1-2h |
+```bash
+curl http://localhost:4000/health
+```
 
-**Total parallel time:** ~5 hours (vs 20+ sequential)
+Expected response:
+```json
+{
+  "status": "healthy",
+  "service": "jarvis-control-plane",
+  "version": "2.0.0",
+  "timestamp": "2025-10-08T17:00:00.000Z",
+  "port": 4000
+}
+```
 
----
+## API Endpoints
 
-## 🛠️ Tech Stack
+### Health Checks
 
-### Core
-- **Electron** - Cross-platform desktop framework
-- **React** - UI library
-- **TypeScript** - Type-safe JavaScript
-- **Webpack** - Module bundler
+#### GET /health
+Basic health check
 
-### Styling
-- **Tailwind CSS** - Utility-first CSS
-- **Lucide React** - Icon library
-- **Recharts** - Data visualization
+```bash
+curl http://localhost:4000/health
+```
 
-### Backend Services
-- **Axios** - HTTP client
-- **node-cron** - Job scheduling
-- **Bull** - Job queue (Redis-based)
+#### GET /health/detailed
+Detailed health of all services
 
-### AI/NLP
-- **OpenAI SDK** - GPT integration
-- **Anthropic SDK** - Claude integration
-- **Natural** - NLP library
-- **Sentiment** - Sentiment analysis
+```bash
+curl http://localhost:4000/health/detailed
+```
 
-### Testing
-- **Jest** - Unit testing
-- **Playwright** - E2E testing
-- **ts-jest** - TypeScript Jest support
+Returns status of:
+- AI Dawg Backend (3001)
+- AI Dawg Docker (3000)
+- Vocal Coach (8000)
+- Producer (8001)
+- AI Brain (8002)
+- PostgreSQL
+- Redis
 
----
+### Module Execution
 
-## 📂 Project Structure
+#### POST /api/v1/execute
+Execute a module command
+
+```bash
+curl -X POST http://localhost:4000/api/v1/execute \
+  -H "Authorization: Bearer test-token" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "module": "music",
+    "action": "create_beat",
+    "params": {
+      "genre": "hip-hop",
+      "bpm": 120
+    }
+  }'
+```
+
+### System Status
+
+#### GET /status
+Get current controller status
+
+```bash
+curl -H "Authorization: Bearer test-token" \
+  http://localhost:4000/status
+```
+
+## Module Command Format
+
+Commands sent to `/api/v1/execute` must follow this schema:
+
+```typescript
+{
+  module: string;    // Module name (e.g., "music", "vocal", "ai")
+  action: string;    // Action to perform (e.g., "create_beat", "analyze")
+  params: object;    // Action-specific parameters
+}
+```
+
+## Project Structure
 
 ```
-Jarvis/
-├── config/
-│   └── jarvis.config.json         # System configuration
-│
+/Users/benkennon/Jarvis/
 ├── src/
-│   ├── main.ts                    # Electron main process
-│   │
-│   ├── jarvis/
-│   │   ├── core/                  # Core orchestration
-│   │   │   ├── jarvis.controller.ts
-│   │   │   ├── jarvis.scheduler.ts
-│   │   │   ├── jarvis.monitor.ts
-│   │   │   └── jarvis.interfaces.ts
-│   │   │
-│   │   ├── api/                   # API integration
-│   │   │   └── jarvis-api.client.ts
-│   │   │
-│   │   ├── modules/               # Feature modules
-│   │   │   ├── music/
-│   │   │   ├── marketing/
-│   │   │   ├── engagement/
-│   │   │   ├── workflow/
-│   │   │   └── intelligence/
-│   │   │
-│   │   └── jobs/                  # Scheduled tasks
-│   │       ├── daily-metrics.job.ts
-│   │       ├── feedback-sync.job.ts
-│   │       └── health-tracking.job.ts
-│   │
-│   └── renderer/                  # React frontend
-│       ├── index.tsx
-│       ├── App.tsx
-│       ├── components/
-│       ├── hooks/
-│       └── pages/
-│
-├── tests/
-│   ├── unit/
-│   ├── integration/
-│   └── e2e/
-│
+│   ├── main.ts                    # Entry point
+│   ├── core/
+│   │   ├── gateway.ts             # API Gateway (Express server)
+│   │   ├── module-router.ts       # Routes commands to AI Dawg
+│   │   ├── health-aggregator.ts   # Health check aggregation
+│   │   └── types.ts               # TypeScript type definitions
+│   ├── jarvis-core/               # Extracted Jarvis controller logic
+│   │   └── [from AI Dawg]
+│   ├── integrations/
+│   │   ├── chatgpt/
+│   │   │   └── webhook-handler.ts # ChatGPT webhook (stub)
+│   │   └── claude/
+│   │       └── mcp-server.ts      # Claude MCP server (stub)
+│   └── utils/
+│       ├── logger.ts              # Winston logger
+│       └── config.ts              # Configuration management
 ├── docs/
-│   ├── ARCHITECTURE.md
-│   ├── API_REFERENCE.md
-│   ├── DEVELOPMENT.md
-│   └── DEPLOYMENT.md
-│
-└── dist/                          # Build output
+│   ├── API_CONTRACT.md            # API contract for Instance 2
+│   └── ARCHITECTURE.md            # Architecture documentation
+├── package.json
+├── tsconfig.json
+└── .env.example
 ```
 
----
+## Development
 
-## 🔧 Development
-
-### Instance 1: Backend Core
+### Run in Development Mode
 ```bash
-git checkout instance-1-backend
-npm install
-# Follow QUICK_START.md Instance 1 prompt
+npm run dev
 ```
 
-### Instance 2: Frontend
+### Build for Production
 ```bash
-git checkout instance-2-frontend
-# Follow QUICK_START.md Instance 2 prompt
+npm run build
+npm start
 ```
 
-### Instances 3, 4, 5
-See [QUICK_START.md](./QUICK_START.md) for detailed instructions.
-
----
-
-## 🧪 Testing
-
+### Run Tests
 ```bash
-# Run all tests
 npm test
-
-# Run unit tests
-npm run test:unit
-
-# Run integration tests
-npm run test:integration
-
-# Run E2E tests
-npm run test:e2e
-
-# Coverage report
-npm run test:coverage
 ```
 
----
-
-## 📦 Building
-
+### Type Check
 ```bash
-# Development mode (hot reload)
-npm run dev
-
-# Build for production
-npm run build
-
-# Build for macOS
-npm run build:mac
-
-# Build for Windows
-npm run build:win
-
-# Build for Linux
-npm run build:linux
+npm run type-check
 ```
 
----
+## Integration Points
 
-## 🔑 Environment Variables
+### ChatGPT Custom GPT
+Webhook endpoint for ChatGPT integration (stub):
+- POST `/integrations/chatgpt/webhook`
+- See `src/integrations/chatgpt/webhook-handler.ts`
+- **TODO: Instance 3 to implement**
 
-Copy `.env.example` to `.env` and configure:
+### Claude MCP Server
+Model Context Protocol server (stub):
+- Exposes Jarvis tools to Claude Desktop
+- See `src/integrations/claude/mcp-server.ts`
+- **TODO: Instance 4 to implement**
 
-```bash
-# Jarvis API
-JARVIS_API_URL=https://kaycee-nonextrinsical-yosef.ngrok-free.dev
-JARVIS_API_KEY=aigpt_b-Vwg_lDEBh5EX1tHM3frWlFTTdnylYbPImeY0XfI10
+## Error Handling
 
-# Optional services
-OPENAI_API_KEY=sk-...
-ANTHROPIC_API_KEY=sk-ant-...
-SENDGRID_API_KEY=SG...
-```
+The module router includes retry logic:
+- 3 attempts with exponential backoff
+- Base delay: 1000ms
+- Max delay: 10000ms
+- Jitter added to prevent thundering herd
 
----
+## Monitoring
 
-## 📊 Features
+Health checks run with 5-second timeout per service.
+Overall status:
+- `healthy`: All services responding
+- `degraded`: Some services responding
+- `down`: No services responding
 
-### Core Capabilities
-- ✅ System health monitoring
-- ✅ Real-time metrics dashboard
-- ✅ Scheduled job management
-- ✅ AI model orchestration
-- ✅ Automated deployments
-- ✅ Anomaly detection
-- ✅ Adaptive learning
+## Security
 
-### Module Features
+- Bearer token authentication
+- Rate limiting (100 requests per 15 minutes)
+- Helmet security headers
+- CORS configuration
 
-#### 🎵 Music
-- AI music generation
-- Dynamic model selection
-- Generation queue management
+## Environment Variables
 
-#### 📈 Marketing
-- Social media automation
-- SEO analysis
-- Campaign optimization
-- A/B testing
-- Revenue tracking
+See `.env.example` for all configuration options.
 
-#### 💬 Engagement
-- AI chatbot
-- Sentiment analysis
-- Proactive user retention
-- Churn prediction
+Key variables:
+- `JARVIS_PORT`: Gateway port (default: 4000)
+- `AI_DAWG_BACKEND_URL`: AI Dawg backend URL
+- `JARVIS_AUTH_TOKEN`: Authentication token
+- `NODE_ENV`: Environment (development/production)
 
-#### 🔄 Workflow
-- Automated testing
-- CI/CD orchestration
-- Auto-scaling
-- Self-healing systems
+## Coordination with Instance 2
 
-#### 🧠 Intelligence
-- Business intelligence
-- Predictive analytics
-- Resource optimization
-- Performance reporting
+This control plane communicates with AI Dawg backend at:
+- Primary: `http://localhost:3001`
+- Docker: `http://localhost:3000`
 
----
+See `docs/API_CONTRACT.md` for the expected API contract.
 
-## 🔐 Security
+## License
 
-- ✅ API key encryption
-- ✅ Role-based access control
-- ✅ Audit logging
-- ✅ Rate limiting
-- ✅ Secure IPC communication
-
----
-
-## 📈 Monitoring
-
-### Built-in Metrics
-- CPU usage
-- Memory usage
-- API response times
-- Job success rates
-- Error rates
-- User engagement
-- Revenue tracking
-
-### Alerts
-- Threshold breaches
-- Anomaly detection
-- Deployment status
-- System health issues
-
----
-
-## 🤝 Contributing
-
-### Adding a New Module
-
-1. Create module directory:
-   ```bash
-   mkdir -p src/jarvis/modules/your-module
-   ```
-
-2. Implement service class:
-   ```typescript
-   // src/jarvis/modules/your-module/your-service.ts
-   export class YourService {
-     async doSomething(): Promise<Result> {
-       // Implementation
-     }
-   }
-   ```
-
-3. Register in controller:
-   ```typescript
-   // src/jarvis/core/jarvis.controller.ts
-   import { YourService } from '../modules/your-module/your-service';
-   ```
-
-4. Add tests:
-   ```typescript
-   // tests/unit/modules/your-module/your-service.spec.ts
-   ```
-
-See [DEVELOPMENT.md](./docs/DEVELOPMENT.md) for detailed guidelines.
-
----
-
-## 📚 Documentation
-
-- [Architecture Overview](./docs/ARCHITECTURE.md)
-- [API Reference](./docs/API_REFERENCE.md)
-- [Development Guide](./docs/DEVELOPMENT.md)
-- [Deployment Guide](./docs/DEPLOYMENT.md)
-
----
-
-## 🐛 Troubleshooting
-
-### Common Issues
-
-**App won't start**
-```bash
-# Clear node_modules and reinstall
-rm -rf node_modules package-lock.json
-npm install
-npm run dev
-```
-
-**API calls failing**
-- Check `.env` file has correct API key
-- Verify API endpoint is accessible
-- Check network/firewall settings
-
-**Jobs not running**
-- Check cron syntax in config
-- Verify scheduler is initialized
-- Check logs: `tail -f logs/jarvis.log`
-
-**Build errors**
-- Ensure Node.js v18+
-- Clear dist folder: `rm -rf dist`
-- Run `npm run build` again
-
----
-
-## 📄 License
-
-MIT License - See [LICENSE](./LICENSE) file for details
-
----
-
-## 🎉 Getting Help
-
-1. Check [QUICK_START.md](./QUICK_START.md)
-2. Read [BUILD_GUIDE.md](./BUILD_GUIDE.md)
-3. Review [INTEGRATION.md](./INTEGRATION.md)
-4. Search existing issues
-5. Create new issue with details
-
----
-
-## 🚀 Deployment
-
-### Production Build
-
-```bash
-# Build for your platform
-npm run build
-
-# Output will be in dist/
-# - dist/mac/Jarvis.dmg (macOS)
-# - dist/win/Jarvis.exe (Windows)
-# - dist/linux/Jarvis.AppImage (Linux)
-```
-
-### Auto-Updates
-
-Configure in `electron-builder.yml`:
-```yaml
-publish:
-  provider: github
-  repo: jarvis-desktop
-  owner: your-username
-```
-
----
-
-**Built with ❤️ for autonomous AI operations**
-
-**Version:** 2.0
-**Status:** In Development
-**API:** [Jarvis AI DAWG Controller](https://kaycee-nonextrinsical-yosef.ngrok-free.dev)
+MIT
