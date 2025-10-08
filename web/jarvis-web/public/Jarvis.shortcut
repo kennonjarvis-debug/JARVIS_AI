@@ -1,0 +1,6 @@
+This is a placeholder for the binary Jarvis.shortcut file.
+Replace this file with the real exported and signed `.shortcut` bundle.
+
+The install page links to:
+shortcuts://import-shortcut?url=https://jarvis-ai-web.vercel.app/Jarvis.shortcut
+

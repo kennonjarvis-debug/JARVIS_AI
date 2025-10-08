@@ -1,0 +1,345 @@
+{
+  "deployment_success": {
+    "text": "✅ Jarvis V2 Deployment Successful",
+    "blocks": [
+      {
+        "type": "header",
+        "text": {
+          "type": "plain_text",
+          "text": "✅ Jarvis V2 Deployment Report"
+        }
+      },
+      {
+        "type": "section",
+        "fields": [
+          {
+            "type": "mrkdwn",
+            "text": "*Status:*\nSUCCESS ✅"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Environment:*\n{{ENVIRONMENT}}"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Commit:*\n<{{COMMIT_URL}}|{{COMMIT_SHA}}>"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Author:*\n{{AUTHOR}}"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Vitality:*\n{{VITALITY}}"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Timestamp:*\n{{TIMESTAMP}}"
+          }
+        ]
+      },
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": "*Results:*\n• Deploy: success\n• Memory Sync: success\n• Tests: passed"
+        }
+      },
+      {
+        "type": "actions",
+        "elements": [
+          {
+            "type": "button",
+            "text": {
+              "type": "plain_text",
+              "text": "View Workflow"
+            },
+            "url": "{{WORKFLOW_URL}}",
+            "style": "primary"
+          }
+        ]
+      }
+    ]
+  },
+  "deployment_failure": {
+    "text": "❌ Jarvis V2 Deployment Failed",
+    "blocks": [
+      {
+        "type": "header",
+        "text": {
+          "type": "plain_text",
+          "text": "❌ Jarvis V2 Deployment Failed"
+        }
+      },
+      {
+        "type": "section",
+        "fields": [
+          {
+            "type": "mrkdwn",
+            "text": "*Status:*\nFAILED ❌"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Environment:*\n{{ENVIRONMENT}}"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Commit:*\n<{{COMMIT_URL}}|{{COMMIT_SHA}}>"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Author:*\n{{AUTHOR}}"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Failed Stage:*\n{{FAILED_STAGE}}"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Timestamp:*\n{{TIMESTAMP}}"
+          }
+        ]
+      },
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": "*Error:*\n```{{ERROR_MESSAGE}}```"
+        }
+      },
+      {
+        "type": "actions",
+        "elements": [
+          {
+            "type": "button",
+            "text": {
+              "type": "plain_text",
+              "text": "View Logs"
+            },
+            "url": "{{WORKFLOW_URL}}",
+            "style": "danger"
+          }
+        ]
+      }
+    ]
+  },
+  "backup_success": {
+    "text": "✅ Jarvis Daily S3 Backup Completed",
+    "blocks": [
+      {
+        "type": "header",
+        "text": {
+          "type": "plain_text",
+          "text": "☁️  Jarvis S3 Backup Report"
+        }
+      },
+      {
+        "type": "section",
+        "fields": [
+          {
+            "type": "mrkdwn",
+            "text": "*Status:*\nSuccess ✅"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Timestamp:*\n{{TIMESTAMP}}"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Backup Size:*\n{{BACKUP_SIZE}} MB"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Files Backed Up:*\n{{FILE_COUNT}}"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Encryption:*\n{{ENCRYPTION_STATUS}}"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Versioning:*\n{{VERSIONING_STATUS}}"
+          }
+        ]
+      },
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": "*Backed Up:*\n• Memory folder 💾\n• Adaptive data 🧠\n• Logs (7 days) 📋\n• Config files ⚙️"
+        }
+      },
+      {
+        "type": "context",
+        "elements": [
+          {
+            "type": "mrkdwn",
+            "text": "Retention: {{RETENTION_DAYS}} days | Bucket: {{BUCKET_NAME}}"
+          }
+        ]
+      }
+    ]
+  },
+  "backup_failure": {
+    "text": "🚨 ALERT: Jarvis S3 Backup Failed",
+    "blocks": [
+      {
+        "type": "header",
+        "text": {
+          "type": "plain_text",
+          "text": "🚨 Backup Failure Alert"
+        }
+      },
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": "*⚠️ Backup Job Failed*\n\nThe daily S3 backup job has failed. Please investigate immediately.\n\n*Timestamp:* {{TIMESTAMP}}\n*Error:* {{ERROR_MESSAGE}}"
+        }
+      },
+      {
+        "type": "actions",
+        "elements": [
+          {
+            "type": "button",
+            "text": {
+              "type": "plain_text",
+              "text": "View Workflow"
+            },
+            "url": "{{WORKFLOW_URL}}",
+            "style": "danger"
+          }
+        ]
+      }
+    ]
+  },
+  "health_alert": {
+    "text": "🚨 ALERT: Jarvis Health Check Failed",
+    "blocks": [
+      {
+        "type": "header",
+        "text": {
+          "type": "plain_text",
+          "text": "🚨 Jarvis Health Alert"
+        }
+      },
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": "*⚠️ Deployment Blocked*\n\nJarvis vitality is below the threshold. Deployment has been halted.\n\n*Current Vitality:* {{VITALITY}}\n*Required Threshold:* {{THRESHOLD}}\n*Timestamp:* {{TIMESTAMP}}"
+        }
+      },
+      {
+        "type": "section",
+        "fields": [
+          {
+            "type": "mrkdwn",
+            "text": "*CPU Usage:*\n{{CPU_USAGE}}%"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Memory Usage:*\n{{MEMORY_USAGE}}%"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Error Rate:*\n{{ERROR_RATE}}%"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*API Response:*\n{{API_RESPONSE_TIME}}ms"
+          }
+        ]
+      },
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": "*Recommended Actions:*\n• Investigate system health\n• Check error logs\n• Review recent changes\n• Verify service dependencies"
+        }
+      }
+    ]
+  },
+  "deployment_started": {
+    "text": "🚀 Jarvis V2 Deployment Started",
+    "blocks": [
+      {
+        "type": "header",
+        "text": {
+          "type": "plain_text",
+          "text": "🚀 Deployment In Progress"
+        }
+      },
+      {
+        "type": "section",
+        "fields": [
+          {
+            "type": "mrkdwn",
+            "text": "*Environment:*\n{{ENVIRONMENT}}"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Commit:*\n{{COMMIT_SHA}}"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Author:*\n{{AUTHOR}}"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Started:*\n{{TIMESTAMP}}"
+          }
+        ]
+      },
+      {
+        "type": "context",
+        "elements": [
+          {
+            "type": "mrkdwn",
+            "text": "Estimated completion: ~5 minutes"
+          }
+        ]
+      }
+    ]
+  },
+  "daily_summary": {
+    "text": "📊 Jarvis Daily Summary",
+    "blocks": [
+      {
+        "type": "header",
+        "text": {
+          "type": "plain_text",
+          "text": "📊 Jarvis Daily Summary"
+        }
+      },
+      {
+        "type": "section",
+        "fields": [
+          {
+            "type": "mrkdwn",
+            "text": "*Date:*\n{{DATE}}"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Deployments:*\n{{DEPLOYMENT_COUNT}}"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Success Rate:*\n{{SUCCESS_RATE}}%"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Avg Vitality:*\n{{AVG_VITALITY}}"
+          }
+        ]
+      },
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": "*Today's Activity:*\n• Deployments: {{DEPLOYMENT_COUNT}}\n• Backups: {{BACKUP_COUNT}}\n• Health Checks: {{HEALTH_CHECK_COUNT}}\n• Alerts: {{ALERT_COUNT}}"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "deployment_id": "1234567890",
+  "timestamp": "2025-10-07T14:15:30Z",
+  "status": "success",
+  "environment": "staging",
+  "commit": {
+    "sha": "a1b2c3d4e5f6",
+    "message": "Add multi-model AI orchestration engine",
+    "author": "devops-bot",
+    "url": "https://github.com/jarvis/jarvis-v2/commit/a1b2c3d4e5f6"
+  },
+  "health": {
+    "pre_deploy_vitality": 85,
+    "post_deploy_vitality": 87,
+    "deploy_allowed": true,
+    "health_check_passed": true
+  },
+  "jobs": {
+    "lint": "success",
+    "unit_tests": "success",
+    "integration_tests": "success",
+    "e2e_tests": "success",
+    "security_scan": "success",
+    "build": "success",
+    "deploy": "success",
+    "sync_memory": "success",
+    "notify": "success"
+  },
+  "metrics": {
+    "duration_seconds": 342,
+    "build_time_seconds": 87,
+    "test_time_seconds": 156,
+    "deploy_time_seconds": 45
+  },
+  "backup": {
+    "sync_performed": true,
+    "backup_size_mb": 245,
+    "files_synced": 1247,
+    "s3_url": "s3://jarvis-backups/backups/2025-10-07-14-15-30/"
+  },
+  "metadata": {
+    "workflow_url": "https://github.com/jarvis/jarvis-v2/actions/runs/1234567890",
+    "triggered_by": "push",
+    "branch": "main",
+    "skip_tests": false,
+    "tags": ["ai-orchestration", "multi-model", "feature"],
+    "notes": "Deployed AI orchestration engine with Claude, GPT-4o, and Gemini integration"
+  },
+  "errors": [],
+  "notifications": {
+    "slack_sent": true,
+    "email_sent": true,
+    "notification_errors": []
+  }
+}

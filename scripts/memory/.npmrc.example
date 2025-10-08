@@ -1,0 +1,11 @@
+# Optional: Add these to your package.json scripts for easier access
+
+# "mem:save": "node scripts/memory/mem-save.js",
+# "mem:load": "node scripts/memory/mem-load.js",
+# "mem:delete": "node scripts/memory/mem-delete.js",
+# "mem:list": "node scripts/memory/mem-load.js --list",
+# "mem:encode": "node scripts/memory/encode.js",
+# "mem:decode": "node scripts/memory/decode.js"
+
+# Then use like:
+# npm run mem:save my_key $(npm run -s mem:encode "My message")
