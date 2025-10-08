@@ -7,8 +7,40 @@ const InstallPage: React.FC = () => {
     typeof window !== "undefined"
       ? window.location.origin
       : process.env.NEXT_PUBLIC_FALLBACK_URL;
-  const shortcutUrl = `${host}/Jarvis.shortcut`;
-  const installUrl = `shortcuts://import-shortcut?url=${shortcutUrl}`;
+  const preferred = `${host}/Jarvis.shortcut`;
+  const [shortcutUrl, setShortcutUrl] = React.useState(preferred);
+  const [error, setError] = React.useState<string | null>(null);
+  const installUrl = `shortcuts://import-shortcut?url=${encodeURIComponent(
+    shortcutUrl
+  )}`;
+
+  React.useEffect(() => {
+    let alive = true;
+    async function probe() {
+      try {
+        const res = await fetch(preferred, { method: "HEAD" });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        if (alive) setShortcutUrl(preferred);
+      } catch (e) {
+        const fallback = "https://jarvis-web-pi.vercel.app/Jarvis.shortcut";
+        // Try fallback host
+        try {
+          const r2 = await fetch(fallback, { method: "HEAD" });
+          if (!r2.ok) throw new Error(`HTTP ${r2.status}`);
+          if (alive) setShortcutUrl(fallback);
+        } catch (e2) {
+          if (alive)
+            setError(
+              "Shortcut file is unreachable right now. Please try again later."
+            );
+        }
+      }
+    }
+    probe();
+    return () => {
+      alive = false;
+    };
+  }, [preferred]);
 
   return (
     <main style={{
@@ -55,6 +87,11 @@ const InstallPage: React.FC = () => {
           <p style={{ marginTop: 8, fontSize: 12, opacity: 0.65 }}>
             Deep link target: {installUrl}
           </p>
+          {error && (
+            <p style={{ marginTop: 8, fontSize: 12, color: "#fca5a5" }}>
+              {error}
+            </p>
+          )}
         </div>
       </div>
     </main>
