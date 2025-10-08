@@ -3,8 +3,12 @@
 import React from "react";
 
 const InstallPage: React.FC = () => {
-  const installUrl =
-    "shortcuts://import-shortcut?url=https://jarvis-ai-web.vercel.app/Jarvis.shortcut";
+  const host =
+    typeof window !== "undefined"
+      ? window.location.origin
+      : process.env.NEXT_PUBLIC_FALLBACK_URL;
+  const shortcutUrl = `${host}/Jarvis.shortcut`;
+  const installUrl = `shortcuts://import-shortcut?url=${shortcutUrl}`;
 
   return (
     <main style={{
