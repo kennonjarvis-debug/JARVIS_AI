@@ -10,7 +10,8 @@
  */
 
 import { EventEmitter } from 'events';
-import { HealthAggregator, HealthStatus, ServiceHealth } from './health-aggregator.js';
+import { HealthAggregator } from './health-aggregator.js';
+import { HealthStatus, ServiceHealth } from './types.js';
 import { businessIntelligence } from './business-intelligence.js';
 import { exec } from 'child_process';
 import { promisify } from 'util';
@@ -58,9 +59,12 @@ export class BusinessOperator extends EventEmitter {
   private serviceRestartAttempts: Map<string, number> = new Map();
   private serviceUptimeStart: Map<string, number> = new Map();
   private alerts: ServiceAlert[] = [];
+  private cachedMetrics: BusinessMetrics | null = null;
+  private lastMetricsUpdate: number = 0;
 
   private readonly HEALTH_CHECK_INTERVAL = 30000; // 30 seconds
   private readonly METRICS_INTERVAL = 300000; // 5 minutes
+  private readonly METRICS_CACHE_TTL = 10000; // 10 seconds cache TTL
   private readonly MAX_RESTART_ATTEMPTS = 3;
   private readonly RESTART_WINDOW = 300000; // 5 minutes - reset attempt counter after this
 
@@ -368,16 +372,77 @@ export class BusinessOperator extends EventEmitter {
   }
 
   /**
-   * Get current business metrics
+   * Get current business metrics (with caching)
    */
   async getCurrentMetrics(): Promise<BusinessMetrics> {
-    const health = await this.healthAggregator.checkAll();
+    // Return cached metrics if still valid
+    const now = Date.now();
+    if (this.cachedMetrics && (now - this.lastMetricsUpdate) < this.METRICS_CACHE_TTL) {
+      return this.cachedMetrics;
+    }
 
+    // Fetch fresh metrics with timeout protection
+    try {
+      const health = await Promise.race([
+        this.healthAggregator.checkAll(),
+        new Promise<HealthStatus>((_, reject) =>
+          setTimeout(() => reject(new Error('Health check timeout')), 3000)
+        )
+      ]) as HealthStatus;
+
+      const metrics = {
+        uptime: this.calculateUptime(),
+        performance: await this.calculatePerformance(health),
+        costs: await this.calculateCosts(),
+        users: await this.calculateUserMetrics(),
+        timestamp: new Date().toISOString()
+      };
+
+      // Cache the metrics
+      this.cachedMetrics = metrics;
+      this.lastMetricsUpdate = now;
+
+      return metrics;
+    } catch (error) {
+      // If metrics fetch fails but we have cache, return cache
+      if (this.cachedMetrics) {
+        console.warn('[BusinessOperator] Using cached metrics due to fetch timeout');
+        return this.cachedMetrics;
+      }
+
+      // Otherwise return default metrics
+      console.error('[BusinessOperator] Metrics fetch failed, returning defaults', error);
+      return this.getDefaultMetrics();
+    }
+  }
+
+  /**
+   * Get default metrics when real data unavailable
+   */
+  private getDefaultMetrics(): BusinessMetrics {
     return {
-      uptime: this.calculateUptime(),
-      performance: await this.calculatePerformance(health),
-      costs: await this.calculateCosts(),
-      users: await this.calculateUserMetrics(),
+      uptime: {
+        overall: 0,
+        byService: {}
+      },
+      performance: {
+        responseTime: {},
+        requestsPerMinute: 0,
+        errorRate: 0
+      },
+      costs: {
+        total: 0,
+        aiApiCalls: {
+          openai: 0,
+          anthropic: 0,
+          gemini: 0
+        }
+      },
+      users: {
+        active: 0,
+        sessions: 0,
+        newUsers: 0
+      },
       timestamp: new Date().toISOString()
     };
   }
