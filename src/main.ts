@@ -56,6 +56,25 @@ async function main() {
     await businessOperator.start();
     logger.info('✅ Business Operator monitoring AI DAWG services');
 
+    // Start Autonomous Orchestrator (if enabled)
+    const { AutonomousOrchestrator } = await import('./autonomous/orchestrator.js');
+    const orchestrator = AutonomousOrchestrator.getInstance();
+    await orchestrator.start();
+
+    if (process.env.AUTONOMOUS_ENABLED === 'true') {
+      logger.info('');
+      logger.info('🤖 AUTONOMOUS MODE ACTIVE');
+      logger.info('   AI DAWG is now self-managing with domain agents:');
+      logger.info('   - Music Production (compositions, mixing, mastering)');
+      logger.info('   - Marketing Strategy (promotion, user acquisition)');
+      logger.info('   - User Engagement (onboarding, support)');
+      logger.info('   - Workflow Automation (testing, deployment)');
+      logger.info('   - Business Intelligence (analytics, insights)');
+      logger.info('   - Cost Optimization (resource management)');
+      logger.info('   - System Health (monitoring, recovery)');
+      logger.info('');
+    }
+
     // Log startup success
     logger.info('✅ Jarvis Control Plane started successfully');
     logger.info(`📡 Gateway: http://localhost:${config.port}`);

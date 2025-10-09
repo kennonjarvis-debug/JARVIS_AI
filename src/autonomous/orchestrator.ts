@@ -56,23 +56,40 @@ export class AutonomousOrchestrator extends EventEmitter {
   private constructor(config?: Partial<OrchestratorConfig>) {
     super();
 
+    // Read configuration from environment variables
+    const enabled = process.env.AUTONOMOUS_ENABLED === 'true';
+    const analysisInterval = parseInt(process.env.AUTONOMOUS_ANALYSIS_INTERVAL || '300000', 10);
+    const maxConcurrentTasks = parseInt(process.env.AUTONOMOUS_MAX_CONCURRENT_TASKS || '3', 10);
+
+    // Parse clearance level from environment
+    const clearanceMap: Record<string, ClearanceLevel> = {
+      'READ_ONLY': ClearanceLevel.READ_ONLY,
+      'SUGGEST': ClearanceLevel.SUGGEST,
+      'MODIFY_SAFE': ClearanceLevel.MODIFY_SAFE,
+      'MODIFY_PRODUCTION': ClearanceLevel.MODIFY_PRODUCTION,
+      'FULL_AUTONOMY': ClearanceLevel.FULL_AUTONOMY,
+    };
+    const globalClearance = clearanceMap[process.env.AUTONOMOUS_CLEARANCE || 'SUGGEST'] || ClearanceLevel.SUGGEST;
+
     this.config = {
-      enabled: false, // Disabled by default
-      analysisInterval: 300000, // 5 minutes
-      maxConcurrentTasks: 3,
-      globalClearance: ClearanceLevel.SUGGEST,
+      enabled,
+      analysisInterval,
+      maxConcurrentTasks,
+      globalClearance,
       autoApprove: {
-        readOnly: true,
-        suggestionsOnly: true,
-        modifySafe: false,
-        modifyProduction: false,
+        readOnly: process.env.AUTONOMOUS_AUTO_APPROVE_READ_ONLY === 'true',
+        suggestionsOnly: process.env.AUTONOMOUS_AUTO_APPROVE_SUGGESTIONS === 'true',
+        modifySafe: process.env.AUTONOMOUS_AUTO_APPROVE_MODIFY_SAFE === 'true',
+        modifyProduction: process.env.AUTONOMOUS_AUTO_APPROVE_MODIFY_PRODUCTION === 'true',
       },
       ...config,
     };
 
-    logger.info('AutonomousOrchestrator initialized', {
+    logger.info('🤖 AutonomousOrchestrator initialized', {
       enabled: this.config.enabled,
       clearance: ClearanceLevel[this.config.globalClearance],
+      analysisInterval: `${this.config.analysisInterval / 1000}s`,
+      maxConcurrentTasks: this.config.maxConcurrentTasks,
     });
   }
 
