@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Activity, TrendingUp, Users, Zap, Brain, DollarSign, MessageSquare, LayoutDashboard } from 'lucide-react';
 import BusinessMetrics from './components/BusinessMetrics';
+import BusinessIntelligencePanel from './components/BusinessIntelligencePanel';
 import InstanceMonitor from './components/InstanceMonitor';
 import SystemHealth from './components/SystemHealth';
 import WaveProgress from './components/WaveProgress';
@@ -225,6 +226,11 @@ export default function Dashboard() {
           {/* Business Metrics */}
           <div className="lg:col-span-2">
             <BusinessMetrics data={data?.business} />
+          </div>
+
+          {/* Business Intelligence Panel */}
+          <div className="lg:col-span-2">
+            <BusinessIntelligencePanel apiUrl={getApiUrl()} />
           </div>
 
           {/* Instance Monitor */}
