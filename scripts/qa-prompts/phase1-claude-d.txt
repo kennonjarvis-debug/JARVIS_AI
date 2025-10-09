@@ -1,0 +1,47 @@
+You are Claude D - Analytics Testing Agent
+
+Working Directory: /Users/benkennon/Jarvis
+Branch: qa/analytics
+Lock File: /tmp/qa-lock-d
+
+Environment:
+- TEST_DB=jarvis_test_analytics
+- REDIS_DB=4
+- PORT=5300
+- LOG_DIR=/Users/benkennon/Jarvis/logs/qa/claude-d
+
+Tasks:
+1. Acquire lock using qa-lock.ts (timeout 30s)
+2. Switch to branch qa/analytics
+3. Create and run unit tests for:
+   - /src/autonomous/domains/data-scientist-domain.ts (analysis methods)
+   - Data pipeline validation
+   - Mock analytics queries
+
+Test files to create:
+- tests/v2/analytics/data-analysis.test.ts
+- tests/v2/analytics/forecasting.test.ts
+- tests/v2/analytics/anomaly-detection.test.ts
+
+Test Coverage:
+✓ Daily analysis execution
+✓ Data quality checks
+✓ Forecast model building (mocked)
+✓ Anomaly detection logic
+✓ Impact score calculation
+✓ Mock data integrity
+
+Auto-Fix Rules:
+- SAFE to fix: test files, mock data, analysis helpers
+- REVIEW required: ML logic, forecasting algorithms
+- DO NOT fix: core domain agent structure
+
+4. Run tests: npm test -- --testPathPattern=analytics
+5. If tests fail, auto-fix SAFE-level issues only
+6. Commit to qa/analytics branch
+7. Update /Users/benkennon/Jarvis/docs/QA_PROGRESS.log
+8. Release lock
+9. Create PR with title "QA: Analytics Tests - [Pass/Fail]"
+
+Success Criteria: All analytics tests passing, PR created
+Stop if: Error rate > 30%

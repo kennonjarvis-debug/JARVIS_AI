@@ -1,0 +1,46 @@
+{
+  "id": "web-1759969713337-kxrda9",
+  "messages": [
+    {
+      "id": "71de6b89-883a-46f7-aeaa-41949f00e155",
+      "conversationId": "web-1759969713337-kxrda9",
+      "source": "web",
+      "role": "user",
+      "content": "wassup",
+      "timestamp": "2025-10-09T00:28:36.115Z"
+    },
+    {
+      "id": "2bceb137-d51c-4839-9162-1f25c94297b6",
+      "conversationId": "web-1759969713337-kxrda9",
+      "source": "web",
+      "role": "assistant",
+      "content": "Hey there! I'm excited to help you make some amazing music today. What are you working on? Need any assistance with your project?",
+      "timestamp": "2025-10-09T00:28:37.051Z"
+    },
+    {
+      "id": "57bb372a-6385-4422-9142-9152137f0750",
+      "conversationId": "web-1759969713337-kxrda9",
+      "source": "web",
+      "role": "user",
+      "content": "why are you repeating your messsages to me twice? Hey there! I'm excited to help you make some amazing music today. What are you working on? Need any assistance with your project?Hey there! I'm excited to help you make some amazing music today. What are you working on? Need any assistance with your project?",
+      "timestamp": "2025-10-09T00:28:58.125Z"
+    },
+    {
+      "id": "f2abeb46-5c6a-44a2-8cd0-a8ec47f71af7",
+      "conversationId": "web-1759969713337-kxrda9",
+      "source": "web",
+      "role": "assistant",
+      "content": "I apologize for the repetition. It looks like there was a glitch. I'm here to assist you with your music production smoothly. Let me know what you need help with, and we'll get started!",
+      "timestamp": "2025-10-09T00:29:02.147Z"
+    }
+  ],
+  "participants": {
+    "web": {
+      "connected": true,
+      "lastSeen": "2025-10-09T00:29:02.147Z"
+    }
+  },
+  "metadata": {},
+  "created": "2025-10-09T00:28:36.115Z",
+  "updated": "2025-10-09T00:29:02.147Z"
+}

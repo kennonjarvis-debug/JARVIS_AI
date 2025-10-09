@@ -1,0 +1,6 @@
+{
+  "claude": "claude-3.7-sonnet",
+  "gemini": "gemini-2.5-flash",
+  "openai": "gpt-4-turbo"
+}
+

@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "jarvis-aidawg": {
+      "command": "npx",
+      "args": [
+        "tsx",
+        "/Users/benkennon/Jarvis/src/integrations/claude/mcp-server.ts"
+      ],
+      "env": {
+        "NODE_ENV": "production",
+        "AI_DAWG_BACKEND_URL": "http://localhost:3001"
+      }
+    }
+  }
+}

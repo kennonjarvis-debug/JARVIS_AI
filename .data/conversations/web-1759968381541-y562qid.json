@@ -1,0 +1,30 @@
+{
+  "id": "web-1759968381541-y562qid",
+  "messages": [
+    {
+      "id": "bbeb5d35-b91c-4f43-815a-670b34cd382b",
+      "conversationId": "web-1759968381541-y562qid",
+      "source": "web",
+      "role": "user",
+      "content": "are you online?",
+      "timestamp": "2025-10-09T00:06:25.724Z"
+    },
+    {
+      "id": "e69c964d-6260-4899-a7a2-29e835083a4c",
+      "conversationId": "web-1759968381541-y562qid",
+      "source": "web",
+      "role": "assistant",
+      "content": "{\"success\":true,\"data\":{\"success\":false,\"error\":\"Module not found: ai-brain\",\"timestamp\":\"2025-10-09T00:06:25.747Z\"},\"timestamp\":\"2025-10-09T00:06:25.748Z\"}",
+      "timestamp": "2025-10-09T00:06:25.748Z"
+    }
+  ],
+  "participants": {
+    "web": {
+      "connected": true,
+      "lastSeen": "2025-10-09T00:06:25.748Z"
+    }
+  },
+  "metadata": {},
+  "created": "2025-10-09T00:06:25.724Z",
+  "updated": "2025-10-09T00:06:25.748Z"
+}

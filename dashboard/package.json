@@ -1,0 +1,19 @@
+{
+  "name": "jarvis-dashboard-suite",
+  "version": "1.0.0",
+  "description": "Jarvis Dashboard with comprehensive testing",
+  "private": true,
+  "scripts": {
+    "test": "npm run test:backend && npm run test:frontend",
+    "test:backend": "cd backend && npm test",
+    "test:frontend": "cd frontend && npm test",
+    "test:e2e": "playwright test",
+    "test:integration": "./tests/health-check.sh",
+    "test:all": "npm run test && npm run test:e2e",
+    "test:coverage": "npm run test:backend -- --coverage && npm run test:frontend -- --coverage",
+    "health-check": "./tests/health-check.sh"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.1"
+  }
+}

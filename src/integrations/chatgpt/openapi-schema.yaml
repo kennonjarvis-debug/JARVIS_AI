@@ -1,0 +1,951 @@
+openapi: 3.1.0
+info:
+  title: Jarvis AI Control Plane
+  version: 2.0.0
+  description: |
+    Jarvis is your AI-powered assistant that orchestrates music production, marketing analytics,
+    user engagement, workflow automation, and system testing. Each action returns results immediately
+    or provides a job ID for long-running tasks.
+  contact:
+    name: Jarvis Support
+    email: support@jarvis-ai.com
+
+servers:
+  - url: http://localhost:4000/integrations/chatgpt
+    description: Local development server
+  - url: https://api.jarvis-ai.com/integrations/chatgpt
+    description: Production server
+
+security:
+  - BearerAuth: []
+
+paths:
+  # ==================== MUSIC MODULE ====================
+
+  /actions/music/generate:
+    post:
+      operationId: generateMusic
+      summary: Generate music from text description
+      description: |
+        Create original music tracks from text prompts. You can specify genre, mood, tempo,
+        and instruments. Returns a job ID that you can use to check progress.
+      tags:
+        - Music
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - prompt
+              properties:
+                prompt:
+                  type: string
+                  description: Text description of the music you want to create
+                  example: "Upbeat electronic dance track with synthesizers and drums, 120 BPM"
+                duration:
+                  type: integer
+                  description: Duration in seconds (default 30, max 300)
+                  example: 60
+                  default: 30
+                genre:
+                  type: string
+                  description: Musical genre preference
+                  example: "electronic"
+                mood:
+                  type: string
+                  description: Emotional mood of the track
+                  example: "energetic"
+      responses:
+        '200':
+          description: Music generation started successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  jobId:
+                    type: string
+                    description: Job ID to check generation progress
+                  estimatedTime:
+                    type: integer
+                    description: Estimated completion time in seconds
+                  message:
+                    type: string
+              example:
+                success: true
+                jobId: "job_music_gen_abc123"
+                estimatedTime: 45
+                message: "Music generation started. Check job status to get your track."
+
+  /actions/music/analyze:
+    post:
+      operationId: analyzeMusic
+      summary: Analyze music track characteristics
+      description: |
+        Analyze an audio file or URL to extract musical features like tempo, key, genre,
+        mood, and structure. Perfect for understanding existing tracks.
+      tags:
+        - Music
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - audioUrl
+              properties:
+                audioUrl:
+                  type: string
+                  format: uri
+                  description: URL to the audio file to analyze
+                  example: "https://example.com/track.mp3"
+                analyzeVocals:
+                  type: boolean
+                  description: Include vocal analysis (pitch, tone, quality)
+                  default: false
+      responses:
+        '200':
+          description: Analysis completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      tempo:
+                        type: number
+                        description: Beats per minute
+                      key:
+                        type: string
+                        description: Musical key
+                      genre:
+                        type: string
+                        description: Detected genre
+                      mood:
+                        type: string
+                        description: Overall mood/emotion
+                      duration:
+                        type: number
+                        description: Track length in seconds
+                      structure:
+                        type: array
+                        description: Song structure (intro, verse, chorus, etc.)
+                        items:
+                          type: object
+              example:
+                success: true
+                data:
+                  tempo: 128
+                  key: "C major"
+                  genre: "Electronic Dance"
+                  mood: "energetic"
+                  duration: 245
+                  structure: ["intro", "verse", "chorus", "verse", "chorus", "bridge", "outro"]
+
+  /actions/music/validate:
+    post:
+      operationId: validateMusic
+      summary: Validate music file quality
+      description: |
+        Check if an audio file meets quality standards for production. Validates format,
+        bitrate, sample rate, clipping, and other technical requirements.
+      tags:
+        - Music
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - audioUrl
+              properties:
+                audioUrl:
+                  type: string
+                  format: uri
+                  description: URL to the audio file to validate
+                standards:
+                  type: string
+                  enum: [streaming, broadcast, mastering]
+                  description: Quality standard to validate against
+                  default: streaming
+      responses:
+        '200':
+          description: Validation completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  valid:
+                    type: boolean
+                  issues:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        severity:
+                          type: string
+                          enum: [critical, warning, info]
+                        message:
+                          type: string
+                  metrics:
+                    type: object
+              example:
+                success: true
+                valid: false
+                issues:
+                  - severity: "warning"
+                    message: "Peak volume exceeds -1dB. Consider reducing gain to prevent clipping."
+                  - severity: "info"
+                    message: "Sample rate is 44.1kHz. Consider 48kHz for broadcast."
+
+  # ==================== MARKETING MODULE ====================
+
+  /actions/marketing/metrics:
+    post:
+      operationId: getMarketingMetrics
+      summary: Get marketing performance metrics
+      description: |
+        Retrieve comprehensive marketing analytics including campaign performance,
+        conversion rates, ROI, and audience insights for a specified time period.
+      tags:
+        - Marketing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                timeRange:
+                  type: string
+                  enum: [today, week, month, quarter, year, custom]
+                  default: month
+                  description: Time period for metrics
+                startDate:
+                  type: string
+                  format: date
+                  description: Start date for custom range (YYYY-MM-DD)
+                endDate:
+                  type: string
+                  format: date
+                  description: End date for custom range (YYYY-MM-DD)
+                campaigns:
+                  type: array
+                  items:
+                    type: string
+                  description: Filter by specific campaign IDs
+      responses:
+        '200':
+          description: Marketing metrics retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      impressions:
+                        type: integer
+                      clicks:
+                        type: integer
+                      conversions:
+                        type: integer
+                      ctr:
+                        type: number
+                        description: Click-through rate percentage
+                      roi:
+                        type: number
+                        description: Return on investment
+                      costPerAcquisition:
+                        type: number
+              example:
+                success: true
+                data:
+                  impressions: 125000
+                  clicks: 3200
+                  conversions: 145
+                  ctr: 2.56
+                  roi: 3.2
+                  costPerAcquisition: 12.50
+
+  /actions/marketing/campaigns:
+    post:
+      operationId: manageCampaigns
+      summary: Create or manage marketing campaigns
+      description: |
+        Create new marketing campaigns, update existing ones, or get campaign details.
+        Campaigns can target specific audiences with custom messaging and budgets.
+      tags:
+        - Marketing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - action
+              properties:
+                action:
+                  type: string
+                  enum: [create, update, get, list]
+                  description: Campaign action to perform
+                campaignId:
+                  type: string
+                  description: Required for update/get actions
+                name:
+                  type: string
+                  description: Campaign name (for create/update)
+                budget:
+                  type: number
+                  description: Campaign budget in dollars
+                targetAudience:
+                  type: object
+                  properties:
+                    demographics:
+                      type: object
+                    interests:
+                      type: array
+                      items:
+                        type: string
+                schedule:
+                  type: object
+                  properties:
+                    startDate:
+                      type: string
+                      format: date-time
+                    endDate:
+                      type: string
+                      format: date-time
+      responses:
+        '200':
+          description: Campaign action completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+
+  /actions/marketing/growth-analysis:
+    post:
+      operationId: analyzeGrowth
+      summary: Analyze growth trends and opportunities
+      description: |
+        Get AI-powered insights on growth trends, market opportunities, and recommendations
+        for scaling your marketing efforts. Includes predictive analytics and competitor analysis.
+      tags:
+        - Marketing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                includeCompetitors:
+                  type: boolean
+                  default: true
+                  description: Include competitor analysis
+                forecastMonths:
+                  type: integer
+                  default: 3
+                  description: Number of months to forecast
+      responses:
+        '200':
+          description: Growth analysis completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      currentGrowthRate:
+                        type: number
+                      projectedGrowth:
+                        type: array
+                        items:
+                          type: object
+                      opportunities:
+                        type: array
+                        items:
+                          type: string
+                      recommendations:
+                        type: array
+                        items:
+                          type: string
+
+  # ==================== ENGAGEMENT MODULE ====================
+
+  /actions/engagement/sentiment:
+    post:
+      operationId: analyzeSentiment
+      summary: Analyze user sentiment and feedback
+      description: |
+        Analyze sentiment from user feedback, reviews, social media, or support tickets.
+        Get overall sentiment scores and identify key themes in user opinions.
+      tags:
+        - Engagement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                source:
+                  type: string
+                  enum: [reviews, social, support, surveys, all]
+                  default: all
+                  description: Data source for sentiment analysis
+                timeRange:
+                  type: string
+                  enum: [today, week, month, quarter]
+                  default: week
+                includeTopics:
+                  type: boolean
+                  default: true
+                  description: Extract key topics and themes
+      responses:
+        '200':
+          description: Sentiment analysis completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      overallSentiment:
+                        type: string
+                        enum: [positive, neutral, negative]
+                      score:
+                        type: number
+                        description: Sentiment score from -1 (negative) to 1 (positive)
+                      distribution:
+                        type: object
+                        properties:
+                          positive:
+                            type: number
+                          neutral:
+                            type: number
+                          negative:
+                            type: number
+                      topTopics:
+                        type: array
+                        items:
+                          type: object
+
+  /actions/engagement/churn:
+    post:
+      operationId: detectChurn
+      summary: Detect users at risk of churning
+      description: |
+        Identify users showing signs of disengagement or likely to churn. Get risk scores
+        and recommended interventions to retain at-risk users.
+      tags:
+        - Engagement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                riskThreshold:
+                  type: string
+                  enum: [high, medium, low]
+                  default: medium
+                  description: Minimum risk level to include
+                includeRecommendations:
+                  type: boolean
+                  default: true
+                  description: Include retention recommendations
+                segmentBy:
+                  type: array
+                  items:
+                    type: string
+                  description: Segment results by user attributes
+      responses:
+        '200':
+          description: Churn detection completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      totalAtRisk:
+                        type: integer
+                      riskDistribution:
+                        type: object
+                      topFactors:
+                        type: array
+                        items:
+                          type: string
+                      recommendations:
+                        type: array
+                        items:
+                          type: object
+
+  /actions/engagement/re-engage:
+    post:
+      operationId: createReEngagement
+      summary: Create re-engagement campaigns
+      description: |
+        Launch automated campaigns to re-engage dormant or at-risk users. Personalize
+        messaging based on user behavior and preferences.
+      tags:
+        - Engagement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - targetSegment
+              properties:
+                targetSegment:
+                  type: string
+                  description: User segment to target (e.g., "dormant_30days")
+                campaignType:
+                  type: string
+                  enum: [email, push, sms, in-app]
+                  default: email
+                personalization:
+                  type: boolean
+                  default: true
+                incentive:
+                  type: object
+                  properties:
+                    type:
+                      type: string
+                      enum: [discount, trial, content, feature]
+                    value:
+                      type: string
+      responses:
+        '200':
+          description: Re-engagement campaign created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  campaignId:
+                    type: string
+                  estimatedReach:
+                    type: integer
+
+  # ==================== AUTOMATION MODULE ====================
+
+  /actions/automation/workflows:
+    post:
+      operationId: manageWorkflows
+      summary: Create and manage automation workflows
+      description: |
+        Build automated workflows that trigger actions based on events, schedules, or conditions.
+        Chain multiple actions together for complex automations.
+      tags:
+        - Automation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - action
+              properties:
+                action:
+                  type: string
+                  enum: [create, update, delete, get, list, execute]
+                workflowId:
+                  type: string
+                  description: Required for update/delete/get/execute
+                workflow:
+                  type: object
+                  description: Workflow definition (for create/update)
+                  properties:
+                    name:
+                      type: string
+                    trigger:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                          enum: [schedule, event, webhook, condition]
+                        config:
+                          type: object
+                    actions:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          type:
+                            type: string
+                          params:
+                            type: object
+      responses:
+        '200':
+          description: Workflow action completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+
+  /actions/automation/forecasts:
+    post:
+      operationId: generateForecast
+      summary: Generate predictive forecasts
+      description: |
+        Use AI to forecast future metrics like revenue, user growth, resource needs, or
+        system load. Get confidence intervals and scenario analysis.
+      tags:
+        - Automation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - metric
+              properties:
+                metric:
+                  type: string
+                  description: Metric to forecast (e.g., "revenue", "users", "load")
+                horizon:
+                  type: integer
+                  default: 30
+                  description: Forecast horizon in days
+                includeScenarios:
+                  type: boolean
+                  default: true
+                  description: Include best/worst case scenarios
+                historicalData:
+                  type: array
+                  items:
+                    type: object
+                  description: Optional historical data to improve accuracy
+      responses:
+        '200':
+          description: Forecast generated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      forecast:
+                        type: array
+                        items:
+                          type: object
+                      confidence:
+                        type: number
+                      scenarios:
+                        type: object
+
+  /actions/automation/scaling:
+    post:
+      operationId: manageScaling
+      summary: Auto-scale resources intelligently
+      description: |
+        Automatically scale infrastructure resources based on demand, schedules, or ML predictions.
+        Optimize costs while maintaining performance.
+      tags:
+        - Automation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - action
+              properties:
+                action:
+                  type: string
+                  enum: [get-status, scale-up, scale-down, auto-optimize]
+                resource:
+                  type: string
+                  description: Resource type to scale
+                targetMetric:
+                  type: string
+                  description: Metric to optimize (e.g., "cpu", "memory", "cost")
+                constraints:
+                  type: object
+                  properties:
+                    minInstances:
+                      type: integer
+                    maxInstances:
+                      type: integer
+                    maxCost:
+                      type: number
+      responses:
+        '200':
+          description: Scaling action completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+
+  # ==================== TESTING MODULE ====================
+
+  /actions/testing/health:
+    post:
+      operationId: runHealthChecks
+      summary: Run comprehensive health checks
+      description: |
+        Execute health checks across all services and infrastructure. Get detailed status
+        of databases, APIs, microservices, and external dependencies.
+      tags:
+        - Testing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                scope:
+                  type: string
+                  enum: [all, infrastructure, services, dependencies]
+                  default: all
+                  description: Scope of health checks to run
+                includeMetrics:
+                  type: boolean
+                  default: true
+                  description: Include performance metrics
+      responses:
+        '200':
+          description: Health checks completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  status:
+                    type: string
+                    enum: [healthy, degraded, down]
+                  services:
+                    type: object
+                    additionalProperties:
+                      type: object
+                      properties:
+                        status:
+                          type: string
+                        responseTime:
+                          type: number
+                        lastCheck:
+                          type: string
+                          format: date-time
+
+  /actions/testing/validate:
+    post:
+      operationId: runValidation
+      summary: Validate system integrity
+      description: |
+        Run validation tests to verify data integrity, configuration correctness,
+        API contracts, and business logic. Catch issues before they impact users.
+      tags:
+        - Testing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                validationType:
+                  type: string
+                  enum: [data, config, api, business-rules, all]
+                  default: all
+                severity:
+                  type: string
+                  enum: [critical, all]
+                  default: all
+                  description: Minimum severity to report
+      responses:
+        '200':
+          description: Validation completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  valid:
+                    type: boolean
+                  issues:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        severity:
+                          type: string
+                        category:
+                          type: string
+                        message:
+                          type: string
+                        location:
+                          type: string
+
+  # ==================== JOB MANAGEMENT ====================
+
+  /jobs/{jobId}:
+    get:
+      operationId: getJobStatus
+      summary: Check job status
+      description: |
+        Check the status of a long-running job. Returns progress percentage, estimated
+        time remaining, and results when complete.
+      tags:
+        - Jobs
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Job ID returned from an async action
+      responses:
+        '200':
+          description: Job status retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  jobId:
+                    type: string
+                  status:
+                    type: string
+                    enum: [queued, running, completed, failed]
+                  progress:
+                    type: number
+                    description: Progress percentage (0-100)
+                  estimatedTimeRemaining:
+                    type: integer
+                    description: Seconds until completion
+                  result:
+                    type: object
+                    description: Results (only when status is completed)
+                  error:
+                    type: string
+                    description: Error message (only when status is failed)
+              example:
+                jobId: "job_music_gen_abc123"
+                status: "running"
+                progress: 65
+                estimatedTimeRemaining: 15
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Provide your API token in the Authorization header as: Bearer <token>
+
+        Tokens can be generated from your Jarvis dashboard.
+
+  responses:
+    Unauthorized:
+      description: Authentication failed
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              message:
+                type: string
+          example:
+            error: "Unauthorized"
+            message: "Invalid or missing authentication token"
+
+    RateLimitExceeded:
+      description: Rate limit exceeded
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              message:
+                type: string
+              retryAfter:
+                type: integer
+                description: Seconds until rate limit resets
+          example:
+            error: "RateLimitExceeded"
+            message: "Too many requests. Please try again in 60 seconds."
+            retryAfter: 60
+
+    ServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              message:
+                type: string
+          example:
+            error: "InternalServerError"
+            message: "An unexpected error occurred. Please try again later."

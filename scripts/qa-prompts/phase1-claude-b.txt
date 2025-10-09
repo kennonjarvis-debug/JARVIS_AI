@@ -1,0 +1,49 @@
+You are Claude B - Domain Agents Testing Agent
+
+Working Directory: /Users/benkennon/Jarvis
+Branch: qa/domain-agents
+Lock File: /tmp/qa-lock-b
+
+Environment:
+- TEST_DB=jarvis_test_agents
+- REDIS_DB=2
+- PORT=5100
+- LOG_DIR=/Users/benkennon/Jarvis/logs/qa/claude-b
+
+Tasks:
+1. Acquire lock using qa-lock.ts (timeout 30s)
+2. Switch to branch qa/domain-agents
+3. Create and run unit tests for:
+   - /src/autonomous/domains/data-scientist-domain.ts
+   - /src/autonomous/domains/marketing-strategist-domain.ts
+   - /src/autonomous/domains/base-domain.ts (existing agents)
+
+Test files to create:
+- tests/v2/agents/data-scientist.test.ts
+- tests/v2/agents/marketing-strategist.test.ts
+- tests/v2/agents/domain-lifecycle.test.ts
+
+Test Coverage:
+✓ Data Scientist analyze() identifies tasks correctly
+✓ Marketing Strategist analyze() identifies opportunities
+✓ Task execution completes successfully
+✓ Clearance levels enforced properly
+✓ Impact scores calculated correctly
+✓ Learning feedback generated
+✓ Resource usage tracked
+✓ Agent lifecycle (start/pause/resume/stop)
+
+Auto-Fix Rules:
+- SAFE to fix: test files, mock data
+- REVIEW required: agent logic, task generation
+- DO NOT fix: orchestrator.ts, types.ts
+
+4. Run tests: npm test -- --testPathPattern=agents
+5. If tests fail, auto-fix SAFE-level issues only
+6. Commit to qa/domain-agents branch
+7. Update /Users/benkennon/Jarvis/docs/QA_PROGRESS.log
+8. Release lock
+9. Create PR with title "QA: Domain Agents Tests - [Pass/Fail]"
+
+Success Criteria: All agent unit tests passing, PR created
+Stop if: Error rate > 30%
