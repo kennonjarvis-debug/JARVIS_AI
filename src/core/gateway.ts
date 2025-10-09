@@ -13,6 +13,9 @@ import { config } from '../utils/config.js';
 import { logger } from '../utils/logger.js';
 import { ModuleRouter } from './module-router.js';
 import { HealthAggregator } from './health-aggregator.js';
+import { websocketHub } from './websocket-hub.js';
+import { businessOperator } from './business-operator.js';
+import { businessIntelligence } from './business-intelligence.js';
 
 const app = express();
 const moduleRouter = new ModuleRouter();
@@ -37,12 +40,21 @@ app.use('/api/', limiter);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Request logging
+// Request logging and business intelligence tracking
 app.use((req: Request, res: Response, next: NextFunction) => {
   const start = Date.now();
   res.on('finish', () => {
     const duration = Date.now() - start;
     logger.info(`${req.method} ${req.path} ${res.statusCode} - ${duration}ms`);
+
+    // Track in business intelligence
+    businessIntelligence.trackRequest(
+      req.path,
+      req.method,
+      res.statusCode,
+      duration,
+      res.statusCode >= 400 ? `HTTP ${res.statusCode}` : undefined
+    );
   });
   next();
 });
@@ -164,6 +176,104 @@ app.get('/status', authenticate, (req: Request, res: Response) => {
   });
 });
 
+/**
+ * Business Metrics
+ * GET /api/v1/business/metrics
+ * Returns current business metrics (uptime, performance, costs, users)
+ */
+app.get('/api/v1/business/metrics', authenticate, async (req: Request, res: Response) => {
+  try {
+    const metrics = await businessOperator.getCurrentMetrics();
+    res.json({
+      success: true,
+      data: metrics,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error: any) {
+    logger.error(`Failed to get business metrics: ${error.message}`);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get metrics',
+      message: error.message
+    });
+  }
+});
+
+/**
+ * Business Alerts
+ * GET /api/v1/business/alerts
+ * Returns recent service alerts
+ */
+app.get('/api/v1/business/alerts', authenticate, (req: Request, res: Response) => {
+  try {
+    const limit = parseInt(req.query.limit as string) || 50;
+    const alerts = businessOperator.getAlerts(limit);
+    res.json({
+      success: true,
+      data: alerts,
+      count: alerts.length,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error: any) {
+    logger.error(`Failed to get alerts: ${error.message}`);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get alerts',
+      message: error.message
+    });
+  }
+});
+
+/**
+ * Business Health
+ * GET /api/v1/business/health
+ * Returns current health status of all AI DAWG services
+ */
+app.get('/api/v1/business/health', authenticate, async (req: Request, res: Response) => {
+  try {
+    const health = await businessOperator.getCurrentHealth();
+    res.json({
+      success: true,
+      data: health,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error: any) {
+    logger.error(`Failed to get business health: ${error.message}`);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get health status',
+      message: error.message
+    });
+  }
+});
+
+/**
+ * Business Insights
+ * GET /api/v1/business/insights
+ * Returns AI-generated business insights
+ */
+app.get('/api/v1/business/insights', authenticate, (req: Request, res: Response) => {
+  try {
+    const timeWindow = parseInt(req.query.timeWindow as string) || 60;
+    const insights = businessIntelligence.getInsights(timeWindow);
+    res.json({
+      success: true,
+      data: {
+        insights,
+        timeWindow,
+        timestamp: new Date().toISOString()
+      }
+    });
+  } catch (error: any) {
+    logger.error(`Failed to get business insights: ${error.message}`);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get insights',
+      message: error.message
+    });
+  }
+});
+
 // ============================================================================
 // ERROR HANDLING
 // ============================================================================
@@ -196,19 +306,24 @@ export function startGateway() {
     logger.info(`🚀 Jarvis Control Plane started on port ${config.port}`);
     logger.info(`📡 AI Dawg Backend: ${config.aiDawgBackendUrl}`);
     logger.info(`🔐 Auth: ${config.authToken === 'test-token' ? 'Development mode' : 'Production mode'}`);
+
+    // Initialize WebSocket Hub
+    websocketHub.initialize(server);
   });
 
   // Graceful shutdown
-  process.on('SIGTERM', () => {
+  process.on('SIGTERM', async () => {
     logger.info('SIGTERM received, shutting down gracefully');
+    await websocketHub.shutdown();
     server.close(() => {
       logger.info('Server closed');
       process.exit(0);
     });
   });
 
-  process.on('SIGINT', () => {
+  process.on('SIGINT', async () => {
     logger.info('SIGINT received, shutting down gracefully');
+    await websocketHub.shutdown();
     server.close(() => {
       logger.info('Server closed');
       process.exit(0);

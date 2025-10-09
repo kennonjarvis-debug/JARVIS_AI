@@ -10,6 +10,7 @@ import { startGateway } from './core/gateway.js';
 import { logger } from './utils/logger.js';
 import { config } from './utils/config.js';
 import MCPServer from './integrations/claude/mcp-server.js';
+import { businessOperator } from './core/business-operator.js';
 
 // ASCII Art Banner
 const banner = `
@@ -49,6 +50,11 @@ async function main() {
       const mcpServer = new MCPServer();
       await mcpServer.start();
     }
+
+    // Start Business Operator for autonomous management
+    logger.info('Starting Business Operator...');
+    await businessOperator.start();
+    logger.info('✅ Business Operator monitoring AI DAWG services');
 
     // Log startup success
     logger.info('✅ Jarvis Control Plane started successfully');
@@ -102,6 +108,9 @@ async function checkPortAvailability() {
 function setupShutdownHandlers() {
   const shutdown = (signal: string) => {
     logger.info(`${signal} received, shutting down gracefully...`);
+
+    // Stop Business Operator
+    businessOperator.stop();
 
     // Give time for connections to close
     setTimeout(() => {

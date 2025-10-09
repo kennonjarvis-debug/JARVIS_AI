@@ -183,4 +183,7 @@ export class HealthAggregator {
   }
 }
 
+// Singleton instance
+export const healthAggregator = new HealthAggregator();
+
 export default HealthAggregator;

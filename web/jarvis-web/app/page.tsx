@@ -5,9 +5,7 @@ import React from "react";
 type Msg = { role: "user" | "jarvis"; content: string };
 
 export default function Home() {
-  const API_URL =
-    process.env.NEXT_PUBLIC_JARVIS_API_URL ||
-    "https://jarvis-ai-backend.onrender.com/api/chat";
+  const API_URL = "/api/chat";
 
   const [messages, setMessages] = React.useState<Msg[]>([
     {

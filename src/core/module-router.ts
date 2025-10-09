@@ -25,6 +25,30 @@ export class ModuleRouter {
    * Execute a module command with retry logic
    */
   async execute(command: ModuleCommand): Promise<ModuleResponse> {
+    // Route AI Brain requests directly to AI Brain service
+    if (command.module === 'ai-brain') {
+      logger.info(`Routing ${command.module}.${command.action} directly to AI Brain service`);
+
+      // Map action to AI Brain endpoint
+      const endpointMap: Record<string, string> = {
+        'chat': '/api/chat',
+        'voice-chat': '/api/voice-chat',
+        'health': '/api/health'
+      };
+
+      const endpoint = endpointMap[command.action] || '/api/chat';
+
+      // Transform params to match AI Brain API format
+      const aiBrainData = {
+        message: command.params.message || '',
+        session_id: command.params.conversationId || command.params.sessionId || 'default',
+        ...(command.params.context && { context: command.params.context })
+      };
+
+      return await this.routeToService('ai-brain', endpoint, aiBrainData);
+    }
+
+    // Default: route through AI DAWG Backend
     let lastError: Error | null = null;
 
     for (let attempt = 1; attempt <= this.retryConfig.maxAttempts; attempt++) {
