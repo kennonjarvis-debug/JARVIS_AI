@@ -70,7 +70,7 @@ export default function ObservatoryPage() {
             🔭
           </div>
           <div>
-            <div style={{ fontSize: 20, fontWeight: 700 }}>{userName}'s Observatory</div>
+            <div style={{ fontSize: 20, fontWeight: 700 }}>{userName}&apos;s Observatory</div>
             <div style={{ fontSize: 12, opacity: 0.6 }}>Jarvis AI Control Center</div>
           </div>
         </div>
