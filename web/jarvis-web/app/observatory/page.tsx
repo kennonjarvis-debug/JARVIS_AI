@@ -208,8 +208,8 @@ export default function ObservatoryPage() {
         }}>
           <StatCard title="Messages Handled" value="0" subtitle="iMessages, DMs, emails" />
           <StatCard title="Posts Created" value="0" subtitle="Social media automation" />
-          <StatCard title="Time Saved" value="0 hrs" subtitle="This week" />
-          <StatCard title="DAWG AI Status" value="Not Connected" subtitle="Connect below" color="#ef4444" />
+          <StatCard title="Tasks Automated" value="0" subtitle="Active automations" />
+          <StatCard title="Integrations" value="0/8" subtitle="Connect your accounts" color="#ef4444" />
         </div>
 
         {/* Business Connection Section */}

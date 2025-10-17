@@ -10,7 +10,7 @@ export default function OnboardingPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 4;
+  const totalSteps = 3;
 
   // Redirect to home if not authenticated
   React.useEffect(() => {
@@ -119,7 +119,7 @@ export default function OnboardingPage() {
           justifyContent: "space-between",
           marginBottom: 12,
         }}>
-          {[1, 2, 3, 4].map((step) => (
+          {[1, 2, 3].map((step) => (
             <div
               key={step}
               style={{
@@ -145,7 +145,7 @@ export default function OnboardingPage() {
               }}>
                 {step}
               </div>
-              {step < 4 && (
+              {step < 3 && (
                 <div style={{
                   flex: 1,
                   height: 2,
@@ -180,9 +180,8 @@ export default function OnboardingPage() {
           width: "100%",
         }}>
           {currentStep === 1 && <StepWelcome userName={userName} onNext={handleNext} />}
-          {currentStep === 2 && <StepDawgAI onNext={handleNext} onSkip={handleSkip} />}
-          {currentStep === 3 && <StepConnectAccounts onNext={handleNext} onSkip={handleSkip} />}
-          {currentStep === 4 && <StepComplete onFinish={handleFinish} />}
+          {currentStep === 2 && <StepConnectAccounts onNext={handleNext} onSkip={handleSkip} />}
+          {currentStep === 3 && <StepComplete onFinish={handleFinish} />}
         </div>
       </div>
     </main>
@@ -239,8 +238,8 @@ function StepWelcome({ userName, onNext }: { userName: string; onNext: () => voi
         }}>
           <ListItem icon="💬" text="Automatically respond to iMessages, emails, and DMs" />
           <ListItem icon="🐦" text="Manage and post to your social media accounts" />
-          <ListItem icon="📊" text="Integrate with Salesforce, HubSpot, and other tools" />
-          <ListItem icon="🎵" text="Connect with DAWG AI for music production automation" />
+          <ListItem icon="📊" text="Integrate with Salesforce, HubSpot, and other business tools" />
+          <ListItem icon="📈" text="Automate sales, marketing, and customer service" />
           <ListItem icon="⚡" text="Work 24/7 while you focus on growing your business" />
         </ul>
       </div>
@@ -264,125 +263,7 @@ function StepWelcome({ userName, onNext }: { userName: string; onNext: () => voi
   );
 }
 
-// Step 2: DAWG AI Setup
-function StepDawgAI({ onNext, onSkip }: { onNext: () => void; onSkip: () => void }) {
-  return (
-    <div>
-      <div style={{
-        textAlign: "center",
-        marginBottom: 40,
-      }}>
-        <div style={{
-          fontSize: 64,
-          marginBottom: 24,
-        }}>
-          🎵
-        </div>
-        <h2 style={{
-          fontSize: 40,
-          fontWeight: 800,
-          marginBottom: 16,
-          color: "#111827",
-        }}>
-          Set Up DAWG AI
-        </h2>
-        <p style={{
-          fontSize: 18,
-          color: "#6b7280",
-          lineHeight: 1.6,
-        }}>
-          Your AI-powered music production assistant
-        </p>
-      </div>
-
-      <div style={{
-        background: "#f9fafb",
-        border: "1px solid #e5e7eb",
-        borderRadius: 12,
-        padding: 32,
-        marginBottom: 32,
-      }}>
-        <h3 style={{
-          fontSize: 20,
-          fontWeight: 700,
-          color: "#111827",
-          marginBottom: 16,
-        }}>
-          What is DAWG AI?
-        </h3>
-        <p style={{
-          fontSize: 16,
-          color: "#6b7280",
-          lineHeight: 1.6,
-          marginBottom: 24,
-        }}>
-          DAWG AI is your intelligent music production companion that integrates seamlessly with
-          Jarvis to automate creative workflows, manage your music business, and handle production tasks.
-        </p>
-
-        <h4 style={{
-          fontSize: 16,
-          fontWeight: 700,
-          color: "#111827",
-          marginBottom: 12,
-        }}>
-          Key Features:
-        </h4>
-        <ul style={{
-          listStyle: "none",
-          padding: 0,
-          margin: 0,
-        }}>
-          <ListItem icon="🎹" text="Automated beat generation and sound design" />
-          <ListItem icon="📝" text="Smart project organization and file management" />
-          <ListItem icon="🤝" text="Collaboration tools for producers and artists" />
-          <ListItem icon="💼" text="Music business automation (releases, distribution, royalties)" />
-          <ListItem icon="🔊" text="AI-assisted mixing and mastering suggestions" />
-        </ul>
-      </div>
-
-      <div style={{
-        display: "flex",
-        gap: 16,
-        justifyContent: "center",
-      }}>
-        <button
-          onClick={onSkip}
-          style={{
-            padding: "14px 32px",
-            borderRadius: 8,
-            background: "#fff",
-            color: "#6b7280",
-            border: "2px solid #e5e7eb",
-            cursor: "pointer",
-            fontSize: 16,
-            fontWeight: 600,
-          }}
-        >
-          Skip for Now
-        </button>
-        <button
-          onClick={onNext}
-          style={{
-            padding: "14px 32px",
-            borderRadius: 8,
-            background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
-            color: "#fff",
-            border: "none",
-            cursor: "pointer",
-            fontSize: 16,
-            fontWeight: 600,
-            boxShadow: "0 4px 12px rgba(239,68,68,0.3)",
-          }}
-        >
-          Continue →
-        </button>
-      </div>
-    </div>
-  );
-}
-
-// Step 3: Connect Accounts
+// Step 2: Connect Accounts
 function StepConnectAccounts({ onNext, onSkip }: { onNext: () => void; onSkip: () => void }) {
   return (
     <div>
