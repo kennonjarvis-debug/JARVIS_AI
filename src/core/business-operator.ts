@@ -13,6 +13,7 @@ import { EventEmitter } from 'events';
 import { HealthAggregator } from './health-aggregator.js';
 import { HealthStatus, ServiceHealth } from './types.js';
 import { businessIntelligence } from './business-intelligence.js';
+import { getAlertDispatcher } from './alert-dispatcher.js';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 
@@ -54,6 +55,7 @@ export interface BusinessMetrics {
 
 export class BusinessOperator extends EventEmitter {
   private healthAggregator: HealthAggregator;
+  private alertDispatcher: ReturnType<typeof getAlertDispatcher> | null = null;
   private monitoringInterval: NodeJS.Timeout | null = null;
   private metricsInterval: NodeJS.Timeout | null = null;
   private serviceRestartAttempts: Map<string, number> = new Map();
@@ -88,6 +90,37 @@ export class BusinessOperator extends EventEmitter {
    */
   async start(): Promise<void> {
     console.log('[BusinessOperator] Starting autonomous management system...');
+
+    // Initialize Alert Dispatcher
+    try {
+      this.alertDispatcher = getAlertDispatcher({
+        pushover: process.env.PUSHOVER_USER_KEY && process.env.PUSHOVER_API_TOKEN ? {
+          userKey: process.env.PUSHOVER_USER_KEY,
+          apiToken: process.env.PUSHOVER_API_TOKEN
+        } : undefined,
+        ntfy: process.env.NTFY_TOPIC ? {
+          topic: process.env.NTFY_TOPIC,
+          server: process.env.NTFY_SERVER
+        } : undefined,
+        macosNotifications: {
+          enabled: process.env.MACOS_NOTIFICATIONS_ENABLED !== 'false'
+        },
+        dashboardWebSocket: {
+          enabled: true
+        },
+        slack: process.env.SLACK_WEBHOOK_URL ? {
+          enabled: true,
+          webhookUrl: process.env.SLACK_WEBHOOK_URL
+        } : undefined,
+        chatgptWebhook: process.env.CHATGPT_WEBHOOK_URL ? {
+          enabled: true,
+          url: process.env.CHATGPT_WEBHOOK_URL
+        } : undefined
+      });
+      console.log('[BusinessOperator] Alert Dispatcher initialized');
+    } catch (error) {
+      console.warn('[BusinessOperator] Failed to initialize Alert Dispatcher:', error);
+    }
 
     // Initial health check
     await this.checkHealth();
@@ -173,7 +206,7 @@ export class BusinessOperator extends EventEmitter {
   private async handleUnhealthyService(serviceName: string, health: ServiceHealth): Promise<void> {
     const attempts = this.serviceRestartAttempts.get(serviceName) || 0;
 
-    if (health.status === 'unhealthy') {
+    if (health.status === 'down') {
       if (attempts < this.MAX_RESTART_ATTEMPTS) {
         // Attempt auto-restart
         console.log(`[BusinessOperator] Service ${serviceName} is unhealthy. Attempting restart (${attempts + 1}/${this.MAX_RESTART_ATTEMPTS})`);
@@ -302,7 +335,7 @@ export class BusinessOperator extends EventEmitter {
     const responseTimes: Record<string, number> = {};
 
     for (const [serviceName, serviceHealth] of Object.entries(health.services)) {
-      responseTimes[serviceName] = serviceHealth.responseTime || 0;
+      responseTimes[serviceName] = serviceHealth.latency || 0;
     }
 
     // Get request metrics from business intelligence
@@ -358,6 +391,13 @@ export class BusinessOperator extends EventEmitter {
 
     this.alerts.push(alert);
     this.emit('alert', alert);
+
+    // Dispatch alert to all channels (iPhone, macOS, WebSocket, etc.)
+    if (this.alertDispatcher) {
+      this.alertDispatcher.dispatch(alert).catch(error => {
+        console.error('[BusinessOperator] Failed to dispatch alert:', error);
+      });
+    }
 
     // Log based on severity
     const logFn = severity === 'critical' ? console.error : severity === 'warning' ? console.warn : console.log;

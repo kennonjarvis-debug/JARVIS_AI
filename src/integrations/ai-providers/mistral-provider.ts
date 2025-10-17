@@ -99,6 +99,11 @@ export class MistralProvider implements IProviderClient {
         throw new Error('No content in Mistral response');
       }
 
+      // Handle content being either string or array
+      const content = typeof choice.message.content === 'string'
+        ? choice.message.content
+        : JSON.stringify(choice.message.content);
+
       logger.debug('Mistral API response received', {
         model: modelId,
         latency: `${latency}ms`,
@@ -107,7 +112,7 @@ export class MistralProvider implements IProviderClient {
       });
 
       return {
-        content: choice.message.content,
+        content,
         inputTokens: usage?.promptTokens || 0,
         outputTokens: usage?.completionTokens || 0,
         finishReason: choice.finishReason,
@@ -164,7 +169,11 @@ export class MistralProvider implements IProviderClient {
       for await (const chunk of stream) {
         const content = chunk.data?.choices?.[0]?.delta?.content;
         if (content) {
-          yield content;
+          // Handle content being either string or array
+          const textContent = typeof content === 'string'
+            ? content
+            : JSON.stringify(content);
+          yield textContent;
         }
       }
 

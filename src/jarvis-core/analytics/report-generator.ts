@@ -97,7 +97,7 @@ ${result.vitalityIndex >= 85 ? '- ✅ System is operating optimally' :
       for (const pattern of result.testResults.failurePatterns.slice(0, 5)) {
         section += `\n- **${pattern.pattern}**\n`;
         section += `  - Frequency: ${pattern.frequency} occurrences\n`;
-        section += `  - Severity: ${pattern.severity.toUpperCase()}\n`;
+        section += `  - Severity: ${(pattern as any).severity?.toUpperCase() || 'MEDIUM'}\n`;
         section += `  - Affected Modules: ${pattern.affectedModules.join(', ')}\n`;
       }
     }

@@ -6,7 +6,7 @@
 import cron from 'node-cron';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import { logger } from '../../backend/utils/logger';
+import { logger } from '../../utils/logger';
 import { notificationService, NotificationPayload, NotificationLevel, NotificationChannel } from '../services/notification.service';
 
 const execAsync = promisify(exec);

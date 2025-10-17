@@ -16,7 +16,7 @@
  */
 
 import { EventEmitter } from 'events';
-import { logger } from '../../backend/utils/logger';
+import { logger } from '../../utils/logger';
 import { adaptiveEngine } from './adaptive-engine';
 import { clearanceSystem, ClearanceLevel, JarvisAction } from './clearance-system';
 import { selfAwareness } from './self-awareness';

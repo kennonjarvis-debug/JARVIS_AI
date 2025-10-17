@@ -1,0 +1,428 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]:
+          - heading "Jarvis Command Center" [level=1] [ref=e6]
+          - paragraph [ref=e7]: Real-time Business Intelligence & Instance Monitoring
+        - generic [ref=e8]:
+          - generic [ref=e9]:
+            - generic [ref=e10]:
+              - img [ref=e11]
+              - generic [ref=e13]: Live (SSE)
+            - paragraph [ref=e14]: "Last updated: 2:07:00 PM"
+            - paragraph [ref=e15]: "Data timestamp: 11:27:30 AM"
+          - button "Notifications (0 active)" [ref=e16]:
+            - img [ref=e17]
+      - generic [ref=e20]:
+        - button "Dashboard" [ref=e21]:
+          - img [ref=e22]
+          - text: Dashboard
+        - button "Chat" [ref=e27]:
+          - img [ref=e28]
+          - text: Chat
+        - link "Music Studio" [ref=e30] [cursor=pointer]:
+          - /url: /music
+          - button "Music Studio" [ref=e31]:
+            - img [ref=e32]
+            - text: Music Studio
+      - generic [ref=e36]:
+        - generic [ref=e37]:
+          - generic [ref=e38]:
+            - img [ref=e39]
+            - generic [ref=e47]: Instances
+          - generic [ref=e48]: "3"
+          - generic [ref=e49]: active
+        - generic [ref=e50]:
+          - generic [ref=e51]:
+            - img [ref=e52]
+            - generic [ref=e54]: System Health
+          - generic [ref=e55]: healthy
+          - generic [ref=e56]: 2 services
+        - generic [ref=e57]:
+          - generic [ref=e58]:
+            - img [ref=e59]
+            - generic [ref=e62]: Progress
+          - generic [ref=e63]: 62%
+          - generic [ref=e64]: complete
+        - generic [ref=e65]:
+          - generic [ref=e66]:
+            - img [ref=e67]
+            - generic [ref=e69]: Efficiency
+          - generic [ref=e70]: 1.54x
+          - generic [ref=e71]: vs estimate
+    - generic [ref=e72]:
+      - generic [ref=e74]:
+        - heading "Business Performance" [level=2] [ref=e75]:
+          - img [ref=e76]
+          - text: Business Performance
+        - generic [ref=e79]:
+          - generic [ref=e80]:
+            - generic [ref=e81]:
+              - img [ref=e83]
+              - generic "healthy" [ref=e87]
+            - heading "Music Generation" [level=3] [ref=e88]
+            - generic [ref=e89]:
+              - generic [ref=e90]:
+                - generic [ref=e91]: Generations Today
+                - generic [ref=e92]: "0"
+              - generic [ref=e93]:
+                - generic [ref=e94]: Success Rate
+                - generic [ref=e95]: 0%
+              - generic [ref=e96]:
+                - generic [ref=e97]: Avg Time
+                - generic [ref=e98]: 0s
+            - generic [ref=e100]: Priority 1
+          - generic [ref=e101]:
+            - generic [ref=e102]:
+              - img [ref=e104]
+              - generic "healthy" [ref=e107]
+            - heading "Marketing & Strategy" [level=3] [ref=e108]
+            - generic [ref=e109]:
+              - generic [ref=e110]:
+                - generic [ref=e111]: Users Today
+                - generic [ref=e112]: "0"
+              - generic [ref=e113]:
+                - generic [ref=e114]: Conversion Rate
+                - generic [ref=e115]: 0%
+              - generic [ref=e116]:
+                - generic [ref=e117]: Revenue
+                - generic [ref=e118]: $0
+            - generic [ref=e120]: Priority 2
+          - generic [ref=e121]:
+            - generic [ref=e122]:
+              - img [ref=e124]
+              - generic "degraded" [ref=e129]
+            - heading "User Engagement" [level=3] [ref=e130]
+            - generic [ref=e131]:
+              - generic [ref=e132]:
+                - generic [ref=e133]: Active Users
+                - generic [ref=e134]: "0"
+              - generic [ref=e135]:
+                - generic [ref=e136]: Churn Risk
+                - generic [ref=e137]: 0%
+              - generic [ref=e138]:
+                - generic [ref=e139]: Satisfaction
+                - generic [ref=e140]: 0%
+            - generic [ref=e142]: Priority 3
+          - generic [ref=e143]:
+            - generic [ref=e144]:
+              - img [ref=e146]
+              - generic "healthy" [ref=e148]
+            - heading "Workflow Automation" [level=3] [ref=e149]
+            - generic [ref=e150]:
+              - generic [ref=e151]:
+                - generic [ref=e152]: Workflows
+                - generic [ref=e153]: "0"
+              - generic [ref=e154]:
+                - generic [ref=e155]: Test Coverage
+                - generic [ref=e156]: 0%
+              - generic [ref=e157]:
+                - generic [ref=e158]: Error Rate
+                - generic [ref=e159]: 0%
+            - generic [ref=e161]: Priority 4
+          - generic [ref=e162]:
+            - generic [ref=e163]:
+              - img [ref=e165]
+              - generic "unknown" [ref=e173]
+            - heading "Business Intelligence" [level=3] [ref=e174]
+            - generic [ref=e175]:
+              - generic [ref=e176]:
+                - generic [ref=e177]: Dashboards
+                - generic [ref=e178]: "0"
+              - generic [ref=e179]:
+                - generic [ref=e180]: Reports
+                - generic [ref=e181]: "0"
+              - generic [ref=e182]:
+                - generic [ref=e183]: Insights
+                - generic [ref=e184]: "0"
+            - generic [ref=e186]: Priority 5
+      - generic [ref=e188]:
+        - generic [ref=e189]:
+          - generic [ref=e190]:
+            - heading "JARVIS Business Intelligence" [level=2] [ref=e191]:
+              - img [ref=e192]
+              - text: JARVIS Business Intelligence
+            - generic [ref=e200]: "Last updated: 2:07:00 PM"
+          - generic [ref=e202]:
+            - img [ref=e203]
+            - generic [ref=e206]:
+              - heading "Real-time Insights" [level=3] [ref=e207]
+              - list [ref=e208]:
+                - listitem [ref=e209]: "\" 160 requests (2.7/min)"
+        - generic [ref=e210]:
+          - generic [ref=e211]:
+            - generic [ref=e212]:
+              - img [ref=e213]
+              - generic [ref=e216]: Uptime
+            - generic [ref=e217]: 0h 0m
+            - generic [ref=e218]: All services operational
+          - generic [ref=e219]:
+            - generic [ref=e220]:
+              - img [ref=e221]
+              - generic [ref=e226]: Users
+            - generic [ref=e227]: "0"
+            - generic [ref=e228]: 0 active sessions
+          - generic [ref=e229]:
+            - generic [ref=e230]:
+              - img [ref=e231]
+              - generic [ref=e233]: AI Costs
+            - generic [ref=e234]: $0.00
+            - generic [ref=e235]: Last hour usage
+          - generic [ref=e236]:
+            - generic [ref=e237]:
+              - img [ref=e238]
+              - generic [ref=e240]: Performance
+            - generic [ref=e241]: 2.0/min
+            - generic [ref=e242]: 0.0% error rate
+      - generic [ref=e243]:
+        - heading "Claude Instances" [level=2] [ref=e244]:
+          - img [ref=e245]
+          - text: Claude Instances
+        - generic [ref=e253]:
+          - generic [ref=e254]:
+            - img [ref=e256]
+            - generic [ref=e259]: "16"
+            - generic [ref=e260]: Completed
+          - generic [ref=e261]:
+            - img [ref=e263]
+            - generic [ref=e266]: "3"
+            - generic [ref=e267]: In Progress
+          - generic [ref=e268]:
+            - img [ref=e270]
+            - generic [ref=e272]: "0"
+            - generic [ref=e273]: Blockers
+        - generic [ref=e274]:
+          - generic [ref=e275]:
+            - generic [ref=e276]:
+              - generic [ref=e277]:
+                - heading "instance-0" [level=3] [ref=e278]
+                - paragraph [ref=e279]: Monitor & Coordinator
+              - generic [ref=e280]: Active
+            - generic [ref=e281]:
+              - generic [ref=e282]:
+                - generic [ref=e283]: "Current:"
+                - generic [ref=e284]: Setting up monitoring and tracking system
+              - generic [ref=e285]:
+                - generic [ref=e286]: "Branch:"
+                - code [ref=e287]: feature/final-shortcut-fix
+          - generic [ref=e288]:
+            - generic [ref=e289]:
+              - generic [ref=e290]:
+                - heading "instance-1" [level=3] [ref=e291]
+                - paragraph [ref=e292]: Jarvis Core Development
+              - generic [ref=e293]: Active
+            - generic [ref=e294]:
+              - generic [ref=e295]:
+                - generic [ref=e296]: "Current:"
+                - generic [ref=e297]: Building Jarvis Control Plane
+              - generic [ref=e298]:
+                - generic [ref=e299]: "Branch:"
+                - code [ref=e300]: main-rearch/instance-1-jarvis-core
+              - generic [ref=e302]:
+                - generic [ref=e303]: "7e50032"
+                - generic [ref=e304]: •
+                - generic [ref=e305]: "feat: Build Jarvis Control Plane as central orchestration layer"
+          - generic [ref=e306]:
+            - generic [ref=e307]:
+              - generic [ref=e308]:
+                - heading "instance-2" [level=3] [ref=e309]
+                - paragraph [ref=e310]: AI DAWG Backend Development
+              - generic [ref=e311]: Active
+            - generic [ref=e312]:
+              - generic [ref=e313]:
+                - generic [ref=e314]: "Current:"
+                - generic [ref=e315]: Building AI Brain with modern model APIs and orchestration
+              - generic [ref=e316]:
+                - generic [ref=e317]: "Branch:"
+                - code [ref=e318]: instance/ai-abstraction
+              - generic [ref=e320]:
+                - generic [ref=e321]: 43be485
+                - generic [ref=e322]: •
+                - generic [ref=e323]: "🔁 Nightly model auto-adapt: update defaults, restart pm2, Slack notify"
+      - generic [ref=e324]:
+        - heading "System Health" [level=2] [ref=e325]:
+          - img [ref=e326]
+          - text: System Health
+        - generic [ref=e329]:
+          - generic [ref=e330]:
+            - img [ref=e331]
+            - generic [ref=e334]:
+              - generic [ref=e335]: Overall Status
+              - generic [ref=e336]: healthy
+          - generic [ref=e337]:
+            - generic [ref=e338]: "2"
+            - generic [ref=e339]: Services
+        - generic [ref=e340]:
+          - generic [ref=e341]:
+            - generic [ref=e342]:
+              - img [ref=e343]
+              - generic [ref=e346]: controlPlane
+            - generic [ref=e347]:
+              - img [ref=e348]
+              - generic [ref=e351]: healthy
+          - generic [ref=e352]:
+            - generic [ref=e353]:
+              - img [ref=e354]
+              - generic [ref=e357]: aiDawg
+            - generic [ref=e358]:
+              - img [ref=e359]
+              - generic [ref=e362]: healthy
+      - generic [ref=e363]:
+        - heading "Financial Summary" [level=2] [ref=e364]:
+          - img [ref=e365]
+          - text: Financial Summary
+        - generic [ref=e367]:
+          - generic [ref=e368]:
+            - img [ref=e370]
+            - generic [ref=e373]: $0
+            - generic [ref=e374]: MRR
+          - generic [ref=e375]:
+            - img [ref=e377]
+            - generic [ref=e379]: $0
+            - generic [ref=e380]: ARR
+          - generic [ref=e381]:
+            - img [ref=e383]
+            - generic [ref=e388]: "0"
+            - generic [ref=e389]: Customers
+          - generic [ref=e390]:
+            - img [ref=e392]
+            - generic [ref=e394]: $0
+            - generic [ref=e395]: Revenue Today
+        - generic [ref=e396]:
+          - generic [ref=e397]:
+            - generic [ref=e398]: CAC
+            - generic [ref=e399]: $127.5
+          - generic [ref=e400]:
+            - generic [ref=e401]: LTV
+            - generic [ref=e402]: $524.4
+          - generic [ref=e403]:
+            - generic [ref=e404]: Burn Rate
+            - generic [ref=e405]: $8,500/mo
+          - generic [ref=e406]:
+            - generic [ref=e407]: Runway
+            - generic [ref=e408]: 26 months
+      - generic [ref=e409]:
+        - heading "Development Progress" [level=2] [ref=e410]:
+          - img [ref=e411]
+          - text: Development Progress
+        - generic [ref=e415]:
+          - generic [ref=e416]:
+            - generic [ref=e417]:
+              - generic [ref=e418]:
+                - img [ref=e419]
+                - generic [ref=e422]: "Wave 1: Foundation & Core Systems"
+              - generic [ref=e423]: 100%
+            - generic [ref=e427]:
+              - generic [ref=e428]:
+                - text: "Tasks:"
+                - generic [ref=e429]: 3/3
+              - generic [ref=e430]:
+                - text: "Time:"
+                - generic [ref=e431]: 6h / 8h
+              - generic [ref=e432]:
+                - text: "Remaining:"
+                - generic [ref=e433]: 0h
+          - generic [ref=e434]:
+            - generic [ref=e435]:
+              - generic [ref=e436]:
+                - img [ref=e437]
+                - generic [ref=e440]: "Wave 2: AI Brain & Orchestration"
+              - generic [ref=e441]: 100%
+            - generic [ref=e445]:
+              - generic [ref=e446]:
+                - text: "Tasks:"
+                - generic [ref=e447]: 3/3
+              - generic [ref=e448]:
+                - text: "Time:"
+                - generic [ref=e449]: 8h / 10h
+              - generic [ref=e450]:
+                - text: "Remaining:"
+                - generic [ref=e451]: 0h
+          - generic [ref=e452]:
+            - generic [ref=e453]:
+              - generic [ref=e454]:
+                - img [ref=e455]
+                - generic [ref=e458]: "Wave 3: Business Modules"
+              - generic [ref=e459]: 100%
+            - generic [ref=e463]:
+              - generic [ref=e464]:
+                - text: "Tasks:"
+                - generic [ref=e465]: 3/3
+              - generic [ref=e466]:
+                - text: "Time:"
+                - generic [ref=e467]: 10h / 12h
+              - generic [ref=e468]:
+                - text: "Remaining:"
+                - generic [ref=e469]: 0h
+          - generic [ref=e470]:
+            - generic [ref=e471]:
+              - generic [ref=e472]:
+                - img [ref=e473]
+                - generic [ref=e476]: "Wave 4: Integration & Deployment"
+              - generic [ref=e477]: 100%
+            - generic [ref=e481]:
+              - generic [ref=e482]:
+                - text: "Tasks:"
+                - generic [ref=e483]: 3/3
+              - generic [ref=e484]:
+                - text: "Time:"
+                - generic [ref=e485]: 7h / 8h
+              - generic [ref=e486]:
+                - text: "Remaining:"
+                - generic [ref=e487]: 0h
+          - generic [ref=e488]:
+            - generic [ref=e489]:
+              - generic [ref=e490]:
+                - img [ref=e491]
+                - generic [ref=e494]: "Wave 5: Voice & Multi-Channel"
+              - generic [ref=e495]: 100%
+            - generic [ref=e499]:
+              - generic [ref=e500]:
+                - text: "Tasks:"
+                - generic [ref=e501]: 3/3
+              - generic [ref=e502]:
+                - text: "Time:"
+                - generic [ref=e503]: 5h / 6h
+              - generic [ref=e504]:
+                - text: "Remaining:"
+                - generic [ref=e505]: 0h
+          - generic [ref=e506]:
+            - generic [ref=e507]:
+              - generic [ref=e508]:
+                - img [ref=e509]
+                - generic [ref=e512]: "Wave 6: Monitoring & Dashboard"
+              - generic [ref=e513]: 60%
+            - generic [ref=e517]:
+              - generic [ref=e518]:
+                - text: "Tasks:"
+                - generic [ref=e519]: 1/3
+              - generic [ref=e520]:
+                - text: "Time:"
+                - generic [ref=e521]: 2.5h / 4h
+              - generic [ref=e522]:
+                - text: "Remaining:"
+                - generic [ref=e523]: 1.5h
+          - generic [ref=e524]:
+            - generic [ref=e525]:
+              - generic [ref=e526]:
+                - img [ref=e527]
+                - generic [ref=e529]: "Wave 7: Advanced Features & Scale"
+              - generic [ref=e530]: 0%
+            - generic [ref=e533]:
+              - generic [ref=e534]:
+                - text: "Tasks:"
+                - generic [ref=e535]: 0/3
+              - generic [ref=e536]:
+                - text: "Time:"
+                - generic [ref=e537]: 0h / 10h
+              - generic [ref=e538]:
+                - text: "Remaining:"
+                - generic [ref=e539]: 10h
+  - button "Open Next.js Dev Tools" [ref=e545] [cursor=pointer]:
+    - img [ref=e546]
+  - alert [ref=e549]
+```

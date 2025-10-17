@@ -51,10 +51,14 @@ async function main() {
       await mcpServer.start();
     }
 
-    // Start Business Operator for autonomous management
-    logger.info('Starting Business Operator...');
-    await businessOperator.start();
-    logger.info('✅ Business Operator monitoring AI DAWG services');
+    // Start Business Operator for autonomous management (skip in ECS)
+    if (process.env.ENABLE_BUSINESS_OPERATOR !== 'false') {
+      logger.info('Starting Business Operator...');
+      await businessOperator.start();
+      logger.info('✅ Business Operator monitoring AI DAWG services');
+    } else {
+      logger.info('⏭️  Business Operator disabled (ENABLE_BUSINESS_OPERATOR=false)');
+    }
 
     // Start Autonomous Orchestrator (if enabled)
     const { AutonomousOrchestrator } = await import('./autonomous/orchestrator.js');
@@ -72,6 +76,75 @@ async function main() {
       logger.info('   - Business Intelligence (analytics, insights)');
       logger.info('   - Cost Optimization (resource management)');
       logger.info('   - System Health (monitoring, recovery)');
+      logger.info('');
+    }
+
+    // Start Activity Monitoring System (if enabled)
+    if (process.env.ACTIVITY_MONITORING_ENABLED === 'true') {
+      logger.info('🔍 Starting Activity Monitoring System...');
+
+      const { activityMonitor, MonitoringLevel } = await import('./services/activity-monitor.service.js');
+      const { proactiveActions } = await import('./services/proactive-action.service.js');
+      const { deviceSync } = await import('./services/device-sync.service.js');
+
+      // Configure activity monitoring
+      activityMonitor.updateConfig({
+        level: MonitoringLevel.COMPREHENSIVE,
+        privacy: {
+          excludedApps: ['Passwords', '1Password', 'KeyChain Access', 'Banking'],
+          excludedKeywords: ['password', 'secret', 'api key', 'ssn', 'credit card'],
+          encryptionEnabled: true,
+          autoDeleteAfterDays: 7
+        },
+        monitoring: {
+          screenCaptureInterval: 60,
+          audioSamplingInterval: 5,
+          appCheckInterval: 10
+        },
+        storage: {
+          localPath: '/Users/benkennon/Jarvis/data/activity-logs',
+          maxStorageGB: 10
+        }
+      });
+
+      // Start monitoring for current user
+      const userId = process.env.USER || 'ben';
+      await activityMonitor.startMonitoring(userId);
+
+      // Setup event listeners for proactive actions
+      activityMonitor.on('session:ended', async (session) => {
+        // Analyze for opportunities
+        const sessions = activityMonitor.getUserSessions(userId);
+        const events = activityMonitor.getRecentEvents(100);
+        const opportunities = proactiveActions.analyzeActivity(sessions, events);
+
+        // Log detected opportunities
+        for (const opp of opportunities) {
+          logger.info(`💡 Opportunity detected: ${opp.title} (${Math.round(opp.confidence * 100)}% confidence)`);
+
+          // Auto-create action
+          const action = proactiveActions.createAction(opp.id);
+
+          // Auto-approve low-risk actions
+          if (opp.clearanceRequired <= 2) { // MODIFY_SAFE or lower
+            proactiveActions.approveAction(action.id);
+            logger.info(`✅ Action auto-approved: ${action.id}`);
+          }
+        }
+      });
+
+      logger.info('');
+      logger.info('👁️  ACTIVITY MONITORING ACTIVE');
+      logger.info('   Jarvis is now watching your work and will proactively:');
+      logger.info('   - Detect freestyle sessions → Auto-finish songs');
+      logger.info('   - Track app usage → Create shortcuts');
+      logger.info('   - Analyze coding patterns → Generate templates');
+      logger.info('   - Monitor work sessions → Suggest breaks');
+      logger.info('   - Sync to iPhone → Real-time notifications');
+      logger.info('');
+      logger.info(`   Current Context: Monitoring started for ${userId}`);
+      logger.info(`   Privacy: ${activityMonitor.getStats().isMonitoring ? 'Active with exclusions' : 'Disabled'}`);
+      logger.info(`   Device Sync: ${deviceSync.getStatus().enabled ? 'Enabled' : 'Disabled'}`);
       logger.info('');
     }
 

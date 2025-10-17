@@ -120,7 +120,7 @@ export class ForecastingService {
           },
         });
 
-        return revenueMetrics.map((m) => ({
+        return revenueMetrics.map((m: { date: Date; totalRevenue: number }) => ({
           date: m.date,
           value: m.totalRevenue,
         }));
@@ -138,7 +138,7 @@ export class ForecastingService {
           },
         });
 
-        return userMetrics.map((m) => ({
+        return userMetrics.map((m: { date: Date; activeUsers: number }) => ({
           date: m.date,
           value: m.activeUsers,
         }));
@@ -158,7 +158,7 @@ export class ForecastingService {
           },
         });
 
-        return usageEvents.map((e) => ({
+        return usageEvents.map((e: { createdAt: Date; _count: { id: number } }) => ({
           date: e.createdAt,
           value: e._count.id,
         }));
@@ -222,7 +222,7 @@ Format your response as JSON with the following structure:
       const result = JSON.parse(response.choices[0].message.content || '{}');
 
       // Convert predictions to the expected format
-      const predictions = result.predictions.map((p: any, index: number) => {
+      const predictions = result.predictions.map((p: { predicted: number; confidence: number; lowerBound: number; upperBound: number }, index: number) => {
         const date = new Date();
         date.setDate(date.getDate() + index + 1);
 

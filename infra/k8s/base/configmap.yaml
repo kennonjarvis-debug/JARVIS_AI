@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jarvis-config
+data:
+  NODE_ENV: "production"
+  LOG_LEVEL: "info"
+  AI_DAWG_BACKEND_URL: "http://backend:3001"
+  VOCAL_COACH_URL: "http://vocal-coach:8000"
+  PRODUCER_URL: "http://producer:8001"
+  AI_BRAIN_URL: "http://ai-brain:8002"

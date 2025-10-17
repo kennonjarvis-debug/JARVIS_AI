@@ -1,0 +1,10 @@
+{
+  "command": "generate drums",
+  "response": {
+    "status": "queued",
+    "action": "generate_drums",
+    "message": "Generating drum pattern..."
+  },
+  "timestamp": "2025-10-15T13:24:47.927229",
+  "source": "DAWG-AI"
+}

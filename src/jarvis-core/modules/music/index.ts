@@ -13,7 +13,7 @@
  */
 
 import { BaseModule } from '../../core/base-module';
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import { ScheduledJob } from '../../core/jarvis.interfaces';
 import { PrismaClient } from '@prisma/client';
 import { spawn } from 'child_process';
@@ -143,7 +143,7 @@ export class MusicModule extends BaseModule {
    */
   protected onRegisterRoutes(router: Router): void {
     // Music generation endpoint
-    router.post('/generate', async (req, res) => {
+    router.post('/generate', async (req: Request, res: Response) => {
       try {
         const request: MusicGenerationRequest = req.body;
         const result = await this.generateMusic(request);
@@ -158,7 +158,7 @@ export class MusicModule extends BaseModule {
     });
 
     // Vocal analysis endpoint
-    router.post('/analyze-vocal', async (req, res) => {
+    router.post('/analyze-vocal', async (req: Request, res: Response) => {
       try {
         const request: VocalAnalysisRequest = req.body;
         const result = await this.analyzeVocal(request);
@@ -173,7 +173,7 @@ export class MusicModule extends BaseModule {
     });
 
     // Quality validation endpoint
-    router.post('/validate', async (req, res) => {
+    router.post('/validate', async (req: Request, res: Response) => {
       try {
         const { audioPath } = req.body;
         const quality = await this.validateAudioQuality(audioPath);
@@ -188,7 +188,7 @@ export class MusicModule extends BaseModule {
     });
 
     // Usage statistics endpoint
-    router.get('/usage/:userId', async (req, res) => {
+    router.get('/usage/:userId', async (req: Request, res: Response) => {
       try {
         const { userId } = req.params;
         const stats = await this.getUserUsageStats(userId);
@@ -203,7 +203,7 @@ export class MusicModule extends BaseModule {
     });
 
     // Model health endpoint
-    router.get('/health', async (req, res) => {
+    router.get('/health', async (req: Request, res: Response) => {
       try {
         const health = await this.checkModelHealth();
         res.json({ success: true, data: health });
@@ -308,7 +308,7 @@ export class MusicModule extends BaseModule {
   /**
    * Handle get-model-health command
    */
-  private async handleGetModelHealth(_params: any): Promise<any> {
+  private async handleGetModelHealth(_params: Record<string, any>): Promise<any> {
     this.logger.info('Checking model health');
     return await this.checkModelHealth();
   }
@@ -580,9 +580,9 @@ export class MusicModule extends BaseModule {
     ]);
 
     // Calculate average durations
-    const completedEvents = recentEvents.filter(e => e.eventType === 'completed' && e.duration);
+    const completedEvents = recentEvents.filter((e: any) => e.eventType === 'completed' && e.duration);
     const avgDuration = completedEvents.length > 0
-      ? completedEvents.reduce((sum, e) => sum + (e.duration || 0), 0) / completedEvents.length
+      ? completedEvents.reduce((sum: number, e: any) => sum + (e.duration || 0), 0) / completedEvents.length
       : 0;
 
     return {

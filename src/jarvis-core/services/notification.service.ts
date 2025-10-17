@@ -16,7 +16,7 @@
  */
 
 import { EventEmitter } from 'events';
-import { logger } from '../../backend/utils/logger';
+import { logger } from '../../utils/logger';
 import { JarvisAction } from '../core/clearance-system';
 
 /**

@@ -13,8 +13,10 @@
 
 import { WebSocketServer, WebSocket, RawData } from 'ws';
 import { IncomingMessage, Server as HTTPServer } from 'http';
+import Redis from 'ioredis';
 import { logger } from '../utils/logger.js';
 import { conversationStore, Message, MessageSource } from './conversation-store.js';
+import { config } from '../utils/config.js';
 import { randomUUID } from 'crypto';
 
 export interface WSClient {
@@ -45,20 +47,77 @@ export class WebSocketHub {
   private rooms: Map<string, Set<string>> = new Map(); // conversationId -> Set<clientId>
   private heartbeatInterval: NodeJS.Timeout | null = null;
 
+  // Redis pub/sub for multi-instance support
+  private redis: Redis | null = null;
+  private redisSub: Redis | null = null;
+  private instanceId: string = randomUUID();
+
   /**
    * Initialize WebSocket server
    */
-  initialize(server: HTTPServer): void {
+  async initialize(server: HTTPServer): Promise<void> {
     this.wss = new WebSocketServer({ server, path: '/ws' });
 
     this.wss.on('connection', (ws: WebSocket, req: IncomingMessage) => {
       this.handleConnection(ws, req);
     });
 
+    // Initialize Redis pub/sub
+    await this.initializeRedis();
+
     // Start heartbeat
     this.startHeartbeat();
 
-    logger.info('🔌 WebSocket Hub initialized');
+    logger.info(`🔌 WebSocket Hub initialized (instance: ${this.instanceId})`);
+  }
+
+  /**
+   * Initialize Redis pub/sub for multi-instance support
+   */
+  private async initializeRedis(): Promise<void> {
+    try {
+      // Create Redis clients for pub/sub
+      this.redis = new Redis(config.redisUrl);
+      this.redisSub = new Redis(config.redisUrl);
+
+      // Subscribe to broadcast channel
+      await this.redisSub.subscribe('jarvis:broadcasts');
+
+      // Handle incoming Redis messages
+      this.redisSub.on('message', (channel, message) => {
+        if (channel === 'jarvis:broadcasts') {
+          try {
+            const data = JSON.parse(message);
+
+            // Ignore messages from this instance
+            if (data.instanceId === this.instanceId) {
+              return;
+            }
+
+            // Broadcast to local clients only
+            this.broadcastToLocalClients(data.message, data.conversationId);
+          } catch (error) {
+            logger.error('Failed to process Redis message:', error);
+          }
+        }
+      });
+
+      logger.info('✅ Redis pub/sub initialized for multi-instance WebSocket support');
+    } catch (error) {
+      logger.error('⚠️  Failed to initialize Redis pub/sub:', error);
+      logger.warn('WebSocket hub will run in single-instance mode');
+    }
+  }
+
+  /**
+   * Broadcast message to local clients only (called from Redis)
+   */
+  private broadcastToLocalClients(message: WSMessage, conversationId?: string): void {
+    if (conversationId) {
+      this.broadcastToRoom(conversationId, message);
+    } else {
+      this.broadcastToAll(message);
+    }
   }
 
   /**
@@ -387,6 +446,27 @@ export class WebSocketHub {
         this.sendToClient(client, message);
       }
     }
+
+    // Publish to Redis for other instances
+    this.publishToRedis(message, conversationId);
+  }
+
+  /**
+   * Publish message to Redis for other JARVIS instances
+   */
+  private async publishToRedis(message: WSMessage, conversationId?: string): Promise<void> {
+    if (!this.redis) return;
+
+    try {
+      await this.redis.publish('jarvis:broadcasts', JSON.stringify({
+        instanceId: this.instanceId,
+        conversationId,
+        message,
+        timestamp: Date.now(),
+      }));
+    } catch (error) {
+      logger.error('Failed to publish to Redis:', error);
+    }
   }
 
   /**
@@ -472,6 +552,14 @@ export class WebSocketHub {
 
     this.clients.clear();
     this.rooms.clear();
+
+    // Close Redis connections
+    if (this.redisSub) {
+      await this.redisSub.quit();
+    }
+    if (this.redis) {
+      await this.redis.quit();
+    }
 
     if (this.wss) {
       await new Promise<void>((resolve) => {

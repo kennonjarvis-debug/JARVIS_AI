@@ -7,7 +7,7 @@
  */
 
 import { EventEmitter } from 'events';
-import { logger } from '../../backend/utils/logger';
+import { logger } from '../../utils/logger';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 

@@ -1,0 +1,32 @@
+[
+  [
+    "producer",
+    {
+      "name": "producer",
+      "port": 8001,
+      "status": "unknown",
+      "restart_count": 0,
+      "consecutive_failures": 0
+    }
+  ],
+  [
+    "vocal_coach",
+    {
+      "name": "vocal_coach",
+      "port": 8000,
+      "status": "unknown",
+      "restart_count": 0,
+      "consecutive_failures": 0
+    }
+  ],
+  [
+    "test-service",
+    {
+      "name": "test-service",
+      "port": 9001,
+      "status": "unknown",
+      "restart_count": 0,
+      "consecutive_failures": 0
+    }
+  ]
+]

@@ -4,173 +4,179 @@
  * Specialized agent for data analysis, processing, and insights.
  */
 
-import { BaseDomainAgent, ClearanceLevel, Task, AnalysisResult, ExecutionResult } from './base-domain.js';
+import { BaseDomainAgent, ClearanceLevel } from './base-domain.js';
+import { DomainType, Priority, TaskStatus } from '../types.js';
+import type { AutonomousTask, TaskResult, DomainCapability } from '../types.js';
 
-export class DataScientistAgent extends BaseDomainAgent {
-  constructor(clearanceLevel: ClearanceLevel = ClearanceLevel.SAFE_MODIFY) {
-    super('DataScientist', 'data-science', clearanceLevel);
+export class DataScientistDomain extends BaseDomainAgent {
+  domain: DomainType = DomainType.DATA_SCIENCE;
+  name: string = 'Data Scientist Agent';
+  description: string = 'Specialized agent for data analysis, processing, and insights';
+  capabilities: DomainCapability[] = [
+    {
+      name: 'data_loading',
+      description: 'Load and import data from various sources',
+      clearanceRequired: ClearanceLevel.READ_ONLY,
+      riskLevel: 'low',
+      resourceRequirements: {},
+      examples: ['Load CSV file', 'Import JSON data']
+    },
+    {
+      name: 'data_processing',
+      description: 'Clean and transform data',
+      clearanceRequired: ClearanceLevel.MODIFY_SAFE,
+      riskLevel: 'low',
+      resourceRequirements: {},
+      examples: ['Clean missing values', 'Transform data types']
+    },
+    {
+      name: 'data_analysis',
+      description: 'Perform statistical analysis and generate insights',
+      clearanceRequired: ClearanceLevel.READ_ONLY,
+      riskLevel: 'low',
+      resourceRequirements: {},
+      examples: ['Run correlation analysis', 'Generate visualizations']
+    }
+  ];
+
+  constructor(clearanceLevel?: ClearanceLevel) {
+    super('Data Scientist Agent', 'data-science', clearanceLevel);
   }
 
   /**
-   * Analyze input to identify data science tasks
+   * Analyze current state to identify data science opportunities
    */
-  async analyze(input: string, context?: any): Promise<AnalysisResult> {
+  async analyze(): Promise<AutonomousTask[]> {
     this.state.status = 'analyzing';
     this.state.lastActivity = new Date();
 
-    const tasks: Task[] = [];
-    const insights: string[] = [];
-    const recommendedActions: string[] = [];
-    let confidence = 0;
+    const tasks: AutonomousTask[] = [];
 
-    const inputLower = input.toLowerCase();
-
-    // Detect data loading tasks
-    if (inputLower.includes('load') || inputLower.includes('import') || inputLower.includes('read')) {
-      if (inputLower.includes('csv') || inputLower.includes('json') || inputLower.includes('data')) {
-        tasks.push({
-          id: 'data-load-' + Date.now(),
-          type: 'data_loading',
-          description: 'Load data file for analysis',
-          priority: 8,
-          clearanceRequired: ClearanceLevel.READ_ONLY,
-          estimatedImpact: 5,
-          metadata: { source: 'file' }
-        });
-        insights.push('Detected data loading requirement');
-        confidence += 0.3;
-      }
-    }
-
-    // Detect data processing tasks
-    if (inputLower.includes('clean') || inputLower.includes('process') || inputLower.includes('transform')) {
-      tasks.push({
-        id: 'data-process-' + Date.now(),
-        type: 'data_processing',
-        description: 'Clean and process data',
-        priority: 7,
-        clearanceRequired: ClearanceLevel.SAFE_MODIFY,
-        estimatedImpact: 7,
-        metadata: { operations: ['clean', 'transform'] }
-      });
-      insights.push('Data processing task identified');
-      confidence += 0.3;
-    }
-
-    // Detect analysis tasks
-    if (inputLower.includes('analyze') || inputLower.includes('visualize') || inputLower.includes('insights')) {
-      tasks.push({
-        id: 'data-analyze-' + Date.now(),
-        type: 'data_analysis',
-        description: 'Perform statistical analysis and generate insights',
-        priority: 9,
-        clearanceRequired: ClearanceLevel.READ_ONLY,
-        estimatedImpact: 8,
-        metadata: { analysisType: 'statistical' }
-      });
-      insights.push('Analysis task detected');
-      recommendedActions.push('Run correlation analysis');
-      recommendedActions.push('Generate visualization dashboard');
-      confidence += 0.4;
-    }
-
-    // Calculate final confidence
-    confidence = Math.min(confidence, 1.0);
+    // For demo purposes, return empty array - would analyze data sources in production
+    // This could check for new data files, outdated analyses, data quality issues, etc.
 
     this.state.status = 'idle';
-
-    return {
-      tasks,
-      insights,
-      confidence,
-      recommendedActions
-    };
+    return tasks;
   }
 
   /**
    * Execute a data science task
    */
-  async executeTask(task: Task): Promise<ExecutionResult> {
+  protected async executeTask(task: AutonomousTask): Promise<TaskResult> {
     this.state.status = 'executing';
     this.state.currentTask = task.id;
     this.state.lastActivity = new Date();
 
     const startTime = Date.now();
     let apiCalls = 0;
-    let tokens = 0;
-    const errors: string[] = [];
-    let success = false;
-
-    // Check clearance
-    if (!this.canExecute(task)) {
-      const errorMsg = 'Insufficient clearance: required ' + task.clearanceRequired + ', have ' + this.clearanceLevel;
-      errors.push(errorMsg);
-      this.state.status = 'error';
-      return {
-        success: false,
-        tasksCompleted: 0,
-        errors,
-        learningFeedback: this.generateLearningFeedback(task, {
-          success: false,
-          tasksCompleted: 0,
-          errors,
-          learningFeedback: [],
-          resourcesUsed: { cpuTime: 0, apiCalls: 0, tokens: 0 }
-        }),
-        resourcesUsed: { cpuTime: 0, apiCalls: 0, tokens: 0 }
-      };
-    }
+    let tokensUsed = 0;
 
     try {
-      switch (task.type) {
+      // Check clearance
+      if (!this.canExecute(task)) {
+        const errorMsg = `Insufficient clearance: required ${task.clearanceRequired}, have ${this.currentClearance}`;
+        this.state.status = 'error';
+
+        return {
+          taskId: task.id,
+          success: false,
+          message: errorMsg,
+          output: null,
+          metrics: {
+            duration: Date.now() - startTime,
+            resourcesUsed: {
+              apiCalls: 0,
+              tokensUsed: 0,
+              costIncurred: 0,
+              filesModified: 0,
+              cpuTime: 0,
+              memoryPeak: 0
+            },
+            impactScore: 0
+          },
+          logs: [{ timestamp: new Date(), level: 'error', message: errorMsg }],
+          timestamp: new Date()
+        };
+      }
+
+      const taskType = task.metadata?.capability || task.title.toLowerCase().replace(/\s+/g, '_');
+      let result: any;
+
+      switch (taskType) {
         case 'data_loading':
           // Simulate data loading
           apiCalls = 1;
-          tokens = 100;
-          success = true;
+          tokensUsed = 100;
+          result = { loaded: true, rows: 1000 };
           break;
 
         case 'data_processing':
           // Simulate data processing
           apiCalls = 2;
-          tokens = 500;
-          success = true;
+          tokensUsed = 500;
+          result = { processed: true, cleaned: 950, errors: 50 };
           break;
 
         case 'data_analysis':
           // Simulate analysis
           apiCalls = 5;
-          tokens = 1500;
-          success = true;
+          tokensUsed = 1500;
+          result = { analysis: 'complete', correlations: 12, insights: 5 };
           break;
 
         default:
-          errors.push('Unknown task type: ' + task.type);
+          throw new Error(`Unknown task type: ${taskType}`);
       }
 
-      if (success) {
-        this.tasksExecuted++;
-        this.totalImpact += this.calculateImpact(task);
-      }
+      this.tasksExecuted++;
+      this.totalImpact += this.calculateImpact(task);
+      this.state.status = 'idle';
+      this.state.currentTask = undefined;
+
+      return {
+        taskId: task.id,
+        success: true,
+        message: 'Data science task completed successfully',
+        output: result,
+        metrics: {
+          duration: Date.now() - startTime,
+          resourcesUsed: {
+            apiCalls,
+            tokensUsed,
+            costIncurred: tokensUsed * 0.00002,
+            filesModified: 0,
+            cpuTime: Date.now() - startTime,
+            memoryPeak: 0
+          },
+          impactScore: 0.8
+        },
+        logs: [{ timestamp: new Date(), level: 'info', message: `Completed ${taskType}` }],
+        timestamp: new Date()
+      };
     } catch (error: any) {
-      errors.push(error.message);
-      success = false;
+      this.state.status = 'error';
+      this.state.currentTask = undefined;
+
+      return {
+        taskId: task.id,
+        success: false,
+        message: `Data science task failed: ${error.message}`,
+        output: null,
+        metrics: {
+          duration: Date.now() - startTime,
+          resourcesUsed: {
+            apiCalls,
+            tokensUsed,
+            costIncurred: 0,
+            filesModified: 0,
+            cpuTime: Date.now() - startTime,
+            memoryPeak: 0
+          },
+          impactScore: 0
+        },
+        logs: [{ timestamp: new Date(), level: 'error', message: error.message }],
+        timestamp: new Date()
+      };
     }
-
-    const cpuTime = Date.now() - startTime;
-    this.state.status = 'idle';
-    this.state.currentTask = undefined;
-
-    const result: ExecutionResult = {
-      success,
-      tasksCompleted: success ? 1 : 0,
-      errors,
-      learningFeedback: [],
-      resourcesUsed: { cpuTime, apiCalls, tokens }
-    };
-
-    result.learningFeedback = this.generateLearningFeedback(task, result);
-
-    return result;
   }
 }

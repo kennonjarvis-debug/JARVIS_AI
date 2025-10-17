@@ -3,13 +3,30 @@ import type { Config } from '@jest/types';
 const config: Config.InitialOptions = {
   preset: 'ts-jest',
   testEnvironment: 'node',
-  roots: ['<rootDir>/tests/unit', '<rootDir>/tests/v2'],
+  roots: [
+    '<rootDir>/tests/unit',
+    '<rootDir>/tests/v2',
+    '<rootDir>/tests/integration',
+    '<rootDir>/tests/security',
+    '<rootDir>/tests/edge-cases',
+    '<rootDir>/tests/performance',
+    '<rootDir>/tests/autonomous',
+    '<rootDir>/tests/cloud'
+  ],
   testMatch: [
     '**/__tests__/**/*.ts',
     '**/?(*.)+(spec|test).ts'
   ],
   transform: {
-    '^.+\\.ts$': 'ts-jest',
+    '^.+\\.ts$': ['ts-jest', {
+      tsconfig: {
+        module: 'ESNext',
+        target: 'ES2022',
+        esModuleInterop: true,
+        allowSyntheticDefaultImports: true,
+        moduleResolution: 'node',
+      },
+    }],
   },
   collectCoverage: true,
   coverageDirectory: 'coverage/unit',
@@ -38,14 +55,6 @@ const config: Config.InitialOptions = {
   verbose: true,
   maxWorkers: '50%',
   testTimeout: 10000,
-  globals: {
-    'ts-jest': {
-      tsconfig: {
-        esModuleInterop: true,
-        allowSyntheticDefaultImports: true,
-      },
-    },
-  },
 };
 
 export default config;

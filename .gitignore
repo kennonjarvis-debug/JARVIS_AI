@@ -39,3 +39,6 @@ temp/
 
 # External dependencies (already in ai-dawg-v0.1)
 external/
+
+# Local Netlify folder
+.netlify

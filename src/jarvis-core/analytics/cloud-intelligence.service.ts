@@ -11,7 +11,7 @@
 
 import fs from 'fs/promises';
 import path from 'path';
-import { logger } from '../../backend/utils/logger';
+import { logger } from '../../utils/logger';
 import { PatternDetector } from './pattern-detector';
 import { PerformanceAnalyzer } from './performance-analyzer';
 import { DeploymentAnalyzer } from './deployment-analyzer';

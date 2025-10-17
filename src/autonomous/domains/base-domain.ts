@@ -4,13 +4,24 @@
  * Defines the interface and base implementation for domain-specific agents.
  */
 
-export enum ClearanceLevel {
-  READ_ONLY = 1,
-  SAFE_MODIFY = 2,
-  FULL_ACCESS = 3,
-  ADMIN = 4
-}
+import { EventEmitter } from 'events';
+import {
+  ClearanceLevel
+} from '../types.js';
+import type {
+  DomainType,
+  AutonomousTask,
+  TaskResult,
+  DomainCapability,
+  AgentStatus,
+  LogEntry,
+  IDomainAgent
+} from '../types.js';
 
+// Re-export ClearanceLevel for backward compatibility
+export { ClearanceLevel };
+
+// Legacy types for backwards compatibility
 export interface Task {
   id: string;
   type: string;
@@ -46,32 +57,71 @@ export interface AgentState {
   lastActivity?: Date;
 }
 
-export abstract class BaseDomainAgent {
-  protected name: string;
-  protected domain: string;
-  protected clearanceLevel: ClearanceLevel;
+export abstract class BaseDomainAgent extends EventEmitter implements IDomainAgent {
+  public abstract domain: DomainType;
+  public abstract name: string;
+  public abstract description: string;
+  public abstract capabilities: DomainCapability[];
+
+  public currentClearance: ClearanceLevel;
   protected state: AgentState;
   protected tasksExecuted: number = 0;
   protected totalImpact: number = 0;
 
-  constructor(name: string, domain: string, clearanceLevel: ClearanceLevel = ClearanceLevel.SAFE_MODIFY) {
-    this.name = name;
-    this.domain = domain;
-    this.clearanceLevel = clearanceLevel;
+  constructor(name: string, domain: string, clearanceLevel?: ClearanceLevel) {
+    super();
+    this.currentClearance = clearanceLevel || 0; // Default to READ_ONLY
     this.state = {
       status: 'idle'
     };
   }
 
   /**
-   * Analyze input and generate tasks
+   * Analyze current state and identify opportunities (IDomainAgent interface)
    */
-  abstract analyze(input: string, context?: any): Promise<AnalysisResult>;
+  abstract analyze(): Promise<AutonomousTask[]>;
 
   /**
-   * Execute a specific task
+   * Execute a specific task (protected - called by public execute method)
    */
-  abstract executeTask(task: Task): Promise<ExecutionResult>;
+  protected abstract executeTask(task: AutonomousTask): Promise<TaskResult>;
+
+  /**
+   * Execute a specific task (public IDomainAgent interface)
+   */
+  async execute(task: AutonomousTask): Promise<TaskResult> {
+    return this.executeTask(task);
+  }
+
+  /**
+   * Validate if agent can execute task
+   */
+  canExecute(task: AutonomousTask): boolean {
+    return this.currentClearance >= task.clearanceRequired;
+  }
+
+  /**
+   * Get agent status and metrics
+   */
+  getStatus(): AgentStatus {
+    return {
+      active: this.state.status !== 'idle' && this.state.status !== 'paused',
+      currentTask: this.state.currentTask,
+      tasksCompleted: this.tasksExecuted,
+      tasksFailed: 0,
+      averageCompletionTime: 0,
+      lastActivityAt: this.state.lastActivity || new Date(),
+      healthScore: 100,
+      resourceUsage: {
+        apiCalls: 0,
+        tokensUsed: 0,
+        costIncurred: 0,
+        filesModified: 0,
+        cpuTime: 0,
+        memoryPeak: 0
+      }
+    };
+  }
 
   /**
    * Get agent's current state
@@ -109,25 +159,18 @@ export abstract class BaseDomainAgent {
     return {
       tasksExecuted: this.tasksExecuted,
       totalImpact: this.totalImpact,
-      clearanceLevel: this.clearanceLevel,
+      clearanceLevel: this.currentClearance,
       domain: this.domain,
       name: this.name
     };
   }
 
   /**
-   * Check if agent can execute task based on clearance
-   */
-  protected canExecute(task: Task): boolean {
-    return this.clearanceLevel >= task.clearanceRequired;
-  }
-
-  /**
    * Calculate impact score for a task
    */
-  protected calculateImpact(task: Task): number {
+  protected calculateImpact(task: AutonomousTask, artifacts?: any[]): number {
     // Base implementation - can be overridden
-    return task.priority * task.estimatedImpact;
+    return task.priority * (task.metadata?.estimatedImpact || 1);
   }
 
   /**
@@ -147,5 +190,27 @@ export abstract class BaseDomainAgent {
     }
 
     return feedback;
+  }
+
+  /**
+   * Helper to create log entries
+   */
+  protected log(level: 'debug' | 'info' | 'warn' | 'error', message: string, context?: Record<string, any>): any {
+    return {
+      timestamp: new Date(),
+      level,
+      message,
+      context
+    };
+  }
+
+  /**
+   * Helper to get system context (can be overridden)
+   */
+  protected async getSystemContext(): Promise<any> {
+    return {
+      timestamp: new Date(),
+      environment: process.env.NODE_ENV || 'development'
+    };
   }
 }

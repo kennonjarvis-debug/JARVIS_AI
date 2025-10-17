@@ -77,7 +77,7 @@ export class ReportingService {
     this.slackWebhook = process.env.SLACK_WEBHOOK_URL || '';
 
     // Email configuration
-    this.emailTransporter = nodemailer.createTransporter({
+    this.emailTransporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: parseInt(process.env.SMTP_PORT || '587'),
       secure: false,

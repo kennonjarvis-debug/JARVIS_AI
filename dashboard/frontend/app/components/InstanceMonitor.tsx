@@ -7,12 +7,19 @@ interface InstanceMonitorProps {
 }
 
 export default function InstanceMonitor({ data }: InstanceMonitorProps) {
-  if (!data) return null;
+  console.log('InstanceMonitor received data:', data);
+
+  if (!data) {
+    console.log('InstanceMonitor: data is null/undefined');
+    return null;
+  }
 
   const instances = Object.entries(data.instances || {}).map(([id, instance]: [string, any]) => ({
     id,
     ...instance,
   }));
+
+  console.log('InstanceMonitor: processed instances:', instances);
 
   return (
     <div className="glass rounded-lg p-6">
@@ -42,6 +49,12 @@ export default function InstanceMonitor({ data }: InstanceMonitorProps) {
 
       {/* Instances */}
       <div className="space-y-3">
+        {instances.length === 0 && (
+          <div className="text-center py-8 text-gray-400">
+            <p className="mb-2">⚠️ No Claude instances found</p>
+            <p className="text-xs">Check browser console for debugging info</p>
+          </div>
+        )}
         {instances.map((instance) => (
           <div
             key={instance.id}

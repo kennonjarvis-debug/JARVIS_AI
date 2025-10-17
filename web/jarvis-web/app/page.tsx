@@ -1,222 +1,137 @@
 "use client";
 
 import React from "react";
-import { signIn, signOut, useSession } from "next-auth/react";
+import { signIn } from "next-auth/react";
 
-export const dynamic = 'force-dynamic';
-
-type Msg = { role: "user" | "jarvis"; content: string };
-
-export default function Home() {
-  const API_URL = "/api/chat";
-  const { data: session, status } = useSession();
-
-  const [messages, setMessages] = React.useState<Msg[]>([
-    {
-      role: "jarvis",
-      content:
-        "Hey! I’m Jarvis. Ask me anything — or say ‘Hey Siri, Jarvis…’ on your phone to go hands‑free.",
-    },
-  ]);
-  const [input, setInput] = React.useState("");
-  const [loading, setLoading] = React.useState(false);
-
-  async function sendMessage(e?: React.FormEvent) {
-    e?.preventDefault();
-    const text = input.trim();
-    if (!text || loading) return;
-    setInput("");
-    const next = [...messages, { role: "user", content: text } as Msg];
-    setMessages(next);
-    setLoading(true);
-
-    try {
-      const res = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      const reply = String(
-        data?.response ?? data?.data?.response ?? "(No response)"
-      );
-
-      // Simple streaming typing effect
-      await typeIn(reply);
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      console.error('Jarvis chat error:', err);
-      setMessages((cur) => [
-        ...cur,
-        { role: "jarvis", content: `Sorry — request failed: ${msg}` },
-      ]);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  function typeIn(full: string) {
-    return new Promise<void>((resolve) => {
-      let i = 0;
-      const id = setInterval(() => {
-        i += Math.max(1, Math.ceil(full.length / 80));
-        if (i >= full.length) {
-          setMessages((cur) => [...cur, { role: "jarvis", content: full }]);
-          clearInterval(id);
-          resolve();
-        }
-      }, 15);
-    });
-  }
-
+export default function LandingPage() {
   return (
-    <main
-      style={{
-        display: "grid",
-        gridTemplateRows: "64px 1fr auto",
-        minHeight: "100vh",
-        background: "#0b0b0f",
-        color: "#f7f7fb",
-        fontFamily:
-          "ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica Neue, Arial, Apple Color Emoji, Segoe UI Emoji",
-      }}
-    >
+    <main style={{
+      minHeight: "100vh",
+      background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+      color: "#fff",
+      fontFamily: "ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto",
+    }}>
       {/* Header */}
-      <header
-        style={{
+      <header style={{
+        padding: "20px 40px",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+      }}>
+        <div style={{
           display: "flex",
           alignItems: "center",
           gap: 12,
-          padding: "0 16px",
-          borderBottom: "1px solid rgba(255,255,255,0.08)",
-          background: "#0b0f17",
-        }}
-      >
-        <div
-          style={{
-            width: 28,
-            height: 28,
-            borderRadius: 8,
-            background: "#4f46e5",
-          }}
-        />
-        <strong style={{ fontWeight: 700 }}>Jarvis</strong>
-        <div style={{ marginLeft: "auto", opacity: 0.8, fontSize: 13, display: "flex", alignItems: "center", gap: 12 }}>
-          <span>Voice: Auto</span>
-          {status === "loading" ? (
-            <span style={{ fontSize: 12 }}>Loading...</span>
-          ) : session ? (
-            <>
-              <span style={{ fontSize: 12 }}>{session.user?.email}</span>
-              <button
-                onClick={() => signOut()}
-                style={{
-                  padding: "6px 12px",
-                  borderRadius: 6,
-                  background: "#374151",
-                  color: "#fff",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  cursor: "pointer",
-                  fontSize: 12,
-                }}
-              >
-                Sign Out
-              </button>
-            </>
-          ) : (
-            <button
-              onClick={() => signIn("google")}
-              style={{
-                padding: "6px 12px",
-                borderRadius: 6,
-                background: "#4f46e5",
-                color: "#fff",
-                border: 0,
-                cursor: "pointer",
-                fontSize: 12,
-                fontWeight: 600,
-              }}
-            >
-              Sign in with Google
-            </button>
-          )}
-        </div>
-      </header>
-
-      {/* Messages */}
-      <section
-        style={{
-          padding: 16,
-          overflowY: "auto",
-          display: "flex",
-          flexDirection: "column",
-          gap: 12,
-        }}
-      >
-        {messages.map((m, idx) => (
-          <div
-            key={idx}
-            style={{
-              alignSelf: m.role === "user" ? "flex-end" : "flex-start",
-              maxWidth: 720,
-              background: m.role === "user" ? "#1f2937" : "#111827",
-              border: "1px solid rgba(255,255,255,0.08)",
-              padding: "10px 12px",
-              borderRadius: 12,
-              whiteSpace: "pre-wrap",
-              lineHeight: 1.5,
-            }}
-          >
-            {m.content}
+        }}>
+          <div style={{
+            width: 40,
+            height: 40,
+            borderRadius: 10,
+            background: "#fff",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 24,
+          }}>
+            🤖
           </div>
-        ))}
-      </section>
-
-      {/* Composer */}
-      <form
-        onSubmit={sendMessage}
-        style={{
-          display: "flex",
-          gap: 8,
-          padding: 12,
-          borderTop: "1px solid rgba(255,255,255,0.08)",
-          background: "#0b0f17",
-          position: "sticky",
-          bottom: 0,
-        }}
-      >
-        <input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder={loading ? "Jarvis is thinking…" : "Type a message"}
-          disabled={loading}
-          style={{
-            flex: 1,
-            padding: "12px 14px",
-            borderRadius: 10,
-            border: "1px solid rgba(255,255,255,0.12)",
-            background: "#0f1320",
-            color: "#f7f7fb",
-            outline: "none",
-          }}
-        />
+          <strong style={{ fontSize: 24, fontWeight: 700 }}>Jarvis AI</strong>
+        </div>
         <button
-          type="submit"
-          disabled={loading || !input.trim()}
+          onClick={() => signIn("google", { callbackUrl: "/observatory" })}
           style={{
-            padding: "12px 16px",
-            borderRadius: 10,
-            background: loading ? "#374151" : "#4f46e5",
-            color: "#fff",
+            padding: "12px 24px",
+            borderRadius: 8,
+            background: "#fff",
+            color: "#667eea",
+            border: "none",
+            cursor: "pointer",
+            fontSize: 16,
             fontWeight: 600,
-            border: 0,
-            cursor: loading ? "default" : "pointer",
+            boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
           }}
         >
-          Send
+          Login
         </button>
-      </form>
+      </header>
+
+      {/* Hero Section */}
+      <section style={{
+        maxWidth: 1200,
+        margin: "0 auto",
+        padding: "100px 40px",
+        textAlign: "center",
+      }}>
+        <h1 style={{
+          fontSize: 64,
+          fontWeight: 700,
+          marginBottom: 20,
+          lineHeight: 1.2,
+        }}>
+          Work Less.<br/>
+          <span style={{ color: "#ffd700" }}>Scale More.</span>
+        </h1>
+
+        <p style={{
+          fontSize: 24,
+          opacity: 0.95,
+          marginBottom: 40,
+          maxWidth: 800,
+          margin: "0 auto 40px",
+          lineHeight: 1.6,
+        }}>
+          Jarvis automates your business operations 24/7. From iMessages to social media, let AI handle the routine while you focus on growth.
+        </p>
+
+        <button
+          onClick={() => signIn("google", { callbackUrl: "/observatory" })}
+          style={{
+            padding: "18px 40px",
+            borderRadius: 10,
+            background: "#fff",
+            color: "#667eea",
+            border: "none",
+            cursor: "pointer",
+            fontSize: 20,
+            fontWeight: 600,
+            boxShadow: "0 8px 16px rgba(0,0,0,0.2)",
+            marginBottom: 20,
+          }}
+        >
+          Sign in with Google →
+        </button>
+
+        <p style={{
+          fontSize: 14,
+          opacity: 0.8,
+        }}>
+          ✨ No credit card required • 14-day free trial • Cancel anytime
+        </p>
+      </section>
+
+      {/* Stats Section */}
+      <section style={{
+        maxWidth: 1200,
+        margin: "0 auto",
+        padding: "60px 40px",
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+        gap: 40,
+        textAlign: "center",
+      }}>
+        <div>
+          <div style={{ fontSize: 48, fontWeight: 700, color: "#ffd700" }}>16 hrs</div>
+          <div style={{ fontSize: 18, opacity: 0.9 }}>Saved per week</div>
+        </div>
+        <div>
+          <div style={{ fontSize: 48, fontWeight: 700, color: "#ffd700" }}>90%</div>
+          <div style={{ fontSize: 18, opacity: 0.9 }}>Tasks automated</div>
+        </div>
+        <div>
+          <div style={{ fontSize: 48, fontWeight: 700, color: "#ffd700" }}>24/7</div>
+          <div style={{ fontSize: 18, opacity: 0.9 }}>Always working</div>
+        </div>
+      </section>
     </main>
   );
 }

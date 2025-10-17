@@ -5,8 +5,11 @@
  * Updates CustomerHealth records in the database
  */
 
-import { PrismaClient, ChurnRisk } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import { ChurnAnalysisResult, HealthScoreUpdate, UserActivityMetrics } from './types';
+
+// ChurnRisk type definition (not in Prisma schema, defined locally)
+type ChurnRisk = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 
 export class ChurnDetector {
   private prisma: PrismaClient;

@@ -1,0 +1,72 @@
+{
+  "enabled": true,
+  "ai_dawg": {
+    "root_path": "/Users/benkennon/ai-dawg-v0.1",
+    "services": {
+      "producer": {
+        "port": 8001,
+        "name": "AI Producer",
+        "start_command": "cd /Users/benkennon/ai-dawg-v0.1/src/ai/producer && source venv/bin/activate && python server.py",
+        "health_endpoint": "http://localhost:8001/health",
+        "log_file": "/Users/benkennon/ai-dawg-v0.1/logs/producer.log"
+      },
+      "vocal_coach": {
+        "port": 8000,
+        "name": "Vocal Coach",
+        "start_command": "cd /Users/benkennon/ai-dawg-v0.1/src/ai/vocal_coach && source venv/bin/activate && python server.py",
+        "health_endpoint": "http://localhost:8000/health",
+        "log_file": "/Users/benkennon/ai-dawg-v0.1/logs/vocal_coach.log"
+      },
+      "brain": {
+        "port": 8003,
+        "name": "AI Brain",
+        "start_command": "cd /Users/benkennon/ai-dawg-v0.1/src/ai/brain && source venv/bin/activate && python server.py",
+        "health_endpoint": "http://localhost:8003/health",
+        "log_file": "/Users/benkennon/ai-dawg-v0.1/logs/brain.log",
+        "enabled": false
+      }
+    }
+  },
+  "monitoring": {
+    "health_check_interval_seconds": 30,
+    "health_check_timeout_seconds": 5,
+    "max_restart_attempts": 3,
+    "restart_cooldown_seconds": 60,
+    "alert_on_failure": true
+  },
+  "testing": {
+    "enabled": true,
+    "interval_hours": 1,
+    "endpoints_to_test": [
+      {
+        "name": "List Genres",
+        "url": "http://localhost:8001/api/genres",
+        "method": "GET",
+        "expected_status": 200
+      },
+      {
+        "name": "Get Training Plan",
+        "url": "http://localhost:8000/api/training/get-plan",
+        "method": "POST",
+        "body": {
+          "vocal_range": "tenor",
+          "skill_level": "beginner",
+          "practice_time_minutes": 30
+        },
+        "expected_status": 200
+      }
+    ]
+  },
+  "safety": {
+    "emergency_kill_switch": false,
+    "require_approval_for_destructive_ops": true,
+    "max_consecutive_failures_before_escalation": 5,
+    "audit_all_commands": true
+  },
+  "notifications": {
+    "enabled": false,
+    "methods": ["console"],
+    "escalation_email": null,
+    "slack_webhook": null
+  }
+}

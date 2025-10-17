@@ -31,6 +31,10 @@ export class CostOptimizationDomain extends BaseDomainAgent {
   name = 'CostOptimizer';
   description = 'Autonomous cost monitoring and optimization agent';
 
+  constructor(clearanceLevel?: ClearanceLevel) {
+    super('CostOptimizer', 'cost-optimization', clearanceLevel);
+  }
+
   private monthlyBudget: number = 50; // Default $50/month
   private criticalThreshold: number = 0.9; // 90%
   private warningThreshold: number = 0.8; // 80%
@@ -481,7 +485,7 @@ export class CostOptimizationDomain extends BaseDomainAgent {
   /**
    * Calculate impact score
    */
-  private calculateImpact(task: AutonomousTask, artifacts: Artifact[]): number {
+  protected calculateImpact(task: AutonomousTask, artifacts: Artifact[]): number {
     let score = 0;
 
     // Base score from priority

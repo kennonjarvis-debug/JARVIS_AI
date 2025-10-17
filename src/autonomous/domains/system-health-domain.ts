@@ -14,13 +14,12 @@
 
 import { BaseDomainAgent } from './base-domain.js';
 import { logger } from '../../utils/logger.js';
-import { ClearanceLevel } from '../types.js';
+import { ClearanceLevel, Priority } from '../types.js';
 import type {
   DomainType,
   AutonomousTask,
   TaskResult,
   DomainCapability,
-  Priority,
   TaskStatus,
   ResourceUsage,
   Artifact,
@@ -40,6 +39,10 @@ export class SystemHealthDomain extends BaseDomainAgent {
   domain: DomainType = 'system-health' as DomainType;
   name = 'SystemHealthMonitor';
   description = 'Autonomous system health and reliability agent';
+
+  constructor(clearanceLevel?: ClearanceLevel) {
+    super('SystemHealthMonitor', 'system-health', clearanceLevel);
+  }
 
   private serviceHealth: Map<string, ServiceHealth> = new Map();
   private checkInterval: number = 60000; // 1 minute
@@ -529,7 +532,7 @@ export class SystemHealthDomain extends BaseDomainAgent {
   /**
    * Calculate impact score
    */
-  private calculateImpact(task: AutonomousTask, artifacts: Artifact[]): number {
+  protected calculateImpact(task: AutonomousTask, artifacts: Artifact[]): number {
     let score = 0;
 
     // Base score from priority

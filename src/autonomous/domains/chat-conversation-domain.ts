@@ -7,57 +7,75 @@
 
 import { BaseDomainAgent } from './base-domain.js';
 import { logger } from '../../utils/logger.js';
-import { conversationStore } from '../../core/conversation-store.js';
+import { conversationStorePG as conversationStore } from '../../core/conversation-store-pg.js';
 import { adaptiveEngine } from '../adaptive/adaptive-engine.js';
-import type {
+import {
   DomainType,
   ClearanceLevel,
-  AutonomousTask,
-  TaskResult,
-  DomainCapability
+  Priority,
+  TaskStatus,
+  type AutonomousTask,
+  type TaskResult,
+  type DomainCapability
 } from '../types.js';
 
 export class ChatConversationDomain extends BaseDomainAgent {
-  domain: DomainType = 'chat';
-  name = 'Chat & Conversation Agent';
-  description = 'Autonomous agent for conversation management, context tracking, and chat intelligence';
+  domain: DomainType = DomainType.CHAT;
+  name: string = 'Chat & Conversation Agent';
+  description: string = 'Autonomous agent for conversation management, context tracking, and chat intelligence';
+
+  constructor(clearanceLevel?: ClearanceLevel) {
+    super('Chat & Conversation Agent', 'chat', clearanceLevel);
+  }
 
   capabilities: DomainCapability[] = [
     {
       name: 'context_analysis',
       description: 'Analyze conversation context and patterns',
       clearanceRequired: ClearanceLevel.SUGGEST,
-      riskLevel: 'low'
+      riskLevel: 'low',
+      resourceRequirements: {},
+      examples: ['Analyze conversation patterns', 'Identify user preferences']
     },
     {
       name: 'conversation_summarization',
       description: 'Summarize long conversations',
       clearanceRequired: ClearanceLevel.SUGGEST,
-      riskLevel: 'low'
+      riskLevel: 'low',
+      resourceRequirements: {},
+      examples: ['Generate conversation summaries']
     },
     {
       name: 'topic_extraction',
       description: 'Extract topics and key points from conversations',
       clearanceRequired: ClearanceLevel.SUGGEST,
-      riskLevel: 'low'
+      riskLevel: 'low',
+      resourceRequirements: {},
+      examples: ['Extract key topics']
     },
     {
       name: 'sentiment_analysis',
       description: 'Analyze conversation sentiment and user mood',
       clearanceRequired: ClearanceLevel.SUGGEST,
-      riskLevel: 'low'
+      riskLevel: 'low',
+      resourceRequirements: {},
+      examples: ['Analyze sentiment']
     },
     {
       name: 'conversation_optimization',
       description: 'Suggest conversation flow improvements',
       clearanceRequired: ClearanceLevel.SUGGEST,
-      riskLevel: 'low'
+      riskLevel: 'low',
+      resourceRequirements: {},
+      examples: ['Optimize conversation flow']
     },
     {
       name: 'auto_categorization',
       description: 'Automatically categorize and tag conversations',
-      clearanceRequired: ClearanceLevel.EXECUTE,
-      riskLevel: 'low'
+      clearanceRequired: ClearanceLevel.MODIFY_SAFE,
+      riskLevel: 'low',
+      resourceRequirements: {},
+      examples: ['Auto-categorize conversations']
     }
   ];
 
@@ -89,12 +107,6 @@ export class ChatConversationDomain extends BaseDomainAgent {
         tasks.push(this.createStaleConversationTask(staleConversations));
       }
 
-      // Check for cross-device sync opportunities
-      const syncOpportunities = await this.checkSyncOpportunities();
-      if (syncOpportunities.length > 0) {
-        tasks.push(...syncOpportunities);
-      }
-
       logger.info(`Chat agent identified ${tasks.length} opportunities`);
     } catch (error) {
       logger.error('Chat agent analysis failed:', error);
@@ -111,44 +123,58 @@ export class ChatConversationDomain extends BaseDomainAgent {
 
     try {
       let result: any;
+      const metadata = task.metadata || {};
 
-      switch (task.type) {
+      // Determine task type from metadata or title
+      const taskType = metadata.capability || task.title.toLowerCase().replace(/\s+/g, '_');
+
+      switch (taskType) {
         case 'conversation_summary':
-          result = await this.summarizeConversations(task.params);
+          result = await this.summarizeConversations(metadata);
           break;
 
         case 'pattern_analysis':
-          result = await this.analyzePatterns(task.params);
+          result = await this.analyzePatterns(metadata);
           break;
 
         case 'sentiment_analysis':
-          result = await this.analyzeSentiment(task.params);
+          result = await this.analyzeSentiment(metadata);
           break;
 
         case 'topic_extraction':
-          result = await this.extractTopics(task.params);
+          result = await this.extractTopics(metadata);
           break;
 
         case 'auto_categorize':
-          result = await this.categorizeConversations(task.params);
+          result = await this.categorizeConversations(metadata);
           break;
 
         case 'sync_check':
-          result = await this.checkConversationSync(task.params);
+          result = await this.checkConversationSync(metadata);
           break;
 
         default:
-          throw new Error(`Unknown task type: ${task.type}`);
+          throw new Error(`Unknown task type: ${taskType}`);
       }
-
-      const executionTime = Date.now() - startTime;
 
       return {
         taskId: task.id,
         success: true,
         message: `Chat task completed successfully`,
         output: result,
-        executionTime,
+        metrics: {
+          duration: Date.now() - startTime,
+          resourcesUsed: {
+            apiCalls: 0,
+            tokensUsed: 0,
+            costIncurred: 0,
+            filesModified: 0,
+            cpuTime: Date.now() - startTime,
+            memoryPeak: 0
+          },
+          impactScore: 0.8
+        },
+        logs: [{ timestamp: new Date(), level: 'info', message: `Completed ${taskType}` }],
         timestamp: new Date()
       };
     } catch (error: any) {
@@ -159,6 +185,19 @@ export class ChatConversationDomain extends BaseDomainAgent {
         success: false,
         message: `Chat task failed: ${error.message}`,
         output: null,
+        metrics: {
+          duration: Date.now() - startTime,
+          resourcesUsed: {
+            apiCalls: 0,
+            tokensUsed: 0,
+            costIncurred: 0,
+            filesModified: 0,
+            cpuTime: Date.now() - startTime,
+            memoryPeak: 0
+          },
+          impactScore: 0
+        },
+        logs: [{ timestamp: new Date(), level: 'error', message: error.message }],
         timestamp: new Date()
       };
     }
@@ -246,12 +285,18 @@ export class ChatConversationDomain extends BaseDomainAgent {
     return {
       id: this.generateTaskId(),
       domain: this.domain,
-      type: 'conversation_summary',
+      title: 'Conversation Summarization',
       description: `${conversations.length} long conversations need summarization`,
-      priority: 5,
+      priority: Priority.MEDIUM,
+      status: TaskStatus.PENDING,
       clearanceRequired: ClearanceLevel.SUGGEST,
-      params: { conversations: conversations.map(c => c.id) },
-      createdAt: new Date()
+      estimatedDuration: 30000,
+      dependencies: [],
+      createdAt: new Date(),
+      metadata: {
+        capability: 'conversation_summary',
+        conversations: conversations.map(c => c.id)
+      }
     };
   }
 
@@ -259,12 +304,18 @@ export class ChatConversationDomain extends BaseDomainAgent {
     return {
       id: this.generateTaskId(),
       domain: this.domain,
-      type: 'pattern_analysis',
+      title: 'Pattern Analysis',
       description: `Detected ${patterns.length} conversation patterns`,
-      priority: 6,
+      priority: Priority.MEDIUM,
+      status: TaskStatus.PENDING,
       clearanceRequired: ClearanceLevel.SUGGEST,
-      params: { patterns },
-      createdAt: new Date()
+      estimatedDuration: 20000,
+      dependencies: [],
+      createdAt: new Date(),
+      metadata: {
+        capability: 'pattern_analysis',
+        patterns
+      }
     };
   }
 
@@ -272,12 +323,18 @@ export class ChatConversationDomain extends BaseDomainAgent {
     return {
       id: this.generateTaskId(),
       domain: this.domain,
-      type: 'stale_conversations',
+      title: 'Stale Conversations',
       description: `${conversations.length} stale conversations can be archived`,
-      priority: 3,
+      priority: Priority.LOW,
+      status: TaskStatus.PENDING,
       clearanceRequired: ClearanceLevel.SUGGEST,
-      params: { conversations: conversations.map(c => c.id) },
-      createdAt: new Date()
+      estimatedDuration: 10000,
+      dependencies: [],
+      createdAt: new Date(),
+      metadata: {
+        capability: 'stale_conversations',
+        conversations: conversations.map(c => c.id)
+      }
     };
   }
 

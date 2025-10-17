@@ -4,7 +4,7 @@
  * Detects performance regressions and module health degradation
  */
 
-import { logger } from '../../backend/utils/logger';
+import { logger } from '../../utils/logger';
 
 export interface ModuleHealth {
   score: number;

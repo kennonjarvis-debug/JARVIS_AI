@@ -116,18 +116,18 @@ export class MetricsAggregator {
 
     // Calculate metrics
     const totalEvents = events.length;
-    const errorEvents = events.filter((e) => e.eventType === 'failed').length;
+    const errorEvents = events.filter((e: { eventType: string }) => e.eventType === 'failed').length;
     const errorRate = totalEvents > 0 ? errorEvents / totalEvents : 0;
 
     // Group by feature
     const byFeature: Record<string, number> = {};
-    events.forEach((event) => {
+    events.forEach((event: { featureKey: string }) => {
       byFeature[event.featureKey] = (byFeature[event.featureKey] || 0) + 1;
     });
 
     // Group by user
     const byUser: Record<string, number> = {};
-    events.forEach((event) => {
+    events.forEach((event: { userId: string }) => {
       byUser[event.userId] = (byUser[event.userId] || 0) + 1;
     });
 
@@ -154,18 +154,18 @@ export class MetricsAggregator {
     });
 
     // Calculate totals
-    const totalRevenue = metrics.reduce((sum, m) => sum + m.totalRevenue, 0);
-    const newSubscribers = metrics.reduce((sum, m) => sum + m.newSubscribers, 0);
-    const churnCount = metrics.reduce((sum, m) => sum + m.churnCount, 0);
+    const totalRevenue = metrics.reduce((sum: number, m: { totalRevenue: number }) => sum + m.totalRevenue, 0);
+    const newSubscribers = metrics.reduce((sum: number, m: { newSubscribers: number }) => sum + m.newSubscribers, 0);
+    const churnCount = metrics.reduce((sum: number, m: { churnCount: number }) => sum + m.churnCount, 0);
 
     // Group by plan
     const byPlan: Record<string, number> = {};
-    metrics.forEach((metric) => {
+    metrics.forEach((metric: { plan: string; totalRevenue: number }) => {
       byPlan[metric.plan] = (byPlan[metric.plan] || 0) + metric.totalRevenue;
     });
 
     // Calculate active users (latest count)
-    const activeUsers = metrics.reduce((sum, m) => sum + m.activeUsers, 0);
+    const activeUsers = metrics.reduce((sum: number, m: { activeUsers: number }) => sum + m.activeUsers, 0);
 
     return {
       totalRevenue,
@@ -179,7 +179,10 @@ export class MetricsAggregator {
   /**
    * Generate insights from aggregated data
    */
-  private generateInsights(usageMetrics: any, revenueMetrics: any): string[] {
+  private generateInsights(
+    usageMetrics: { errorRate: number; byFeature: Record<string, number>; totalEvents: number },
+    revenueMetrics: { churnCount: number; newSubscribers: number; byPlan: Record<string, number> }
+  ): string[] {
     const insights: string[] = [];
 
     // Usage insights
@@ -190,7 +193,7 @@ export class MetricsAggregator {
     }
 
     const topFeature = Object.entries(usageMetrics.byFeature)
-      .sort(([, a], [, b]) => (b as number) - (a as number))[0];
+      .sort(([, a], [, b]: [string, number]) => (b as number) - (a as number))[0];
     if (topFeature) {
       insights.push(`Most popular feature: ${topFeature[0]} with ${topFeature[1]} events`);
     }
@@ -203,7 +206,7 @@ export class MetricsAggregator {
     }
 
     const topPlan = Object.entries(revenueMetrics.byPlan)
-      .sort(([, a], [, b]) => (b as number) - (a as number))[0];
+      .sort(([, a], [, b]: [string, number]) => (b as number) - (a as number))[0];
     if (topPlan) {
       insights.push(
         `Top revenue plan: ${topPlan[0]} generating $${(topPlan[1] as number).toFixed(2)}`

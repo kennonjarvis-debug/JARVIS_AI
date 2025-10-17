@@ -4,8 +4,19 @@
  * Tracks and aggregates revenue metrics using Prisma RevenueMetric model
  */
 
-import { PrismaClient, Plan } from '@prisma/client';
-import { logger } from '../../../backend/utils/logger';
+import { PrismaClient } from '@prisma/client';
+import { logger } from '../../../utils/logger';
+
+// Plan enum - not exported from current Prisma client, defining locally
+// This matches the AI DAWG Prisma schema definition
+export enum Plan {
+  FREE = 'FREE',
+  PRO = 'PRO',
+  STUDIO = 'STUDIO'
+}
+
+// Note: Some marketing code may reference 'ENTERPRISE' but schema has 'STUDIO'
+type MarketingPlan = Plan | 'ENTERPRISE';
 
 const prisma = new PrismaClient();
 
@@ -57,7 +68,7 @@ class RevenueMetricsService {
         orderBy: { date: 'asc' },
       });
 
-      return metrics.map(m => ({
+      return metrics.map((m: any) => ({
         date: m.date,
         plan: m.plan,
         newSubscribers: m.newSubscribers,
@@ -99,9 +110,10 @@ class RevenueMetricsService {
       const averageRevenuePerUser = totalActiveUsers > 0 ? totalRevenue / totalActiveUsers : 0;
 
       // Plan breakdown
-      const freeMetrics = metrics.filter(m => m.plan === 'FREE');
-      const proMetrics = metrics.filter(m => m.plan === 'PRO');
-      const enterpriseMetrics = metrics.filter(m => m.plan === 'ENTERPRISE');
+      const freeMetrics = metrics.filter(m => m.plan === Plan.FREE);
+      const proMetrics = metrics.filter(m => m.plan === Plan.PRO);
+      // Note: Schema has STUDIO, not ENTERPRISE - using STUDIO here
+      const enterpriseMetrics = metrics.filter(m => m.plan === Plan.STUDIO);
 
       return {
         totalRevenue,
@@ -201,7 +213,7 @@ class RevenueMetricsService {
         const activeUsers = planData._count.userId;
 
         // Simplified revenue calculation (would use actual billing data)
-        const revenuePerUser = plan === 'FREE' ? 0 : plan === 'PRO' ? 29.99 : 99.99;
+        const revenuePerUser = plan === Plan.FREE ? 0 : plan === Plan.PRO ? 29.99 : 99.99;
         const totalRevenue = activeUsers * revenuePerUser;
 
         await this.recordMetric({

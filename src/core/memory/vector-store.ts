@@ -309,6 +309,47 @@ export class VectorStore {
     }
   }
 
+  async storeBatch(docs: VectorDocument[]): Promise<void> {
+    if (!this.client) throw new Error('VectorStore not initialized');
+
+    try {
+      const pipeline = this.client.multi();
+
+      for (const doc of docs) {
+        const key = `vec:${doc.id}`;
+        pipeline.json.set(key, '$', {
+          content: doc.content,
+          embedding: doc.embedding,
+          metadata: doc.metadata
+        });
+      }
+
+      await pipeline.exec();
+      logger.info(`[VectorStore] Stored ${docs.length} documents in batch`);
+    } catch (error: any) {
+      logger.error('[VectorStore] Batch store failed:', error);
+      throw error;
+    }
+  }
+
+  async deleteBatch(ids: string[]): Promise<void> {
+    if (!this.client) throw new Error('VectorStore not initialized');
+
+    const keys = ids.map(id => `vec:${id}`);
+    await this.client.del(keys);
+    logger.info(`[VectorStore] Deleted ${ids.length} documents in batch`);
+  }
+
+  async clear(): Promise<void> {
+    if (!this.client) throw new Error('VectorStore not initialized');
+
+    const keys = await this.client.keys('vec:*');
+    if (keys.length > 0) {
+      await this.client.del(keys);
+      logger.info(`[VectorStore] Cleared ${keys.length} documents`);
+    }
+  }
+
   async shutdown(): Promise<void> {
     if (this.client) {
       await this.client.disconnect();

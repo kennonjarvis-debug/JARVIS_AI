@@ -11,7 +11,7 @@ import {
 } from './jarvis.interfaces';
 import { moduleRegistry } from './module-registry';
 import { jarvisScheduler } from './jarvis.scheduler';
-import { logger } from '../../backend/utils/logger';
+import { logger } from '../../utils/logger';
 
 /**
  * Health check interval in milliseconds

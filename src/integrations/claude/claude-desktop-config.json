@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "jarvis": {
+      "command": "node",
+      "args": [
+        "/Users/benkennon/Jarvis/dist/integrations/claude/mcp-cli.js"
+      ],
+      "env": {
+        "DATABASE_URL": "postgresql://postgres:postgres@localhost:5432/jarvis",
+        "REDIS_URL": "redis://localhost:6379",
+        "AI_DAWG_BACKEND_URL": "http://localhost:3001",
+        "VOCAL_COACH_URL": "http://localhost:8000",
+        "PRODUCER_URL": "http://localhost:8001",
+        "AI_BRAIN_URL": "http://localhost:8002"
+      }
+    }
+  },
+  "_comment": "Copy this configuration to ~/Library/Application Support/Claude/claude_desktop_config.json (macOS)"
+}

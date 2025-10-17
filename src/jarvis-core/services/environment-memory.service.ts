@@ -6,8 +6,36 @@
 
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { logger } from '../../backend/utils/logger';
-import { detectEnvironment, getCachedEnvironment } from '../../backend/utils/environment-detector';
+import { logger } from '../../utils/logger';
+
+// Simple environment detection for jarvis-core
+interface EnvironmentInfo {
+  type: string;
+  isAWS: boolean;
+  isProduction: boolean;
+  region?: string;
+  instanceId?: string;
+}
+
+function detectEnvironment(): EnvironmentInfo {
+  const isAWS = !!(process.env.AWS_REGION || process.env.AWS_EXECUTION_ENV);
+  const isProduction = process.env.NODE_ENV === 'production';
+  return {
+    type: isAWS ? (isProduction ? 'aws-production' : 'aws-development') : 'local',
+    isAWS,
+    isProduction,
+    region: process.env.AWS_REGION,
+    instanceId: process.env.AWS_INSTANCE_ID,
+  };
+}
+
+let cachedEnv: EnvironmentInfo | null = null;
+function getCachedEnvironment(): EnvironmentInfo {
+  if (!cachedEnv) {
+    cachedEnv = detectEnvironment();
+  }
+  return cachedEnv;
+}
 
 const MEMORY_FILE_PATH = path.join(process.cwd(), 'memory', 'memory.json');
 

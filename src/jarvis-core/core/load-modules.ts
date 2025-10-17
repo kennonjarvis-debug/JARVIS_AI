@@ -4,7 +4,7 @@
  */
 
 import { moduleRegistry } from './module-registry';
-import { logger } from '../../backend/utils/logger';
+import { logger } from '../../utils/logger';
 
 // Import all modules
 import musicModule from '../modules/music';

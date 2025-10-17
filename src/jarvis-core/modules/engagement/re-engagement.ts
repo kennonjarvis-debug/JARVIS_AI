@@ -12,7 +12,7 @@ export class ReEngagementService {
   private prisma: PrismaClient;
 
   // Message templates
-  private messageTemplates: Record<EngagementMessageType, (context: any) => EngagementMessage>;
+  private messageTemplates: Record<EngagementMessageType, (context: Record<string, any>) => EngagementMessage>;
 
   constructor(prisma: PrismaClient) {
     this.prisma = prisma;
@@ -44,7 +44,7 @@ export class ReEngagementService {
   async sendEngagementMessage(
     userId: string,
     type: EngagementMessageType,
-    metadata?: any
+    metadata?: Record<string, any>
   ): Promise<{ success: boolean; messageId?: string; error?: string }> {
     try {
       // Get user
@@ -78,7 +78,7 @@ export class ReEngagementService {
   async runCampaign(
     userIds: string[],
     type: EngagementMessageType,
-    metadata?: any
+    metadata?: Record<string, any>
   ): Promise<EngagementCampaignResult> {
     const campaignId = uuidv4();
     const startedAt = new Date();
@@ -124,7 +124,7 @@ export class ReEngagementService {
       select: { userId: true }
     });
 
-    const userIds = atRiskUsers.map(u => u.userId);
+    const userIds = atRiskUsers.map((u: any) => u.userId);
 
     return this.runCampaign(userIds, 'win_back', {
       reason: 'churn_prevention'
@@ -147,7 +147,7 @@ export class ReEngagementService {
       select: { id: true }
     });
 
-    const userIds = inactiveUsers.map(u => u.id);
+    const userIds = inactiveUsers.map((u: any) => u.id);
 
     return this.runCampaign(userIds, 'weekly_checkin', {
       daysInactive: 7
@@ -157,7 +157,7 @@ export class ReEngagementService {
   // Private Methods - Message Templates
   // ====================================
 
-  private createWelcomeMessage(context: any): EngagementMessage {
+  private createWelcomeMessage(context: Record<string, any>): EngagementMessage {
     const { user } = context;
     const name = user.firstName || user.username;
 
@@ -182,7 +182,7 @@ export class ReEngagementService {
     };
   }
 
-  private createOnboardingMessage(context: any): EngagementMessage {
+  private createOnboardingMessage(context: Record<string, any>): EngagementMessage {
     const { user } = context;
     const name = user.firstName || user.username;
 
@@ -207,7 +207,7 @@ export class ReEngagementService {
     };
   }
 
-  private createWeeklyCheckinMessage(context: any): EngagementMessage {
+  private createWeeklyCheckinMessage(context: Record<string, any>): EngagementMessage {
     const { user } = context;
     const name = user.firstName || user.username;
 
@@ -232,7 +232,7 @@ export class ReEngagementService {
     };
   }
 
-  private createFeatureHighlightMessage(context: any): EngagementMessage {
+  private createFeatureHighlightMessage(context: Record<string, any>): EngagementMessage {
     const { user, feature } = context;
     const name = user.firstName || user.username;
 
@@ -251,7 +251,7 @@ export class ReEngagementService {
     };
   }
 
-  private createWinBackMessage(context: any): EngagementMessage {
+  private createWinBackMessage(context: Record<string, any>): EngagementMessage {
     const { user } = context;
     const name = user.firstName || user.username;
 
@@ -275,7 +275,7 @@ export class ReEngagementService {
     };
   }
 
-  private createReEngagementMessage(context: any): EngagementMessage {
+  private createReEngagementMessage(context: Record<string, any>): EngagementMessage {
     const { user } = context;
     const name = user.firstName || user.username;
 
@@ -298,7 +298,7 @@ export class ReEngagementService {
     };
   }
 
-  private createMilestoneMessage(context: any): EngagementMessage {
+  private createMilestoneMessage(context: Record<string, any>): EngagementMessage {
     const { user, milestone } = context;
     const name = user.firstName || user.username;
 
@@ -316,7 +316,7 @@ export class ReEngagementService {
     };
   }
 
-  private createFeedbackRequestMessage(context: any): EngagementMessage {
+  private createFeedbackRequestMessage(context: Record<string, any>): EngagementMessage {
     const { user } = context;
     const name = user.firstName || user.username;
 
@@ -335,7 +335,7 @@ export class ReEngagementService {
     };
   }
 
-  private createCustomMessage(context: any): EngagementMessage {
+  private createCustomMessage(context: Record<string, any>): EngagementMessage {
     return {
       type: 'custom',
       subject: context.subject || 'Message from AI DAWG',
@@ -367,7 +367,7 @@ export class ReEngagementService {
     userId: string,
     type: EngagementMessageType,
     messageId: string,
-    metadata?: any
+    metadata?: Record<string, any>
   ): Promise<void> {
     // TODO: Log to database or analytics service
     console.log(`[ENGAGEMENT] User ${userId} - Type: ${type} - Message: ${messageId}`);

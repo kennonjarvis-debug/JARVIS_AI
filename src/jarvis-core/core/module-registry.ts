@@ -4,7 +4,7 @@
  */
 
 import { JarvisModule, ModuleConfig, JarvisEvent } from './jarvis.interfaces';
-import { logger } from '../../backend/utils/logger';
+import { logger } from '../../utils/logger';
 import { EventEmitter } from 'events';
 
 /**

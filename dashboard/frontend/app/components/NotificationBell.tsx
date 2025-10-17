@@ -3,6 +3,11 @@
 import { useState, useEffect } from 'react';
 import { Bell } from 'lucide-react';
 
+// Get API URL from environment or use default
+const getApiUrl = () => {
+  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+};
+
 interface ProactiveSuggestion {
   id: string;
   type: 'information' | 'assistance' | 'warning' | 'opportunity' | 'reminder';
@@ -24,7 +29,7 @@ export default function NotificationBell({ onOpenSuggestions }: NotificationBell
   useEffect(() => {
     const fetchSuggestions = async () => {
       try {
-        const response = await fetch('http://localhost:5001/api/proactive/suggestions');
+        const response = await fetch(`${getApiUrl()}/api/proactive/suggestions`);
         const data = await response.json();
 
         if (data.success) {

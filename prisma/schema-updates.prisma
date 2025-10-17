@@ -1,0 +1,107 @@
+// Add these models to your existing prisma/schema.prisma
+
+// Task History for Learning & Analytics
+model TaskHistory {
+  id              String    @id @default(uuid())
+  taskId          String
+  domain          String
+  action          String
+  decision        String    // 'execute', 'escalate', 'defer'
+  success         Boolean
+  duration        Int
+  resourcesUsed   Json
+  impactScore     Float
+  userFeedback    String?   // 'positive', 'negative', 'neutral'
+  error           String?
+  metadata        Json?
+  executedAt      DateTime  @default(now())
+
+  @@index([domain, action])
+  @@index([executedAt])
+  @@index([success])
+  @@map("task_history")
+}
+
+// AI Usage Tracking (for cost optimization)
+model AIUsage {
+  id              String    @id @default(uuid())
+  provider        String    // 'openai', 'anthropic', 'gemini', 'mistral'
+  model           String
+  inputTokens     Int
+  outputTokens    Int
+  cost            Float
+  duration        Int
+  taskType        String?   // 'code', 'reasoning', 'general', etc.
+  complexity      String?   // 'simple', 'medium', 'complex'
+  correlationId   String?
+  userId          String?
+  timestamp       DateTime  @default(now())
+
+  @@index([provider, model])
+  @@index([timestamp])
+  @@index([correlationId])
+  @@map("ai_usage")
+}
+
+// Circuit Breaker State
+model CircuitBreakerState {
+  id                String    @id @default(uuid())
+  serviceName       String    @unique
+  state             String    // 'CLOSED', 'OPEN', 'HALF_OPEN'
+  failureCount      Int       @default(0)
+  successCount      Int       @default(0)
+  lastFailureTime   DateTime?
+  nextAttemptTime   DateTime?
+  updatedAt         DateTime  @updatedAt
+
+  @@index([serviceName])
+  @@map("circuit_breaker_state")
+}
+
+// Music Project Versions
+model MusicProjectVersion {
+  id              String    @id @default(uuid())
+  projectId       String
+  version         String    // Semantic versioning: "1.0.0"
+  commitMessage   String
+  author          String
+  snapshot        Json      // Full project state snapshot
+  parentVersion   String?   // For branching
+  tags            String[]  @default([])
+  timestamp       DateTime  @default(now())
+
+  @@index([projectId])
+  @@index([projectId, version])
+  @@map("music_project_versions")
+}
+
+// Health Metrics (for predictive monitoring)
+model HealthMetric {
+  id              String    @id @default(uuid())
+  serviceName     String
+  metricType      String    // 'latency', 'error_rate', 'memory', 'cpu'
+  value           Float
+  timestamp       DateTime  @default(now())
+
+  @@index([serviceName, metricType])
+  @@index([timestamp])
+  @@map("health_metrics")
+}
+
+// Agent Performance Snapshots
+model AgentPerformanceSnapshot {
+  id              String    @id @default(uuid())
+  domain          String
+  totalTasks      Int
+  successCount    Int
+  failureCount    Int
+  avgDuration     Float
+  avgImpactScore  Float
+  costIncurred    Float
+  tasksPerHour    Float
+  snapshotDate    DateTime  @default(now())
+
+  @@index([domain])
+  @@index([snapshotDate])
+  @@map("agent_performance_snapshots")
+}

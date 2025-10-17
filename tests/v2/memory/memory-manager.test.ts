@@ -167,7 +167,16 @@ describe('MemoryManager', () => {
     it('should generate embedding for content', async () => {
       const { EmbeddingService } = require('../../../src/core/memory/embedding-service');
       const mockEmbed = jest.fn().mockResolvedValue(new Array(1536).fill(0.5));
-      EmbeddingService.mockImplementation(() => ({ embed: mockEmbed }));
+      EmbeddingService.mockImplementation(() => ({
+        embed: mockEmbed,
+        embedBatch: jest.fn().mockResolvedValue([]),
+        clearCache: jest.fn(),
+        getCacheStats: jest.fn().mockReturnValue({
+          size: 0,
+          maxSize: 1000,
+          hitRate: 0
+        })
+      }));
 
       const newManager = new MemoryManager(mockApiKey);
       await newManager.initialize();
@@ -272,7 +281,16 @@ describe('MemoryManager', () => {
     it('should generate embedding for query', async () => {
       const { EmbeddingService } = require('../../../src/core/memory/embedding-service');
       const mockEmbed = jest.fn().mockResolvedValue(new Array(1536).fill(0.5));
-      EmbeddingService.mockImplementation(() => ({ embed: mockEmbed, getCacheStats: jest.fn().mockReturnValue({}) }));
+      EmbeddingService.mockImplementation(() => ({
+        embed: mockEmbed,
+        embedBatch: jest.fn().mockResolvedValue([]),
+        clearCache: jest.fn(),
+        getCacheStats: jest.fn().mockReturnValue({
+          size: 0,
+          maxSize: 1000,
+          hitRate: 0
+        })
+      }));
 
       const newManager = new MemoryManager(mockApiKey);
       await newManager.initialize();

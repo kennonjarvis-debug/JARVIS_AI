@@ -7,7 +7,7 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { SystemMonitor } from '../../../SystemMonitor/SystemMonitor';
+// SystemMonitor stub - implementation moved to local functions
 
 const execAsync = promisify(exec);
 
@@ -106,7 +106,7 @@ async function fetchVitality(): Promise<HealthReport['vitality']> {
       throw new Error(`Vitality fetch failed: ${response.statusText}`);
     }
 
-    const data = await response.json();
+    const data = await response.json() as any;
 
     return {
       score: data.score || 0,
@@ -142,7 +142,7 @@ async function fetchModuleStatuses(): Promise<HealthReport['modules']> {
       return getDefaultModules();
     }
 
-    const data = await response.json();
+    const data = await response.json() as any;
     return data.modules || getDefaultModules();
   } catch (error) {
     return getDefaultModules();
@@ -171,7 +171,7 @@ async function fetchAnalytics(): Promise<HealthReport['analytics']> {
       return getDefaultAnalytics();
     }
 
-    const data = await response.json();
+    const data = await response.json() as any;
 
     return {
       actionsExecuted: data.actionsExecuted || 0,

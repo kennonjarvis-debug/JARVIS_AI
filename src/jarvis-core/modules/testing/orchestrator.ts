@@ -14,7 +14,7 @@ import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { spawn, ChildProcess } from 'child_process';
 import { promises as fs } from 'fs';
 import path from 'path';
-import { logger } from '../../../backend/utils/logger';
+import { logger } from '../../../utils/logger';
 
 export interface TestFailure {
   testName: string;

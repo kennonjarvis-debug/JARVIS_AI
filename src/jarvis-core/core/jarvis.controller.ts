@@ -15,7 +15,7 @@ import {
   SystemHealth,
 } from './jarvis.interfaces';
 import { moduleRegistry } from './module-registry';
-import { logger } from '../../backend/utils/logger';
+import { logger } from '../../utils/logger';
 import { v4 as uuidv4 } from 'uuid';
 
 /**

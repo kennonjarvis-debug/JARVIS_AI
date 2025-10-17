@@ -199,6 +199,23 @@ export class AgentManager extends EventEmitter {
           success: false,
           message: 'Task queued - no available agent',
           output: null,
+          metrics: {
+            duration: 0,
+            resourcesUsed: {
+              apiCalls: 0,
+              tokensUsed: 0,
+              costIncurred: 0,
+              filesModified: 0,
+              cpuTime: 0,
+              memoryPeak: 0
+            },
+            impactScore: 0
+          },
+          logs: [{
+            timestamp: new Date(),
+            level: 'info',
+            message: 'Task queued - no available agent'
+          }],
           timestamp: new Date()
         };
       }
@@ -211,6 +228,23 @@ export class AgentManager extends EventEmitter {
         success: false,
         message: `Task assignment failed: ${error.message}`,
         output: null,
+        metrics: {
+          duration: 0,
+          resourcesUsed: {
+            apiCalls: 0,
+            tokensUsed: 0,
+            costIncurred: 0,
+            filesModified: 0,
+            cpuTime: 0,
+            memoryPeak: 0
+          },
+          impactScore: 0
+        },
+        logs: [{
+          timestamp: new Date(),
+          level: 'error',
+          message: `Task assignment failed: ${error.message}`
+        }],
         timestamp: new Date()
       };
     }
@@ -265,6 +299,23 @@ export class AgentManager extends EventEmitter {
         success: false,
         message: `Task execution failed: ${error.message}`,
         output: null,
+        metrics: {
+          duration: 0,
+          resourcesUsed: {
+            apiCalls: 0,
+            tokensUsed: 0,
+            costIncurred: 0,
+            filesModified: 0,
+            cpuTime: 0,
+            memoryPeak: 0
+          },
+          impactScore: 0
+        },
+        logs: [{
+          timestamp: new Date(),
+          level: 'error',
+          message: `Task execution failed: ${error.message}`
+        }],
         timestamp: new Date()
       };
     }

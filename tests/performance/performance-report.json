@@ -1,0 +1,350 @@
+{
+  "timestamp": "2025-10-09T16:01:18.537Z",
+  "totalTestTime": "75.01s",
+  "overallStatus": "FAILED",
+  "results": [
+    {
+      "name": "Desktop Health Check",
+      "connections": 10,
+      "metrics": {
+        "latency": {
+          "p50": 1,
+          "p95": 3,
+          "p99": 4,
+          "max": 12,
+          "mean": 1.3875867084358917
+        },
+        "throughput": {
+          "requestsPerSecond": 7148.970205958808,
+          "successfulRequests": 35752,
+          "failedRequests": 0,
+          "totalRequests": 35752
+        },
+        "errorRate": 0
+      },
+      "requirementsMet": {
+        "responseTime": true,
+        "errorRate": true
+      },
+      "violations": []
+    },
+    {
+      "name": "Desktop Health Check",
+      "connections": 100,
+      "metrics": {
+        "latency": {
+          "p50": 13,
+          "p95": 16,
+          "p99": 35,
+          "max": 676,
+          "mean": 13.966164154103852
+        },
+        "throughput": {
+          "requestsPerSecond": 7148.273797645181,
+          "successfulRequests": 35820,
+          "failedRequests": 0,
+          "totalRequests": 35820
+        },
+        "errorRate": 0
+      },
+      "requirementsMet": {
+        "responseTime": true,
+        "errorRate": true
+      },
+      "violations": []
+    },
+    {
+      "name": "Desktop Health Check",
+      "connections": 1000,
+      "metrics": {
+        "latency": {
+          "p50": 29,
+          "p95": 40,
+          "p99": 1313,
+          "max": 5121,
+          "mean": 64.16029285561038
+        },
+        "throughput": {
+          "requestsPerSecond": 5823.240086074393,
+          "successfulRequests": 36970,
+          "failedRequests": 916,
+          "totalRequests": 37886
+        },
+        "errorRate": 2.417779654753735
+      },
+      "requirementsMet": {
+        "responseTime": true,
+        "errorRate": false
+      },
+      "violations": [
+        "Error rate 2.42% exceeds requirement 0.1%"
+      ]
+    },
+    {
+      "name": "Desktop Execute",
+      "connections": 10,
+      "metrics": {
+        "latency": {
+          "p50": 1,
+          "p95": 3,
+          "p99": 4,
+          "max": 54,
+          "mean": 1.576542896971233
+        },
+        "throughput": {
+          "requestsPerSecond": 6311.5376924615075,
+          "successfulRequests": 0,
+          "failedRequests": 31564,
+          "totalRequests": 31564
+        },
+        "errorRate": 100
+      },
+      "requirementsMet": {
+        "responseTime": true,
+        "errorRate": false
+      },
+      "violations": [
+        "Error rate 100.00% exceeds requirement 0.1%"
+      ]
+    },
+    {
+      "name": "Desktop Execute",
+      "connections": 100,
+      "metrics": {
+        "latency": {
+          "p50": 15,
+          "p95": 17,
+          "p99": 28,
+          "max": 712,
+          "mean": 15.322879696487577
+        },
+        "throughput": {
+          "requestsPerSecond": 6518.548065416832,
+          "successfulRequests": 0,
+          "failedRequests": 32684,
+          "totalRequests": 32684
+        },
+        "errorRate": 100
+      },
+      "requirementsMet": {
+        "responseTime": true,
+        "errorRate": false
+      },
+      "violations": [
+        "Error rate 100.00% exceeds requirement 0.1%"
+      ]
+    },
+    {
+      "name": "Desktop Execute",
+      "connections": 1000,
+      "metrics": {
+        "latency": {
+          "p50": 30,
+          "p95": 42,
+          "p99": 1037,
+          "max": 5103,
+          "mean": 64.13576723935043
+        },
+        "throughput": {
+          "requestsPerSecond": 5525.837320574163,
+          "successfulRequests": 0,
+          "failedRequests": 34647,
+          "totalRequests": 34647
+        },
+        "errorRate": 100
+      },
+      "requirementsMet": {
+        "responseTime": true,
+        "errorRate": false
+      },
+      "violations": [
+        "Error rate 100.00% exceeds requirement 0.1%"
+      ]
+    },
+    {
+      "name": "Create Project",
+      "connections": 10,
+      "metrics": {
+        "latency": {
+          "p50": 1,
+          "p95": 2,
+          "p99": 3,
+          "max": 134,
+          "mean": 1.1841593549917002
+        },
+        "throughput": {
+          "requestsPerSecond": 8434,
+          "successfulRequests": 0,
+          "failedRequests": 42170,
+          "totalRequests": 42170
+        },
+        "errorRate": 100
+      },
+      "requirementsMet": {
+        "responseTime": true,
+        "errorRate": false
+      },
+      "violations": [
+        "Error rate 100.00% exceeds requirement 0.1%"
+      ]
+    },
+    {
+      "name": "Create Project",
+      "connections": 100,
+      "metrics": {
+        "latency": {
+          "p50": 10,
+          "p95": 14,
+          "p99": 25,
+          "max": 140,
+          "mean": 10.546315390766383
+        },
+        "throughput": {
+          "requestsPerSecond": 9447.713717693836,
+          "successfulRequests": 0,
+          "failedRequests": 47522,
+          "totalRequests": 47522
+        },
+        "errorRate": 100
+      },
+      "requirementsMet": {
+        "responseTime": true,
+        "errorRate": false
+      },
+      "violations": [
+        "Error rate 100.00% exceeds requirement 0.1%"
+      ]
+    },
+    {
+      "name": "Create Project",
+      "connections": 1000,
+      "metrics": {
+        "latency": {
+          "p50": 105,
+          "p95": 122,
+          "p99": 132,
+          "max": 140,
+          "mean": 103.68330649490069
+        },
+        "throughput": {
+          "requestsPerSecond": 9599.286563614743,
+          "successfulRequests": 0,
+          "failedRequests": 48438,
+          "totalRequests": 48438
+        },
+        "errorRate": 100
+      },
+      "requirementsMet": {
+        "responseTime": false,
+        "errorRate": false
+      },
+      "violations": [
+        "p95 latency 122.00ms exceeds requirement 100ms",
+        "Error rate 100.00% exceeds requirement 0.1%"
+      ]
+    },
+    {
+      "name": "Generate Beat (AI)",
+      "connections": 10,
+      "metrics": {
+        "latency": {
+          "p50": 1,
+          "p95": 2,
+          "p99": 3,
+          "max": 130,
+          "mean": 1.1549826589595376
+        },
+        "throughput": {
+          "requestsPerSecond": 8650,
+          "successfulRequests": 0,
+          "failedRequests": 43250,
+          "totalRequests": 43250
+        },
+        "errorRate": 100
+      },
+      "requirementsMet": {
+        "responseTime": true,
+        "errorRate": false
+      },
+      "violations": [
+        "Error rate 100.00% exceeds requirement 0.1%"
+      ]
+    },
+    {
+      "name": "Generate Beat (AI)",
+      "connections": 100,
+      "metrics": {
+        "latency": {
+          "p50": 10,
+          "p95": 12,
+          "p99": 15,
+          "max": 28,
+          "mean": 10.147875319615244
+        },
+        "throughput": {
+          "requestsPerSecond": 9849.690185888467,
+          "successfulRequests": 0,
+          "failedRequests": 49278,
+          "totalRequests": 49278
+        },
+        "errorRate": 100
+      },
+      "requirementsMet": {
+        "responseTime": true,
+        "errorRate": false
+      },
+      "violations": [
+        "Error rate 100.00% exceeds requirement 0.1%"
+      ]
+    },
+    {
+      "name": "Generate Beat (AI)",
+      "connections": 1000,
+      "metrics": {
+        "latency": {
+          "p50": 108,
+          "p95": 135,
+          "p99": 243,
+          "max": 269,
+          "mean": 111.62077106394352
+        },
+        "throughput": {
+          "requestsPerSecond": 8919.149781485896,
+          "successfulRequests": 0,
+          "failedRequests": 44899,
+          "totalRequests": 44899
+        },
+        "errorRate": 100
+      },
+      "requirementsMet": {
+        "responseTime": true,
+        "errorRate": false
+      },
+      "violations": [
+        "Error rate 100.00% exceeds requirement 0.1%"
+      ]
+    }
+  ],
+  "bottlenecks": [
+    "Desktop Health Check: High error rate (2.42%) at 1000 users",
+    "Desktop Execute: High error rate (100.00%) at 10 users",
+    "Desktop Execute: High error rate (100.00%) at 100 users",
+    "Desktop Execute: High error rate (100.00%) at 1000 users",
+    "Create Project: High error rate (100.00%) at 10 users",
+    "Create Project: High error rate (100.00%) at 100 users",
+    "Create Project: High error rate (100.00%) at 1000 users",
+    "Generate Beat (AI): High error rate (100.00%) at 10 users",
+    "Generate Beat (AI): High error rate (100.00%) at 100 users",
+    "Generate Beat (AI): High error rate (100.00%) at 1000 users"
+  ],
+  "recommendations": [
+    "1. Implement request caching for frequently accessed data",
+    "2. Add database connection pooling and optimize queries",
+    "3. Implement rate limiting per user to prevent abuse",
+    "4. Consider horizontal scaling for high-load endpoints",
+    "5. Optimize AI model inference with batching",
+    "6. Implement circuit breakers for external dependencies",
+    "7. Add response compression (gzip/brotli)",
+    "8. Use async processing for heavy operations"
+  ]
+}

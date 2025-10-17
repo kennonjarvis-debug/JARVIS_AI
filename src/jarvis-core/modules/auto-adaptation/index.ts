@@ -97,6 +97,7 @@ class AutoAdaptationModule extends BaseModule {
         schedule: `0 */${this.config.analysisIntervalMinutes} * * *`,
         timezone: 'UTC',
         description: 'Analyze system performance and propose auto-adaptations',
+        enabled: true,
         handler: async () => {
           await this.performAdaptationAnalysis();
         },
@@ -107,6 +108,7 @@ class AutoAdaptationModule extends BaseModule {
         schedule: '*/15 * * * *', // Every 15 minutes
         timezone: 'UTC',
         description: 'Monitor active adaptations and system health',
+        enabled: true,
         handler: async () => {
           await this.monitorAdaptations();
         },
@@ -276,9 +278,8 @@ class AutoAdaptationModule extends BaseModule {
     }
 
     // Add learning context
-    const learnings = adaptiveEngine.getLearningHistory().slice(-10);
-    const successRate =
-      learnings.filter(l => l.outcomeSuccess).length / Math.max(learnings.length, 1);
+    const insights = adaptiveEngine.getLearningInsights();
+    const successRate = insights.successRate / 100; // Convert percentage to decimal
     if (successRate > 0.8) {
       parts.push(`High confidence based on ${(successRate * 100).toFixed(0)}% success rate`);
     }
@@ -316,13 +317,13 @@ class AutoAdaptationModule extends BaseModule {
       case 'delayed':
         // MEDIUM tier: Notify + delay
         this.logger.info(`⏱️  SCHEDULING (MEDIUM): ${improvement.title}`);
-        await clearanceSystem.requestAction(action as any);
+        await clearanceSystem.performAction(action as any);
         break;
 
       case 'approval-required':
         // HIGH tier: Request approval
         this.logger.info(`🚨 REQUESTING APPROVAL (HIGH): ${improvement.title}`);
-        await clearanceSystem.requestAction(action as any);
+        await clearanceSystem.performAction(action as any);
         break;
     }
 

@@ -6,7 +6,7 @@
 
 import fs from 'fs/promises';
 import path from 'path';
-import { logger } from '../../backend/utils/logger';
+import { logger } from '../../utils/logger';
 import type { AnalysisResult } from './cloud-intelligence.service';
 
 export class GoalUpdater {

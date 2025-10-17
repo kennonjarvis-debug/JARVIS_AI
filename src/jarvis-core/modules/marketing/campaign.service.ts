@@ -8,7 +8,7 @@
  * - Campaign tracking
  */
 
-import { logger } from '../../../backend/utils/logger';
+import { logger } from '../../../utils/logger';
 
 export interface CampaignConfig {
   type: string;

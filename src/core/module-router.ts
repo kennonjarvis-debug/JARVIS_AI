@@ -25,18 +25,60 @@ export class ModuleRouter {
    * Execute a module command with retry logic
    */
   async execute(command: ModuleCommand): Promise<ModuleResponse> {
-    // Route AI Brain requests directly to AI Brain service
+    // Route AI Brain chat requests to the gateway's internal chat handler
+    if (command.module === 'ai-brain' && command.action === 'chat') {
+      logger.info(`Routing ${command.module}.${command.action} to internal chat handler`);
+
+      // Call the gateway's own chat endpoint
+      try {
+        const response = await axios.post(
+          `http://localhost:${process.env.JARVIS_PORT || 4000}/api/v1/chat`,
+          {
+            message: command.params.message || '',
+            conversationHistory: command.params.conversationHistory || []
+          },
+          {
+            headers: {
+              'Authorization': `Bearer ${process.env.JARVIS_AUTH_TOKEN || 'test-token'}`,
+              'Content-Type': 'application/json'
+            },
+            timeout: 35000
+          }
+        );
+
+        return {
+          success: true,
+          data: response.data.data,
+          timestamp: new Date().toISOString()
+        };
+      } catch (error: any) {
+        logger.error(`Internal chat handler failed: ${error.message}`);
+        return {
+          success: false,
+          error: error.message,
+          timestamp: new Date().toISOString()
+        };
+      }
+    }
+
+    // Route other AI Brain requests directly to AI Brain service (if available)
     if (command.module === 'ai-brain') {
-      logger.info(`Routing ${command.module}.${command.action} directly to AI Brain service`);
+      logger.info(`Routing ${command.module}.${command.action} to AI Brain service`);
 
       // Map action to AI Brain endpoint
       const endpointMap: Record<string, string> = {
-        'chat': '/api/chat',
         'voice-chat': '/api/voice-chat',
         'health': '/api/health'
       };
 
-      const endpoint = endpointMap[command.action] || '/api/chat';
+      const endpoint = endpointMap[command.action];
+      if (!endpoint) {
+        return {
+          success: false,
+          error: `Unknown AI Brain action: ${command.action}`,
+          timestamp: new Date().toISOString()
+        };
+      }
 
       // Transform params to match AI Brain API format
       const aiBrainData = {
@@ -46,6 +88,42 @@ export class ModuleRouter {
       };
 
       return await this.routeToService('ai-brain', endpoint, aiBrainData);
+    }
+
+    // Route freestyle module requests to AI DAWG freestyle endpoints
+    if (command.module === 'freestyle') {
+      logger.info(`Routing ${command.module}.${command.action} to AI DAWG freestyle service`);
+
+      // Map action to freestyle endpoint
+      const endpointMap: Record<string, string> = {
+        'upload-beat': '/api/v1/freestyle/beat/upload',
+        'start-session': '/api/v1/freestyle/session/start',
+        'end-session': '/api/v1/freestyle/session/{sessionId}/end',
+        'get-lyrics': '/api/v1/freestyle/session/{sessionId}/lyrics',
+        'get-rhymes': '/api/v1/freestyle/session/{sessionId}/rhyme-suggestions',
+        'cancel-session': '/api/v1/freestyle/session/{sessionId}',
+      };
+
+      let endpoint = endpointMap[command.action];
+      if (!endpoint) {
+        return {
+          success: false,
+          error: `Unknown freestyle action: ${command.action}`,
+          timestamp: new Date().toISOString()
+        };
+      }
+
+      // Replace sessionId placeholder if present
+      if (command.params.sessionId) {
+        endpoint = endpoint.replace('{sessionId}', command.params.sessionId);
+      }
+
+      // Transform params to match freestyle API format
+      const freestyleData = {
+        ...command.params
+      };
+
+      return await this.routeToService('freestyle', endpoint, freestyleData);
     }
 
     // Default: route through AI DAWG Backend
@@ -148,7 +226,8 @@ export class ModuleRouter {
     const serviceUrls: Record<string, string> = {
       'vocal-coach': config.vocalCoachUrl,
       'producer': config.producerUrl,
-      'ai-brain': config.aiBrainUrl
+      'ai-brain': config.aiBrainUrl,
+      'freestyle': config.aiDawgBackendUrl  // Freestyle is part of AI DAWG backend
     };
 
     const baseUrl = serviceUrls[serviceName];
@@ -181,5 +260,8 @@ export class ModuleRouter {
     }
   }
 }
+
+// Singleton instance for shared use
+export const moduleRouter = new ModuleRouter();
 
 export default ModuleRouter;

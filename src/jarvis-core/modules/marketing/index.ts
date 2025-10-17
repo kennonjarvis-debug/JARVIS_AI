@@ -9,12 +9,18 @@
  */
 
 import { BaseModule } from '../../core/base-module';
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import { ScheduledJob, JarvisCommand, JarvisCommandResult } from '../../core/jarvis.interfaces';
 import { revenueMetricsService } from './revenue-metrics.service';
 import { campaignService } from './campaign.service';
 import { analyticsIntegrationService } from './analytics-integration.service';
-import { asyncHandler } from '../../../backend/middleware/errorHandler';
+// import { asyncHandler } from '../../../backend/middleware/errorHandler'; // TODO: Fix path or implement asyncHandler
+// Temporary asyncHandler stub until errorHandler module is available
+type AsyncRequestHandler = (req: Request, res: Response, next?: Function) => Promise<any>;
+type NextFunction = (err?: any) => void;
+const asyncHandler = (fn: AsyncRequestHandler) => (req: Request, res: Response, next: NextFunction) => {
+  Promise.resolve(fn(req, res, next)).catch((err: any) => next(err));
+};
 
 export class MarketingModule extends BaseModule {
   name = 'marketing';
@@ -54,11 +60,11 @@ export class MarketingModule extends BaseModule {
     // GET /api/v1/jarvis/marketing/revenue
     router.get(
       '/revenue',
-      asyncHandler(async (req: any, res) => {
+      asyncHandler(async (req: Request, res: Response) => {
         const { startDate, endDate, plan } = req.query;
 
-        const start = startDate ? new Date(startDate) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-        const end = endDate ? new Date(endDate) : new Date();
+        const start = startDate ? new Date(startDate as string) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+        const end = endDate ? new Date(endDate as string) : new Date();
 
         const revenue = await revenueMetricsService.getRevenue(
           start,
@@ -73,7 +79,7 @@ export class MarketingModule extends BaseModule {
     // GET /api/v1/jarvis/marketing/metrics
     router.get(
       '/metrics',
-      asyncHandler(async (req: any, res) => {
+      asyncHandler(async (req: Request, res: Response) => {
         const metrics = await revenueMetricsService.getMetricsSummary();
         res.json({ success: true, data: metrics });
       })
@@ -82,7 +88,7 @@ export class MarketingModule extends BaseModule {
     // POST /api/v1/jarvis/marketing/report
     router.post(
       '/report',
-      asyncHandler(async (req: any, res) => {
+      asyncHandler(async (req: Request, res: Response) => {
         const { type, period } = req.body;
         const report = await analyticsIntegrationService.generateReport(type, period);
         res.json({ success: true, data: report });
@@ -92,7 +98,7 @@ export class MarketingModule extends BaseModule {
     // POST /api/v1/jarvis/marketing/campaign
     router.post(
       '/campaign',
-      asyncHandler(async (req: any, res) => {
+      asyncHandler(async (req: Request, res: Response) => {
         const { type, target, content } = req.body;
         const result = await campaignService.runCampaign(type, target, content);
         res.json({ success: true, data: result });
@@ -102,10 +108,10 @@ export class MarketingModule extends BaseModule {
     // GET /api/v1/jarvis/marketing/analytics
     router.get(
       '/analytics',
-      asyncHandler(async (req: any, res) => {
+      asyncHandler(async (req: Request, res: Response) => {
         const { timeRange } = req.query;
         const analytics = await analyticsIntegrationService.getAnalytics(
-          timeRange as '7d' | '30d' | '90d' || '30d'
+          (timeRange as '7d' | '30d' | '90d') || '30d'
         );
         res.json({ success: true, data: analytics });
       })
@@ -114,11 +120,11 @@ export class MarketingModule extends BaseModule {
     // GET /api/v1/jarvis/marketing/forecast
     router.get(
       '/forecast',
-      asyncHandler(async (req: any, res) => {
+      asyncHandler(async (req: Request, res: Response) => {
         const { metric, periods } = req.query;
         const forecast = await analyticsIntegrationService.forecastMetric(
-          metric as string || 'revenue',
-          parseInt(periods as string) || 7
+          (metric as string) || 'revenue',
+          parseInt((periods as string) || '7')
         );
         res.json({ success: true, data: forecast });
       })
@@ -219,7 +225,7 @@ export class MarketingModule extends BaseModule {
   /**
    * Get metrics summary
    */
-  private async handleGetMetrics(params: any) {
+  private async handleGetMetrics(params: Record<string, any>) {
     const metrics = await revenueMetricsService.getMetricsSummary();
     return { metrics };
   }
@@ -235,7 +241,7 @@ export class MarketingModule extends BaseModule {
   /**
    * Run campaign
    */
-  private async handleRunCampaign(params: { type: string; target: any; content: any }) {
+  private async handleRunCampaign(params: { type: string; target: Record<string, any>; content: Record<string, any> }) {
     const result = await campaignService.runCampaign(params.type, params.target, params.content);
     return { campaignResult: result };
   }
@@ -245,7 +251,7 @@ export class MarketingModule extends BaseModule {
    */
   private async handleAnalyzeGrowth(params: { timeRange?: string }) {
     const analytics = await analyticsIntegrationService.getAnalytics(
-      params.timeRange as '7d' | '30d' | '90d' || '30d'
+      (params.timeRange as '7d' | '30d' | '90d') || '30d'
     );
     return { analytics };
   }
@@ -281,7 +287,7 @@ export class MarketingModule extends BaseModule {
 
       this.logger.info('✅ Daily report generated and sent');
     } catch (error) {
-      this.logger.error('❌ Failed to generate daily report:', error);
+      this.logger.error('❌ Failed to generate daily report:', { error: error as Record<string, any> });
       throw error;
     }
   }
@@ -307,7 +313,7 @@ export class MarketingModule extends BaseModule {
 
       this.logger.info('✅ Weekly analysis complete');
     } catch (error) {
-      this.logger.error('❌ Weekly analysis failed:', error);
+      this.logger.error('❌ Weekly analysis failed:', { error: error as Record<string, any> });
       throw error;
     }
   }
@@ -322,7 +328,7 @@ export class MarketingModule extends BaseModule {
       await revenueMetricsService.syncFromDatabase();
       this.logger.info('✅ Metrics synced');
     } catch (error) {
-      this.logger.error('❌ Metrics sync failed:', error);
+      this.logger.error('❌ Metrics sync failed:', { error: error as Record<string, any> });
       throw error;
     }
   }
@@ -344,7 +350,7 @@ export class MarketingModule extends BaseModule {
 
       this.logger.info('✅ Monthly forecast generated');
     } catch (error) {
-      this.logger.error('❌ Monthly forecast failed:', error);
+      this.logger.error('❌ Monthly forecast failed:', { error: error as Record<string, any> });
       throw error;
     }
   }

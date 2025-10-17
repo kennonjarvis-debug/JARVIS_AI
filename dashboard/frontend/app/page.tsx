@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Activity, TrendingUp, Users, Zap, Brain, DollarSign, MessageSquare, LayoutDashboard } from 'lucide-react';
+import { Activity, TrendingUp, Users, Zap, Brain, DollarSign, MessageSquare, LayoutDashboard, Music } from 'lucide-react';
+import Link from 'next/link';
 import BusinessMetrics from './components/BusinessMetrics';
 import BusinessIntelligencePanel from './components/BusinessIntelligencePanel';
 import InstanceMonitor from './components/InstanceMonitor';
@@ -13,14 +14,15 @@ import NotificationBell from './components/NotificationBell';
 import ProactivePanel from './components/ProactivePanel';
 import ToastContainer from './components/ToastNotification';
 
-// Dynamically construct API URL based on the current hostname
+// Get API URL from environment or use default
 const getApiUrl = () => {
-  if (typeof window === 'undefined') return 'http://localhost:5001';
-  const hostname = window.location.hostname;
-  return `http://${hostname}:5001`;
+  if (typeof window === 'undefined') {
+    return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+  }
+  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 };
 
-type Tab = 'dashboard' | 'chat';
+type Tab = 'dashboard' | 'chat' | 'music';
 
 export default function Dashboard() {
   const [data, setData] = useState<any>(null);
@@ -183,6 +185,14 @@ export default function Dashboard() {
             <MessageSquare className="w-5 h-5" />
             Chat
           </button>
+          <Link href="/music">
+            <button
+              className="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all glass border border-jarvis-primary/20 hover:border-jarvis-primary/40"
+            >
+              <Music className="w-5 h-5" />
+              Music Studio
+            </button>
+          </Link>
         </div>
 
         {/* Quick Stats - Only show on dashboard tab */}

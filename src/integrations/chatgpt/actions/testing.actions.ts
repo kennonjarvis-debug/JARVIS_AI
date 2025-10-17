@@ -25,10 +25,10 @@ router.post('/health', async (req: Request, res: Response) => {
     }
 
     // Get health status from health aggregator
-    const healthStatus = await healthAggregator.getAggregatedHealth();
+    const healthStatus = await healthAggregator.checkAll();
 
     // If user wants specific scope, filter services
-    let filteredServices = healthStatus.services;
+    let filteredServices: Record<string, any> = healthStatus.services;
     if (scope !== 'all') {
       const scopeMap: Record<string, string[]> = {
         infrastructure: ['postgres', 'redis', 'minio'],
@@ -38,7 +38,7 @@ router.post('/health', async (req: Request, res: Response) => {
       const serviceKeys = scopeMap[scope] || [];
       filteredServices = Object.fromEntries(
         Object.entries(healthStatus.services).filter(([key]) => serviceKeys.includes(key))
-      );
+      ) as Record<string, any>;
     }
 
     // Optionally call AI Dawg testing module for additional checks
@@ -68,12 +68,12 @@ router.post('/health', async (req: Request, res: Response) => {
 
     res.json({
       success: true,
-      status: healthStatus.status,
+      status: healthStatus.overall,
       services: filteredServices,
       timestamp: healthStatus.timestamp,
       summary: {
         total: Object.keys(filteredServices).length,
-        healthy: Object.values(filteredServices).filter((s: any) => s.status === 'up').length,
+        healthy: Object.values(filteredServices).filter((s: any) => s.status === 'healthy').length,
         unhealthy: Object.values(filteredServices).filter((s: any) => s.status === 'down').length,
       },
     });

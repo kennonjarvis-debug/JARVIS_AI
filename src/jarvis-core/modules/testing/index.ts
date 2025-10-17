@@ -87,6 +87,7 @@ class TestingModule extends BaseModule {
         schedule: '0 9 * * *', // 9 AM UTC (changed from 3 AM)
         timezone: 'UTC',
         description: 'Run comprehensive daily test suite with auto-fix',
+        enabled: true,
         handler: async () => {
           await this.autonomousTestRun();
         },
@@ -97,6 +98,7 @@ class TestingModule extends BaseModule {
         schedule: '0 * * * *', // Every hour
         timezone: 'UTC',
         description: 'Check test suite health status',
+        enabled: true,
         handler: async () => {
           const suites = Array.from(this.activeSuites.values());
           const failedSuites = suites.filter(s => s.status === 'failed');
@@ -111,6 +113,7 @@ class TestingModule extends BaseModule {
         schedule: '0 9,17 * * 1-5', // 9 AM and 5 PM on weekdays
         timezone: 'America/Los_Angeles',
         description: 'Pre-deployment validation before typical deploy windows',
+        enabled: true,
         handler: async () => {
           const isValid = await this.preDeployValidation();
           if (!isValid) {
@@ -124,6 +127,7 @@ class TestingModule extends BaseModule {
         schedule: '0 2 * * 0', // 2 AM on Sundays
         timezone: 'UTC',
         description: 'Full regression test suite on weekends',
+        enabled: true,
         handler: async () => {
           this.logger.info('Running weekend full regression...');
           await this.scheduledDailyTests();
@@ -606,7 +610,7 @@ class TestingModule extends BaseModule {
         },
       });
     } catch (error) {
-      this.logger.error('❌ Autonomous test run failed:', error);
+      this.logger.error('❌ Autonomous test run failed:', { error: error as Record<string, any> });
     }
   }
 }

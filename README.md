@@ -1,6 +1,13 @@
 # Jarvis Control Plane v2.0
 
+🟢 **STATUS: PRODUCTION** - Powers jarvis-ai.co backend API
+📍 **See**: `/Users/benkennon/PROJECT_MAP.md` for full project structure
+
 Central orchestration layer for AI Dawg execution engine. Provides API gateway, module routing, health aggregation, and integration points for external AI assistants.
+
+**Production Website**: https://jarvis-ai.co (backend API)
+**Frontend**: `/Users/benkennon/jarvis-ai`
+**Port**: 4000
 
 ## Architecture
 

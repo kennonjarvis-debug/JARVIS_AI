@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jarvis
+  labels:
+    app: jarvis
+    component: control-plane
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: jarvis
+  template:
+    metadata:
+      labels:
+        app: jarvis
+        component: control-plane
+    spec:
+      containers:
+      - name: jarvis
+        image: jarvis:latest
+        ports:
+        - containerPort: 4000
+          name: http
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: JARVIS_PORT
+          value: "4000"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: jarvis-secrets
+              key: database-url
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: jarvis-secrets
+              key: redis-url
+        - name: AI_DAWG_BACKEND_URL
+          value: "http://backend:3001"
+        - name: VOCAL_COACH_URL
+          value: "http://vocal-coach:8000"
+        - name: PRODUCER_URL
+          value: "http://producer:8001"
+        - name: AI_BRAIN_URL
+          value: "http://ai-brain:8002"
+        - name: CHATGPT_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: jarvis-secrets
+              key: chatgpt-api-key
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 4000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 4000
+          initialDelaySeconds: 10
+          periodSeconds: 5

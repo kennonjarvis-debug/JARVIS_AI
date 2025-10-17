@@ -1,0 +1,114 @@
+// Jarvis Control Plane - Prisma Schema
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Circuit Breaker State (for multi-instance coordination)
+model CircuitBreakerState {
+  id              String   @id @default(uuid())
+  serviceName     String   @unique
+  state           String   // CLOSED, OPEN, HALF_OPEN
+  failureCount    Int      @default(0)
+  successCount    Int      @default(0)
+  lastFailureTime DateTime?
+  nextAttemptTime DateTime?
+  updatedAt       DateTime @updatedAt
+
+  @@map("circuit_breaker_state")
+}
+
+// Task Execution History (for autonomous learning)
+model TaskHistory {
+  id            String   @id @default(uuid())
+  taskId        String
+  domain        String
+  action        String
+  decision      String
+  success       Boolean
+  duration      Int
+  resourcesUsed Json
+  impactScore   Float
+  userFeedback  String?
+  error         String?
+  metadata      Json?
+  executedAt    DateTime @default(now())
+
+  @@index([domain, action])
+  @@index([executedAt])
+  @@index([success])
+  @@map("task_history")
+}
+
+// AI Usage Tracking (for cost optimization)
+model AIUsage {
+  id            String   @id @default(uuid())
+  provider      String
+  model         String
+  inputTokens   Int
+  outputTokens  Int
+  cost          Float
+  duration      Int
+  taskType      String?
+  complexity    String?
+  correlationId String?
+  userId        String?
+  timestamp     DateTime @default(now())
+
+  @@index([provider, model])
+  @@index([timestamp])
+  @@index([correlationId])
+  @@map("ai_usage")
+}
+
+// Music Project Versions
+model MusicProjectVersion {
+  id             String   @id @default(uuid())
+  projectId      String
+  version        String
+  commitMessage  String
+  author         String
+  snapshot       Json
+  parentVersion  String?
+  tags           String[]
+  timestamp      DateTime @default(now())
+
+  @@index([projectId])
+  @@index([projectId, version])
+  @@map("music_project_versions")
+}
+
+// Health Metrics
+model HealthMetric {
+  id          String   @id @default(uuid())
+  serviceName String
+  metricType  String
+  value       Float
+  timestamp   DateTime @default(now())
+
+  @@index([serviceName, metricType])
+  @@index([timestamp])
+  @@map("health_metrics")
+}
+
+// Agent Performance Snapshots
+model AgentPerformanceSnapshot {
+  id             String   @id @default(uuid())
+  domain         String
+  totalTasks     Int
+  successCount   Int
+  failureCount   Int
+  avgDuration    Float
+  avgImpactScore Float
+  costIncurred   Float
+  tasksPerHour   Float
+  snapshotDate   DateTime @default(now())
+
+  @@index([domain])
+  @@index([snapshotDate])
+  @@map("agent_performance_snapshots")
+}

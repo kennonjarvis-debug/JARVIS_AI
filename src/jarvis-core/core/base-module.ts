@@ -13,7 +13,7 @@ import {
   ModuleContext,
   ModuleLogger,
 } from './jarvis.interfaces';
-import { logger as systemLogger } from '../../backend/utils/logger';
+import { logger as systemLogger } from '../../utils/logger';
 
 /**
  * Abstract base class that provides common functionality for all modules

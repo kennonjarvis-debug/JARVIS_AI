@@ -10,13 +10,12 @@
 
 import { EventEmitter } from 'events';
 import { logger } from '../utils/logger.js';
+import { ClearanceLevel, Priority } from './types.js';
 import type {
   IDomainAgent,
   AutonomousTask,
   TaskResult,
   TaskStatus,
-  ClearanceLevel,
-  Priority,
   AutonomousDecision,
   AgentMessage,
   SystemContext,
@@ -178,12 +177,15 @@ export class AutonomousOrchestrator extends EventEmitter {
 
     // Setup event listeners for each agent
     for (const [domain, agent] of this.agents.entries()) {
-      agent.on('taskStarted', (task) => {
+      // BaseDomainAgent extends EventEmitter, so we can safely cast
+      const agentEmitter = agent as any;
+
+      agentEmitter.on('taskStarted', (task: AutonomousTask) => {
         logger.info(`[${domain}] Task started: ${task.title}`);
         this.emit('taskStarted', { domain, task });
       });
 
-      agent.on('taskCompleted', (task, result) => {
+      agentEmitter.on('taskCompleted', (task: AutonomousTask, result: TaskResult) => {
         logger.info(`[${domain}] Task completed: ${task.title}`, {
           success: result.success,
           impactScore: result.metrics.impactScore,
@@ -192,7 +194,7 @@ export class AutonomousOrchestrator extends EventEmitter {
         this.emit('taskCompleted', { domain, task, result });
       });
 
-      agent.on('taskFailed', (task, result) => {
+      agentEmitter.on('taskFailed', (task: AutonomousTask, result: TaskResult) => {
         logger.error(`[${domain}] Task failed: ${task.title}`, {
           error: result.error,
         });

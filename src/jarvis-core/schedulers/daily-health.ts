@@ -6,7 +6,7 @@
 import cron from 'node-cron';
 import nodemailer from 'nodemailer';
 import { generateDailyHealthReport, toSlackAttachments } from '../core/health-report';
-import { logger } from '../../backend/utils/logger';
+import { logger } from '../../utils/logger';
 
 /**
  * Initialize daily health report scheduler

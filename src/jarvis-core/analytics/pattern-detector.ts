@@ -4,7 +4,7 @@
  * Identifies recurring patterns in test failures and system issues
  */
 
-import { logger } from '../../backend/utils/logger';
+import { logger } from '../../utils/logger';
 
 export interface TestPattern {
   pattern: string;

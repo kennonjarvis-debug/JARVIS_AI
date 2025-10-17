@@ -13,11 +13,10 @@
  * - Code style standardization
  */
 
-import { BaseDomainAgent } from './base-domain.js';
+import { BaseDomainAgent, type Task, type AnalysisResult, type ExecutionResult } from './base-domain.js';
 import { logger } from '../../utils/logger.js';
-import { ClearanceLevel, Priority } from '../types.js';
+import { ClearanceLevel, Priority, DomainType } from '../types.js';
 import type {
-  DomainType,
   AutonomousTask,
   TaskResult,
   DomainCapability,
@@ -33,9 +32,13 @@ import * as path from 'path';
 const execAsync = promisify(exec);
 
 export class CodeOptimizationDomain extends BaseDomainAgent {
-  domain: DomainType = 'code-optimization' as DomainType;
+  domain: DomainType = DomainType.CODE_OPTIMIZATION;
   name = 'CodeOptimizer';
   description = 'Autonomous code quality and optimization agent';
+
+  constructor(clearanceLevel?: ClearanceLevel) {
+    super('CodeOptimizer', 'code-optimization', clearanceLevel);
+  }
 
   capabilities: DomainCapability[] = [
     {
@@ -101,10 +104,10 @@ export class CodeOptimizationDomain extends BaseDomainAgent {
    * Analyze codebase and identify optimization opportunities
    */
   async analyze(): Promise<AutonomousTask[]> {
-    logger.info('CodeOptimizationDomain: Starting analysis');
+    this.log('info', 'CodeOptimizationDomain: Starting analysis');
 
     const tasks: AutonomousTask[] = [];
-    const context = await this.getSystemContext();
+    const systemContext = await this.getSystemContext();
 
     try {
       // 1. Check for TypeScript errors
@@ -115,7 +118,7 @@ export class CodeOptimizationDomain extends BaseDomainAgent {
           `Fix ${tsErrors.length} TypeScript compilation errors`,
           `Found ${tsErrors.length} TypeScript errors that are preventing build. Errors include: ${tsErrors.slice(0, 3).join(', ')}`,
           Priority.CRITICAL,
-          ClearanceLevel.MODIFY_SAFE,
+          2,
           { errors: tsErrors }
         ));
       }
@@ -128,24 +131,22 @@ export class CodeOptimizationDomain extends BaseDomainAgent {
           `Install ${missingDeps.length} missing dependencies`,
           `Missing type definitions and packages: ${missingDeps.join(', ')}`,
           Priority.HIGH,
-          ClearanceLevel.MODIFY_SAFE,
+          2,
           { dependencies: missingDeps }
         ));
       }
 
       // 3. Check for dead code (if clearance allows)
-      if (this.currentClearance >= ClearanceLevel.MODIFY_SAFE) {
-        const deadCode = await this.findDeadCode();
-        if (deadCode.length > 0) {
-          tasks.push(this.createTask(
-            'remove-dead-code',
-            `Remove ${deadCode.length} unused code sections`,
-            `Found unused code in: ${deadCode.slice(0, 5).map(f => path.basename(f)).join(', ')}`,
-            Priority.MEDIUM,
-            ClearanceLevel.MODIFY_SAFE,
-            { files: deadCode }
-          ));
-        }
+      const deadCode = await this.findDeadCode();
+      if (deadCode.length > 0) {
+        tasks.push(this.createTask(
+          'remove-dead-code',
+          `Remove ${deadCode.length} unused code sections`,
+          `Found unused code in: ${deadCode.slice(0, 5).map(f => path.basename(f)).join(', ')}`,
+          Priority.MEDIUM,
+          2,
+          { files: deadCode }
+        ));
       }
 
       // 4. Check code style consistency
@@ -156,17 +157,17 @@ export class CodeOptimizationDomain extends BaseDomainAgent {
           `Fix ${styleIssues} code style issues`,
           'Apply consistent formatting and style across codebase',
           Priority.LOW,
-          ClearanceLevel.MODIFY_SAFE,
+          2,
           { issueCount: styleIssues }
         ));
       }
 
-      logger.info(`CodeOptimizationDomain: Analysis complete, found ${tasks.length} opportunities`);
+      this.log('info', `CodeOptimizationDomain: Analysis complete, found ${tasks.length} opportunities`);
 
       return tasks;
 
     } catch (error: any) {
-      logger.error('CodeOptimizationDomain: Analysis failed', { error: error.message });
+      this.log('error', 'CodeOptimizationDomain: Analysis failed');
       return [];
     }
   }
@@ -514,7 +515,7 @@ export class CodeOptimizationDomain extends BaseDomainAgent {
   /**
    * Calculate impact score
    */
-  private calculateImpact(task: AutonomousTask, artifacts: Artifact[]): number {
+  protected calculateImpact(task: AutonomousTask, artifacts: Artifact[]): number {
     let score = 0;
 
     // Base score from priority

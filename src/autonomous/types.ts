@@ -31,6 +31,8 @@ export enum DomainType {
   SECURITY = 'security',
   DATA_SCIENCE = 'data-science',
   MARKETING = 'marketing',
+  CHAT = 'chat',
+  MUSIC_PRODUCTION = 'music_production',
 }
 
 /**
@@ -136,6 +138,7 @@ export interface DomainCapability {
   name: string;
   description: string;
   clearanceRequired: ClearanceLevel;
+  riskLevel?: 'low' | 'medium' | 'high' | 'critical';
   resourceRequirements: {
     apiAccess?: string[];
     fileAccess?: string[];

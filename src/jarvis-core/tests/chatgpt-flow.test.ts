@@ -1,11 +1,14 @@
 /**
  * ChatGPT Flow Tests
  * Tests ChatGPT Custom GPT → Jarvis integration
+ *
+ * NOTE: This test file requires a running server instance.
+ * Import paths need to be updated based on actual server implementation.
  */
 
 import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 import request from 'supertest';
-import { app, startServer, stopServer } from '../../backend/server';
+import { app, startServer, stopServer } from '../../core/gateway.js';
 
 describe('ChatGPT → Jarvis Flow', () => {
   const CHATGPT_API_KEY = process.env.CHATGPT_APP_KEY || 'test-key';

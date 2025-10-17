@@ -9,11 +9,9 @@ import remarkGfm from 'remark-gfm';
 import { VoiceInput } from './VoiceInput';
 import { VoiceOutput } from './VoiceOutput';
 
-// Dynamically construct API URL based on the current hostname
+// Get API URL from environment or use default
 const getApiUrl = () => {
-  if (typeof window === 'undefined') return 'http://localhost:5001';
-  const hostname = window.location.hostname;
-  return `http://${hostname}:5001`;
+  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
 };
 
 interface Message {
@@ -61,8 +59,17 @@ export default function ChatInterface() {
 
   // WebSocket connection
   useEffect(() => {
-    const hostname = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
-    const wsUrl = `ws://${hostname}:4000/ws?source=web&conversationId=${conversationId}`;
+    // Use WS_URL from environment or construct from API URL
+    const getWsUrl = () => {
+      if (process.env.NEXT_PUBLIC_WS_URL) {
+        return process.env.NEXT_PUBLIC_WS_URL;
+      }
+      const apiUrl = getApiUrl();
+      // Convert http to ws
+      return apiUrl.replace('http://', 'ws://').replace('https://', 'wss://').replace(':5001', ':4000');
+    };
+
+    const wsUrl = `${getWsUrl()}/ws?source=web&conversationId=${conversationId}`;
 
     console.log('🔌 Connecting to WebSocket:', wsUrl);
 

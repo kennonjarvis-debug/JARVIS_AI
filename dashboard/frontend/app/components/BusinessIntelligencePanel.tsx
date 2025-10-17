@@ -49,6 +49,10 @@ export default function BusinessIntelligencePanel({ apiUrl = 'http://localhost:5
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let retryCount = 0;
+    const maxRetries = 3;
+    const baseInterval = 120000; // 2 minutes base interval (reduced from 30s)
+
     const fetchData = async () => {
       try {
         setLoading(true);
@@ -60,6 +64,24 @@ export default function BusinessIntelligencePanel({ apiUrl = 'http://localhost:5
           fetch(`${apiUrl}/api/dashboard/intelligence/insights`).catch(() => null),
           fetch(`${apiUrl}/api/dashboard/intelligence/alerts`).catch(() => null)
         ]);
+
+        // Check for rate limiting (429) or server errors (500)
+        const hasRateLimitError = [metricsRes, insightsRes, alertsRes].some(
+          res => res && (res.status === 429 || res.status === 500)
+        );
+
+        if (hasRateLimitError) {
+          retryCount++;
+          if (retryCount < maxRetries) {
+            // Exponential backoff: wait longer before next attempt
+            const backoffDelay = baseInterval * Math.pow(2, retryCount);
+            console.warn(`[BI] Rate limited, backing off for ${backoffDelay / 1000}s`);
+          } else {
+            setError('Service temporarily unavailable due to rate limiting');
+          }
+        } else {
+          retryCount = 0; // Reset on success
+        }
 
         if (metricsRes?.ok) {
           const data = await metricsRes.json();
@@ -84,7 +106,7 @@ export default function BusinessIntelligencePanel({ apiUrl = 'http://localhost:5
     };
 
     fetchData();
-    const interval = setInterval(fetchData, 30000); // Refresh every 30 seconds
+    const interval = setInterval(fetchData, baseInterval); // Refresh every 2 minutes
 
     return () => clearInterval(interval);
   }, [apiUrl]);

@@ -4,6 +4,11 @@ import { useState, useEffect } from 'react';
 import ProactiveSuggestionCard from './ProactiveSuggestionCard';
 import { X } from 'lucide-react';
 
+// Get API URL from environment or use default
+const getApiUrl = () => {
+  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+};
+
 interface ProactiveSuggestion {
   id: string;
   type: 'information' | 'assistance' | 'warning' | 'opportunity' | 'reminder';
@@ -32,7 +37,7 @@ export default function ProactivePanel({ isOpen, onClose }: ProactivePanelProps)
   const fetchSuggestions = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:5001/api/proactive/suggestions');
+      const response = await fetch(`${getApiUrl()}/api/proactive/suggestions`);
       const data = await response.json();
 
       if (data.success) {
@@ -53,7 +58,7 @@ export default function ProactivePanel({ isOpen, onClose }: ProactivePanelProps)
 
   const handleDismiss = async (suggestionId: string) => {
     try {
-      await fetch(`http://localhost:5001/api/proactive/feedback/${suggestionId}`, {
+      await fetch(`${getApiUrl()}/api/proactive/feedback/${suggestionId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ feedbackType: 'dismissed' })
@@ -67,7 +72,7 @@ export default function ProactivePanel({ isOpen, onClose }: ProactivePanelProps)
 
   const handleAct = async (suggestionId: string) => {
     try {
-      await fetch(`http://localhost:5001/api/proactive/feedback/${suggestionId}`, {
+      await fetch(`${getApiUrl()}/api/proactive/feedback/${suggestionId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ feedbackType: 'acted_upon' })

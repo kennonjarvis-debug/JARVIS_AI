@@ -4,7 +4,7 @@
  * Sends alerts via Slack and other channels
  */
 
-import { logger } from '../../backend/utils/logger';
+import { logger } from '../../utils/logger';
 
 export interface Alert {
   title: string;

@@ -3,7 +3,7 @@
  * Initializes all automated schedulers
  */
 
-import { logger } from '../../backend/utils/logger';
+import { logger } from '../../utils/logger';
 import { initializeDailyHealthScheduler } from './daily-health';
 import { initializeMaintenanceScheduler } from './maintenance';
 import { initializeMemorySyncScheduler } from './memory-sync';
