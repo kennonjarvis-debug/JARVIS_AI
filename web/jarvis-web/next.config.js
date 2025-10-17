@@ -1,7 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // Ensure static files in `public/` are served (Next does this by default)
+
+  // Use standalone output for Netlify serverless
+  output: 'standalone',
 
   // Disable static optimization to allow client-side hooks
   experimental: {
