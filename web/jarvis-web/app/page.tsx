@@ -38,7 +38,7 @@ export default function LandingPage() {
           }}>
             🤖
           </div>
-          <strong style={{ fontSize: 20, fontWeight: 700, color: "#1f2937" }}>Jarvis AI</strong>
+          <strong style={{ fontSize: 20, fontWeight: 700, color: "#111827" }}>Jarvis AI</strong>
         </div>
 
         <nav style={{
@@ -162,7 +162,7 @@ export default function LandingPage() {
               padding: "16px 32px",
               borderRadius: 10,
               background: "#fff",
-              color: "#374151",
+              color: "#6b7280",
               border: "2px solid #e5e7eb",
               cursor: "pointer",
               fontSize: 16,
@@ -175,7 +175,7 @@ export default function LandingPage() {
 
         <p style={{
           fontSize: 14,
-          color: "#9ca3af",
+          color: "#6b7280",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -356,6 +356,111 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Pricing Section */}
+      <section id="pricing" style={{
+        padding: "100px 60px",
+        maxWidth: 1200,
+        margin: "0 auto",
+      }}>
+        <div style={{ textAlign: "center", marginBottom: 60 }}>
+          <h2 style={{
+            fontSize: 48,
+            fontWeight: 800,
+            color: "#111827",
+            marginBottom: 16,
+          }}>
+            Simple, transparent pricing
+          </h2>
+          <p style={{
+            fontSize: 20,
+            color: "#6b7280",
+            maxWidth: 600,
+            margin: "0 auto",
+          }}>
+            Choose the plan that fits your business. All plans include a 14-day free trial.
+          </p>
+        </div>
+
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+          gap: 32,
+          alignItems: "stretch",
+        }}>
+          <PricingCard
+            name="Starter"
+            price="$49"
+            period="per month"
+            description="Perfect for solopreneurs and small businesses getting started with automation"
+            features={[
+              "Up to 1,000 automated actions/month",
+              "iMessage automation",
+              "Basic email management",
+              "Social media scheduling (1 account)",
+              "Basic analytics dashboard",
+              "Email support",
+              "14-day free trial"
+            ]}
+            popular={false}
+          />
+          <PricingCard
+            name="Professional"
+            price="$149"
+            period="per month"
+            description="For growing businesses that need advanced automation and integrations"
+            features={[
+              "Up to 10,000 automated actions/month",
+              "Advanced iMessage automation",
+              "Smart email management with AI",
+              "Social media scheduling (5 accounts)",
+              "Twitter/X auto-engagement",
+              "Advanced analytics & reporting",
+              "DAWG AI integration",
+              "Priority support",
+              "Custom workflows",
+              "API access"
+            ]}
+            popular={true}
+          />
+          <PricingCard
+            name="Enterprise"
+            price="Custom"
+            period="contact us"
+            description="For large organizations requiring unlimited scale and dedicated support"
+            features={[
+              "Unlimited automated actions",
+              "All Professional features",
+              "Unlimited social media accounts",
+              "White-label options",
+              "Custom AI model training",
+              "Dedicated account manager",
+              "24/7 phone support",
+              "SLA guarantee",
+              "Custom integrations",
+              "On-premise deployment option"
+            ]}
+            popular={false}
+          />
+        </div>
+
+        <div style={{
+          textAlign: "center",
+          marginTop: 48,
+          padding: "24px",
+          background: "#fef2f2",
+          borderRadius: 12,
+          border: "1px solid #fee2e2",
+        }}>
+          <p style={{
+            fontSize: 16,
+            color: "#6b7280",
+            margin: 0,
+          }}>
+            <strong style={{ color: "#dc2626" }}>All plans include:</strong> 256-bit encryption, GDPR compliance, automated backups, and cancel anytime
+          </p>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section style={{
         padding: "100px 60px",
@@ -501,6 +606,138 @@ function StepCard({ number, title, description }: {
       }}>
         {description}
       </p>
+    </div>
+  );
+}
+
+function PricingCard({ name, price, period, description, features, popular }: {
+  name: string;
+  price: string;
+  period: string;
+  description: string;
+  features: string[];
+  popular: boolean;
+}) {
+  return (
+    <div style={{
+      background: "#fff",
+      padding: 40,
+      borderRadius: 16,
+      border: popular ? "2px solid #ef4444" : "1px solid #e5e7eb",
+      position: "relative",
+      display: "flex",
+      flexDirection: "column",
+      boxShadow: popular ? "0 8px 24px rgba(239,68,68,0.15)" : "none",
+    }}>
+      {popular && (
+        <div style={{
+          position: "absolute",
+          top: -12,
+          left: "50%",
+          transform: "translateX(-50%)",
+          background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
+          color: "#fff",
+          padding: "6px 20px",
+          borderRadius: 20,
+          fontSize: 12,
+          fontWeight: 700,
+          textTransform: "uppercase",
+          letterSpacing: "0.5px",
+        }}>
+          Most Popular
+        </div>
+      )}
+
+      <div style={{ marginBottom: 24 }}>
+        <h3 style={{
+          fontSize: 24,
+          fontWeight: 700,
+          color: "#111827",
+          marginBottom: 8,
+        }}>
+          {name}
+        </h3>
+        <p style={{
+          fontSize: 14,
+          color: "#6b7280",
+          lineHeight: 1.5,
+          minHeight: 42,
+        }}>
+          {description}
+        </p>
+      </div>
+
+      <div style={{ marginBottom: 32 }}>
+        <div style={{
+          display: "flex",
+          alignItems: "baseline",
+          gap: 4,
+        }}>
+          <span style={{
+            fontSize: 48,
+            fontWeight: 800,
+            color: "#111827",
+          }}>
+            {price}
+          </span>
+          <span style={{
+            fontSize: 16,
+            color: "#6b7280",
+          }}>
+            /{period}
+          </span>
+        </div>
+      </div>
+
+      <ul style={{
+        listStyle: "none",
+        padding: 0,
+        margin: "0 0 32px 0",
+        flex: 1,
+      }}>
+        {features.map((feature, index) => (
+          <li key={index} style={{
+            display: "flex",
+            alignItems: "flex-start",
+            gap: 12,
+            marginBottom: 16,
+            fontSize: 15,
+            color: "#374151",
+            lineHeight: 1.5,
+          }}>
+            <span style={{
+              color: "#ef4444",
+              fontSize: 18,
+              fontWeight: 700,
+              flexShrink: 0,
+            }}>
+              ✓
+            </span>
+            <span>{feature}</span>
+          </li>
+        ))}
+      </ul>
+
+      <button
+        onClick={() => signIn("google", { callbackUrl: "/observatory" })}
+        style={{
+          width: "100%",
+          padding: "16px 24px",
+          borderRadius: 10,
+          background: popular
+            ? "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)"
+            : "#fff",
+          color: popular ? "#fff" : "#374151",
+          border: popular ? "none" : "2px solid #e5e7eb",
+          cursor: "pointer",
+          fontSize: 16,
+          fontWeight: 600,
+          boxShadow: popular ? "0 4px 12px rgba(239,68,68,0.3)" : "none",
+          transition: "all 0.2s",
+        }}
+      >
+        Start Free Trial
+      </button>
     </div>
   );
 }

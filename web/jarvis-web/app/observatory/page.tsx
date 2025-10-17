@@ -144,8 +144,10 @@ export default function ObservatoryPage() {
           }}>
             <ConnectionCard icon="💼" title="DAWG AI" subtitle="Music production AI" status="Not Connected" />
             <ConnectionCard icon="💬" title="iMessage" subtitle="Respond to messages" status="Not Connected" />
-            <ConnectionCard icon="🐦" title="Twitter/X" subtitle="Social media posts" status="Not Connected" />
             <ConnectionCard icon="📧" title="Email" subtitle="Gmail automation" status="Not Connected" />
+            <ConnectionCard icon="🔷" title="Salesforce" subtitle="CRM integration" status="Not Connected" />
+            <ConnectionCard icon="🟠" title="HubSpot" subtitle="Marketing & sales" status="Not Connected" />
+            <ConnectionCard icon="🐦" title="Twitter/X" subtitle="Social media posts" status="Not Connected" />
             <ConnectionCard icon="📱" title="SMS" subtitle="Text messages" status="Not Connected" />
             <ConnectionCard icon="📊" title="Analytics" subtitle="Business insights" status="Not Connected" />
           </div>
