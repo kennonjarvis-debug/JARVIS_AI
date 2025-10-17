@@ -1,3 +1,5 @@
+import { Providers } from "./providers";
+
 export const metadata = {
   title: "Jarvis",
   description: "Jarvis Web",
@@ -22,7 +24,9 @@ export default function RootLayout({
           }
         ` }} />
       </head>
-      <body>{children}</body>
+      <body>
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }

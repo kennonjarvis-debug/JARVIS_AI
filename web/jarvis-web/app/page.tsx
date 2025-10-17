@@ -1,11 +1,15 @@
 "use client";
 
 import React from "react";
+import { signIn, signOut, useSession } from "next-auth/react";
+
+export const dynamic = 'force-dynamic';
 
 type Msg = { role: "user" | "jarvis"; content: string };
 
 export default function Home() {
   const API_URL = "/api/chat";
+  const { data: session, status } = useSession();
 
   const [messages, setMessages] = React.useState<Msg[]>([
     {
@@ -98,8 +102,45 @@ export default function Home() {
           }}
         />
         <strong style={{ fontWeight: 700 }}>Jarvis</strong>
-        <div style={{ marginLeft: "auto", opacity: 0.8, fontSize: 13 }}>
-          Voice: Auto
+        <div style={{ marginLeft: "auto", opacity: 0.8, fontSize: 13, display: "flex", alignItems: "center", gap: 12 }}>
+          <span>Voice: Auto</span>
+          {status === "loading" ? (
+            <span style={{ fontSize: 12 }}>Loading...</span>
+          ) : session ? (
+            <>
+              <span style={{ fontSize: 12 }}>{session.user?.email}</span>
+              <button
+                onClick={() => signOut()}
+                style={{
+                  padding: "6px 12px",
+                  borderRadius: 6,
+                  background: "#374151",
+                  color: "#fff",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  cursor: "pointer",
+                  fontSize: 12,
+                }}
+              >
+                Sign Out
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => signIn("google")}
+              style={{
+                padding: "6px 12px",
+                borderRadius: 6,
+                background: "#4f46e5",
+                color: "#fff",
+                border: 0,
+                cursor: "pointer",
+                fontSize: 12,
+                fontWeight: 600,
+              }}
+            >
+              Sign in with Google
+            </button>
+          )}
         </div>
       </header>
 

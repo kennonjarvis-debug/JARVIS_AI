@@ -61,10 +61,11 @@ export async function POST(request: NextRequest) {
       response: data.data?.response || data.response || 'No response from AI',
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Chat API error:', error);
+    const message = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
-      { error: 'Internal server error', message: error.message },
+      { error: 'Internal server error', message },
       { status: 500 }
     );
   }

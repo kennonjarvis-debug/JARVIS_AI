@@ -2,6 +2,8 @@
 
 import React from "react";
 
+export const dynamic = 'force-dynamic';
+
 const InstallPage: React.FC = () => {
   const host =
     typeof window !== "undefined"
