@@ -50,7 +50,7 @@ export default function LandingPage() {
           <a href="#pricing" style={{ color: "#6b7280", textDecoration: "none", fontSize: 15, cursor: "pointer" }}>Pricing</a>
           <a href="#how-it-works" style={{ color: "#6b7280", textDecoration: "none", fontSize: 15, cursor: "pointer" }}>How It Works</a>
           <button
-            onClick={() => signIn("google", { callbackUrl: "/observatory" })}
+            onClick={() => signIn("google", { callbackUrl: "/onboarding" })}
             style={{
               background: "transparent",
               border: "none",
@@ -63,7 +63,7 @@ export default function LandingPage() {
             Login
           </button>
           <button
-            onClick={() => signIn("google", { callbackUrl: "/observatory" })}
+            onClick={() => signIn("google", { callbackUrl: "/onboarding" })}
             style={{
               padding: "12px 24px",
               borderRadius: 8,
@@ -137,7 +137,7 @@ export default function LandingPage() {
           marginBottom: 20,
         }}>
           <button
-            onClick={() => signIn("google", { callbackUrl: "/observatory" })}
+            onClick={() => signIn("google", { callbackUrl: "/onboarding" })}
             style={{
               padding: "16px 32px",
               borderRadius: 10,
@@ -486,7 +486,7 @@ export default function LandingPage() {
             Join businesses already automating with Jarvis AI
           </p>
           <button
-            onClick={() => signIn("google", { callbackUrl: "/observatory" })}
+            onClick={() => signIn("google", { callbackUrl: "/onboarding" })}
             style={{
               padding: "18px 40px",
               borderRadius: 10,
@@ -719,7 +719,7 @@ function PricingCard({ name, price, period, description, features, popular }: {
       </ul>
 
       <button
-        onClick={() => signIn("google", { callbackUrl: "/observatory" })}
+        onClick={() => signIn("google", { callbackUrl: "/onboarding" })}
         style={{
           width: "100%",
           padding: "16px 24px",

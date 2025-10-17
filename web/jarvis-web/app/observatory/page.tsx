@@ -1,14 +1,47 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useSession, signOut } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export const dynamic = 'force-dynamic';
 
 export default function ObservatoryPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const [showSuccessBanner, setShowSuccessBanner] = useState(false);
+  const [connectedService, setConnectedService] = useState("");
+
+  // Check for connection success
+  useEffect(() => {
+    const connected = searchParams.get("connected");
+    if (connected) {
+      const serviceMap: Record<string, string> = {
+        "dawg-ai": "DAWG AI",
+        "imessage": "iMessage",
+        "email": "Gmail",
+        "gmail": "Gmail",
+        "salesforce": "Salesforce",
+        "hubspot": "HubSpot",
+        "twitter": "Twitter/X",
+        "sms": "SMS",
+        "analytics": "Analytics"
+      };
+
+      const serviceName = serviceMap[connected] || connected;
+      setConnectedService(serviceName);
+      setShowSuccessBanner(true);
+
+      // Auto-hide banner after 5 seconds
+      setTimeout(() => {
+        setShowSuccessBanner(false);
+      }, 5000);
+
+      // Clean up URL
+      router.replace("/observatory", { scroll: false });
+    }
+  }, [searchParams, router]);
 
   // Redirect to home if not authenticated
   React.useEffect(() => {
@@ -43,6 +76,63 @@ export default function ObservatoryPage() {
       color: "#f7f7fb",
       fontFamily: "ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto",
     }}>
+      {/* Success Banner */}
+      {showSuccessBanner && (
+        <div style={{
+          position: "fixed",
+          top: 20,
+          left: "50%",
+          transform: "translateX(-50%)",
+          zIndex: 1000,
+          background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+          color: "#fff",
+          padding: "16px 32px",
+          borderRadius: 12,
+          boxShadow: "0 10px 40px rgba(16, 185, 129, 0.4)",
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          fontSize: 16,
+          fontWeight: 600,
+          animation: "slideDown 0.3s ease-out",
+        }}>
+          <span style={{ fontSize: 24 }}>✅</span>
+          <span>{connectedService} connected successfully!</span>
+          <button
+            onClick={() => setShowSuccessBanner(false)}
+            style={{
+              background: "rgba(255,255,255,0.2)",
+              border: "none",
+              color: "#fff",
+              width: 24,
+              height: 24,
+              borderRadius: 6,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 16,
+              marginLeft: 8,
+            }}
+          >
+            ×
+          </button>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateX(-50%) translateY(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+          }
+        }
+      `}</style>
+
       {/* Header */}
       <header style={{
         padding: "20px 40px",
@@ -142,14 +232,14 @@ export default function ObservatoryPage() {
             gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
             gap: 16,
           }}>
-            <ConnectionCard icon="💼" title="DAWG AI" subtitle="Music production AI" status="Not Connected" />
-            <ConnectionCard icon="💬" title="iMessage" subtitle="Respond to messages" status="Not Connected" />
-            <ConnectionCard icon="📧" title="Email" subtitle="Gmail automation" status="Not Connected" />
-            <ConnectionCard icon="🔷" title="Salesforce" subtitle="CRM integration" status="Not Connected" />
-            <ConnectionCard icon="🟠" title="HubSpot" subtitle="Marketing & sales" status="Not Connected" />
-            <ConnectionCard icon="🐦" title="Twitter/X" subtitle="Social media posts" status="Not Connected" />
-            <ConnectionCard icon="📱" title="SMS" subtitle="Text messages" status="Not Connected" />
-            <ConnectionCard icon="📊" title="Analytics" subtitle="Business insights" status="Not Connected" />
+            <ConnectionCard icon="💼" title="DAWG AI" subtitle="Music production AI" status="Not Connected" link="/observatory/connect/dawg-ai" />
+            <ConnectionCard icon="💬" title="iMessage" subtitle="Respond to messages" status="Not Connected" link="/observatory/connect/imessage" />
+            <ConnectionCard icon="📧" title="Email" subtitle="Gmail automation" status="Not Connected" link="/observatory/connect/email" />
+            <ConnectionCard icon="🔷" title="Salesforce" subtitle="CRM integration" status="Not Connected" link="/observatory/connect/salesforce" />
+            <ConnectionCard icon="🟠" title="HubSpot" subtitle="Marketing & sales" status="Not Connected" link="/observatory/connect/hubspot" />
+            <ConnectionCard icon="🐦" title="Twitter/X" subtitle="Social media posts" status="Not Connected" link="/observatory/connect/twitter" />
+            <ConnectionCard icon="📱" title="SMS" subtitle="Text messages" status="Not Connected" link="/observatory/connect/sms" />
+            <ConnectionCard icon="📊" title="Analytics" subtitle="Business insights" status="Not Connected" link="/observatory/connect/analytics" />
           </div>
         </section>
 
@@ -200,30 +290,47 @@ function StatCard({ title, value, subtitle, color = "#10b981" }: {
   );
 }
 
-function ConnectionCard({ icon, title, subtitle, status }: {
+function ConnectionCard({ icon, title, subtitle, status, link }: {
   icon: string;
   title: string;
   subtitle: string;
   status: string;
+  link?: string;
 }) {
+  const router = useRouter();
+
+  const handleClick = () => {
+    if (link) {
+      router.push(link);
+    }
+  };
+
   return (
-    <button style={{
-      background: "#0f1320",
-      border: "1px solid rgba(255,255,255,0.1)",
-      borderRadius: 10,
-      padding: 20,
-      cursor: "pointer",
-      textAlign: "left",
-      transition: "all 0.2s",
-    }}
-    onMouseOver={(e) => {
-      e.currentTarget.style.borderColor = "#667eea";
-      e.currentTarget.style.background = "#1a1f2e";
-    }}
-    onMouseOut={(e) => {
-      e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)";
-      e.currentTarget.style.background = "#0f1320";
-    }}
+    <button
+      onClick={handleClick}
+      disabled={!link}
+      style={{
+        background: "#0f1320",
+        border: "1px solid rgba(255,255,255,0.1)",
+        borderRadius: 10,
+        padding: 20,
+        cursor: link ? "pointer" : "not-allowed",
+        textAlign: "left",
+        transition: "all 0.2s",
+        opacity: link ? 1 : 0.5,
+      }}
+      onMouseOver={(e) => {
+        if (link) {
+          e.currentTarget.style.borderColor = "#667eea";
+          e.currentTarget.style.background = "#1a1f2e";
+        }
+      }}
+      onMouseOut={(e) => {
+        if (link) {
+          e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)";
+          e.currentTarget.style.background = "#0f1320";
+        }
+      }}
     >
       <div style={{ fontSize: 32, marginBottom: 12 }}>{icon}</div>
       <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 4, color: "#fff" }}>{title}</div>
