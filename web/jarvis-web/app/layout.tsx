@@ -1,4 +1,5 @@
 import { Providers } from "./providers";
+import Chatbot from "../components/Chatbot";
 
 export const metadata = {
   title: "Jarvis",
@@ -25,7 +26,10 @@ export default function RootLayout({
         ` }} />
       </head>
       <body>
-        <Providers>{children}</Providers>
+        <Providers>
+          {children}
+          <Chatbot />
+        </Providers>
       </body>
     </html>
   );

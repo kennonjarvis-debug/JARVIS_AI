@@ -13,6 +13,11 @@ export default function ObservatoryPage() {
   const [showSuccessBanner, setShowSuccessBanner] = useState(false);
   const [connectedService, setConnectedService] = useState("");
 
+  // Mock subscription data
+  const [currentPlan] = useState("Starter");
+  const [observatoriesUsed] = useState(1);
+  const [observatoriesLimit] = useState(1);
+
   // Check for connection success
   useEffect(() => {
     const connected = searchParams.get("connected");
@@ -57,8 +62,8 @@ export default function ObservatoryPage() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "#0b0f17",
-        color: "#fff",
+        background: "#ffffff",
+        color: "#111827",
       }}>
         <div>Loading Observatory...</div>
       </div>
@@ -72,8 +77,8 @@ export default function ObservatoryPage() {
   return (
     <main style={{
       minHeight: "100vh",
-      background: "#0b0f17",
-      color: "#f7f7fb",
+      background: "#ffffff",
+      color: "#111827",
       fontFamily: "ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto",
     }}>
       {/* Success Banner */}
@@ -135,12 +140,12 @@ export default function ObservatoryPage() {
 
       {/* Header */}
       <header style={{
-        padding: "20px 40px",
-        borderBottom: "1px solid rgba(255,255,255,0.1)",
+        padding: "20px 60px",
+        borderBottom: "1px solid #e5e7eb",
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        background: "#0f1320",
+        background: "#fff",
       }}>
         <div style={{
           display: "flex",
@@ -150,8 +155,8 @@ export default function ObservatoryPage() {
           <div style={{
             width: 40,
             height: 40,
-            borderRadius: 10,
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            borderRadius: 8,
+            background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -160,22 +165,69 @@ export default function ObservatoryPage() {
             🔭
           </div>
           <div>
-            <div style={{ fontSize: 20, fontWeight: 700 }}>{userName}&apos;s Observatory</div>
-            <div style={{ fontSize: 12, opacity: 0.6 }}>Jarvis AI Control Center</div>
+            <div style={{ fontSize: 20, fontWeight: 700, color: "#111827" }}>{userName}&apos;s Observatory</div>
+            <div style={{
+              fontSize: 12,
+              color: "#6b7280",
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+            }}>
+              <span>Jarvis AI Control Center</span>
+              <span style={{ color: "#d1d5db" }}>•</span>
+              <span style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+              }}>
+                <span style={{
+                  display: "inline-block",
+                  width: 8,
+                  height: 8,
+                  borderRadius: "50%",
+                  background: "#10b981",
+                }}></span>
+                <span style={{ fontWeight: 600, color: "#111827" }}>{currentPlan} Plan</span>
+              </span>
+              <span style={{ color: "#d1d5db" }}>•</span>
+              <span>
+                <strong style={{ color: "#111827" }}>{observatoriesUsed}</strong>/{observatoriesLimit} Observatories
+              </span>
+            </div>
           </div>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <div style={{ fontSize: 14, opacity: 0.8 }}>{session.user?.email}</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <button
+            onClick={() => router.push('/observatory/billing')}
+            style={{
+              padding: "8px 16px",
+              borderRadius: 6,
+              background: "#f9fafb",
+              color: "#374151",
+              border: "1px solid #e5e7eb",
+              cursor: "pointer",
+              fontSize: 14,
+              fontWeight: 500,
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+            }}
+          >
+            <span style={{ fontSize: 16 }}>💳</span>
+            <span>Billing</span>
+          </button>
+          <div style={{ fontSize: 14, color: "#6b7280" }}>{session.user?.email}</div>
           <button
             onClick={() => signOut({ callbackUrl: "/" })}
             style={{
               padding: "8px 16px",
               borderRadius: 6,
-              background: "#374151",
-              color: "#fff",
-              border: "none",
+              background: "#fff",
+              color: "#374151",
+              border: "2px solid #e5e7eb",
               cursor: "pointer",
               fontSize: 14,
+              fontWeight: 600,
             }}
           >
             Sign Out
@@ -190,13 +242,41 @@ export default function ObservatoryPage() {
         padding: 40,
       }}>
         {/* Welcome Section */}
-        <section style={{ marginBottom: 40 }}>
-          <h1 style={{ fontSize: 32, fontWeight: 700, marginBottom: 12 }}>
-            Welcome to Your Observatory
-          </h1>
-          <p style={{ fontSize: 16, opacity: 0.8, marginBottom: 24 }}>
-            Connect your business to let Jarvis AI automate your operations 24/7
-          </p>
+        <section style={{
+          marginBottom: 40,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+        }}>
+          <div>
+            <h1 style={{ fontSize: 32, fontWeight: 700, marginBottom: 12, color: "#111827" }}>
+              Welcome to Your Observatory
+            </h1>
+            <p style={{ fontSize: 16, color: "#6b7280", marginBottom: 24 }}>
+              Connect your business to let Jarvis AI automate your operations 24/7
+            </p>
+          </div>
+          <button
+            onClick={() => router.push('/observatory/new')}
+            style={{
+              padding: "14px 24px",
+              borderRadius: 8,
+              background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
+              color: "#fff",
+              border: "none",
+              cursor: "pointer",
+              fontSize: 15,
+              fontWeight: 600,
+              boxShadow: "0 2px 8px rgba(239,68,68,0.3)",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              whiteSpace: "nowrap",
+            }}
+          >
+            <span style={{ fontSize: 18 }}>+</span>
+            <span>Add New Observatory</span>
+          </button>
         </section>
 
         {/* Stats Grid */}
@@ -214,16 +294,16 @@ export default function ObservatoryPage() {
 
         {/* Business Connection Section */}
         <section style={{
-          background: "#1a1f2e",
-          border: "1px solid rgba(255,255,255,0.1)",
+          background: "#f9fafb",
+          border: "1px solid #e5e7eb",
           borderRadius: 12,
           padding: 32,
           marginBottom: 40,
         }}>
-          <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>
+          <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16, color: "#111827" }}>
             Connect Your Business
           </h2>
-          <p style={{ fontSize: 14, opacity: 0.8, marginBottom: 24 }}>
+          <p style={{ fontSize: 14, color: "#6b7280", marginBottom: 24 }}>
             Connect your business accounts so Jarvis can observe and automate your operations
           </p>
 
@@ -232,35 +312,34 @@ export default function ObservatoryPage() {
             gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
             gap: 16,
           }}>
-            <ConnectionCard icon="💼" title="DAWG AI" subtitle="Music production AI" status="Not Connected" link="/observatory/connect/dawg-ai" />
-            <ConnectionCard icon="💬" title="iMessage" subtitle="Respond to messages" status="Not Connected" link="/observatory/connect/imessage" />
-            <ConnectionCard icon="📧" title="Email" subtitle="Gmail automation" status="Not Connected" link="/observatory/connect/email" />
-            <ConnectionCard icon="🔷" title="Salesforce" subtitle="CRM integration" status="Not Connected" link="/observatory/connect/salesforce" />
-            <ConnectionCard icon="🟠" title="HubSpot" subtitle="Marketing & sales" status="Not Connected" link="/observatory/connect/hubspot" />
-            <ConnectionCard icon="🐦" title="Twitter/X" subtitle="Social media posts" status="Not Connected" link="/observatory/connect/twitter" />
-            <ConnectionCard icon="📱" title="SMS" subtitle="Text messages" status="Not Connected" link="/observatory/connect/sms" />
-            <ConnectionCard icon="📊" title="Analytics" subtitle="Business insights" status="Not Connected" link="/observatory/connect/analytics" />
+            <ConnectionCard icon="💼" title="DAWG AI" subtitle="Music production AI" link="/observatory/connect/dawg-ai" />
+            <ConnectionCard icon="💬" title="iMessage" subtitle="Respond to messages" link="/observatory/connect/imessage" />
+            <ConnectionCard icon="📧" title="Email" subtitle="Gmail automation" link="/observatory/connect/email" />
+            <ConnectionCard icon="🔷" title="Salesforce" subtitle="CRM integration" link="/observatory/connect/salesforce" />
+            <ConnectionCard icon="🟠" title="HubSpot" subtitle="Marketing & sales" link="/observatory/connect/hubspot" />
+            <ConnectionCard icon="🐦" title="Twitter/X" subtitle="Social media posts" link="/observatory/connect/twitter" />
+            <ConnectionCard icon="📱" title="SMS" subtitle="Text messages" link="/observatory/connect/sms" />
+            <ConnectionCard icon="📊" title="Analytics" subtitle="Business insights" link="/observatory/connect/analytics" />
           </div>
         </section>
 
         {/* Activity Feed */}
         <section style={{
-          background: "#1a1f2e",
-          border: "1px solid rgba(255,255,255,0.1)",
+          background: "#f9fafb",
+          border: "1px solid #e5e7eb",
           borderRadius: 12,
           padding: 32,
         }}>
-          <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>
+          <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16, color: "#111827" }}>
             Recent Activity
           </h2>
           <div style={{
             textAlign: "center",
             padding: "40px 20px",
-            opacity: 0.6,
           }}>
             <div style={{ fontSize: 48, marginBottom: 12 }}>👀</div>
-            <div style={{ fontSize: 16 }}>No activity yet</div>
-            <div style={{ fontSize: 14, marginTop: 8 }}>
+            <div style={{ fontSize: 16, color: "#111827" }}>No activity yet</div>
+            <div style={{ fontSize: 14, marginTop: 8, color: "#6b7280" }}>
               Connect your business accounts to start observing
             </div>
           </div>
@@ -278,23 +357,22 @@ function StatCard({ title, value, subtitle, color = "#10b981" }: {
 }) {
   return (
     <div style={{
-      background: "#1a1f2e",
-      border: "1px solid rgba(255,255,255,0.1)",
+      background: "#fff",
+      border: "1px solid #e5e7eb",
       borderRadius: 12,
       padding: 24,
     }}>
-      <div style={{ fontSize: 14, opacity: 0.7, marginBottom: 8 }}>{title}</div>
+      <div style={{ fontSize: 14, color: "#6b7280", marginBottom: 8 }}>{title}</div>
       <div style={{ fontSize: 32, fontWeight: 700, color, marginBottom: 4 }}>{value}</div>
-      <div style={{ fontSize: 12, opacity: 0.6 }}>{subtitle}</div>
+      <div style={{ fontSize: 12, color: "#6b7280" }}>{subtitle}</div>
     </div>
   );
 }
 
-function ConnectionCard({ icon, title, subtitle, status, link }: {
+function ConnectionCard({ icon, title, subtitle, link }: {
   icon: string;
   title: string;
   subtitle: string;
-  status: string;
   link?: string;
 }) {
   const router = useRouter();
@@ -310,8 +388,8 @@ function ConnectionCard({ icon, title, subtitle, status, link }: {
       onClick={handleClick}
       disabled={!link}
       style={{
-        background: "#0f1320",
-        border: "1px solid rgba(255,255,255,0.1)",
+        background: "#fff",
+        border: "1px solid #e5e7eb",
         borderRadius: 10,
         padding: 20,
         cursor: link ? "pointer" : "not-allowed",
@@ -321,27 +399,20 @@ function ConnectionCard({ icon, title, subtitle, status, link }: {
       }}
       onMouseOver={(e) => {
         if (link) {
-          e.currentTarget.style.borderColor = "#667eea";
-          e.currentTarget.style.background = "#1a1f2e";
+          e.currentTarget.style.borderColor = "#ef4444";
+          e.currentTarget.style.boxShadow = "0 2px 8px rgba(239,68,68,0.15)";
         }
       }}
       onMouseOut={(e) => {
         if (link) {
-          e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)";
-          e.currentTarget.style.background = "#0f1320";
+          e.currentTarget.style.borderColor = "#e5e7eb";
+          e.currentTarget.style.boxShadow = "none";
         }
       }}
     >
       <div style={{ fontSize: 32, marginBottom: 12 }}>{icon}</div>
-      <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 4, color: "#fff" }}>{title}</div>
-      <div style={{ fontSize: 12, opacity: 0.6, marginBottom: 8, color: "#fff" }}>{subtitle}</div>
-      <div style={{
-        fontSize: 11,
-        color: "#ef4444",
-        fontWeight: 500,
-      }}>
-        {status}
-      </div>
+      <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 4, color: "#111827" }}>{title}</div>
+      <div style={{ fontSize: 12, color: "#6b7280" }}>{subtitle}</div>
     </button>
   );
 }
