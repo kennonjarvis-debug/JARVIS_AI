@@ -116,7 +116,9 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
 }
 
 async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
-  const stripeSubscriptionId = invoice.subscription as string;
+  const stripeSubscriptionId = typeof invoice.subscription === 'string'
+    ? invoice.subscription
+    : (invoice.subscription as any)?.id;
 
   if (!stripeSubscriptionId) return;
 
@@ -125,7 +127,9 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
 }
 
 async function handlePaymentFailed(invoice: Stripe.Invoice) {
-  const stripeSubscriptionId = invoice.subscription as string;
+  const stripeSubscriptionId = typeof invoice.subscription === 'string'
+    ? invoice.subscription
+    : (invoice.subscription as any)?.id;
 
   if (!stripeSubscriptionId) return;
 
