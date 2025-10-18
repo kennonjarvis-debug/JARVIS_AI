@@ -36,12 +36,11 @@ export interface BackupCode {
  * @returns Object containing secret, QR code data URL, and manual entry key
  */
 export async function generateTOTPSecret(userEmail: string): Promise<TwoFactorSecret> {
-  // Generate secret using speakeasy with SHA-256
+  // Generate secret using speakeasy
   const secret = speakeasy.generateSecret({
     name: `${APP_NAME} (${userEmail})`,
     issuer: APP_NAME,
     length: 32,
-    algorithm: 'sha256',
   });
 
   if (!secret.otpauth_url) {
