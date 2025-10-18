@@ -1,0 +1,157 @@
+================================================================================
+ELEVENLABS VOICES - COMPLETE LIST
+================================================================================
+
+Total Available: 21 voices
+
+DEFAULT VOICE FOR DAWG AI:
+Charlie (IKne3meq5aSn9XLyUdCD)
+- Young Australian male with confident and energetic voice
+
+================================================================================
+RECOMMENDED VOICES FOR TECH NARRATION
+================================================================================
+
+1. Charlie (IKne3meq5aSn9XLyUdCD) ⭐ CURRENT DEFAULT
+   Description: A young Australian male with a confident and energetic voice.
+   Best for: Tech demos, enthusiastic explanations, friendly tutorials
+
+2. Callum (N2lVS1w4EtoT3dr4eOWO)
+   Description: Deceptively gravelly, yet unsettling edge.
+   Best for: Dramatic presentations, serious tech talks
+
+================================================================================
+ALL AVAILABLE VOICES
+================================================================================
+
+Voice 1: Clyde
+   ID: 2EiwWnXFnvU5JabPnv8n
+
+Voice 2: Roger
+   ID: CwhRBWXzGAHq8TQ4Fs17
+
+Voice 3: Sarah
+   ID: EXAVITQu4vr4xnSDxMaL
+
+Voice 4: Laura
+   ID: FGY2WhTYpPnrIDTdsKH5
+
+Voice 5: Charlie ⭐
+   ID: IKne3meq5aSn9XLyUdCD
+   Description: A young Australian male with a confident and energetic voice.
+
+Voice 6: George
+   ID: JBFqnCBsd6RMkjVDRZzb
+
+Voice 7: Callum
+   ID: N2lVS1w4EtoT3dr4eOWO
+   Description: Deceptively gravelly, yet unsettling edge.
+
+Voice 8: River
+   ID: SAz9YHcvj6GT2YYXdXww
+
+Voice 9: Harry
+   ID: SOYHLrjzK2X1ezoPC6cr
+
+Voice 10: Liam
+   ID: TX3LPaxmHKxFdv7VOQHJ
+
+Voice 11: Alice
+   ID: Xb7hH8MSUJpSbSDYk0k2
+
+Voice 12: Matilda
+   ID: XrExE9yKIg1WjnnlVkGX
+
+Voice 13: Will
+   ID: bIHbv24MWmeRgasZH58o
+
+Voice 14: Jessica
+   ID: cgSgspJ2msm6clMCkdW9
+
+Voice 15: Eric
+   ID: cjVigY5qzO86Huf0OWal
+
+Voice 16: Chris
+   ID: iP95p4xoKVk53GoZ742B
+
+Voice 17: Brian
+   ID: nPczCjzI2devNBz1zQrb
+
+Voice 18: Daniel
+   ID: onwK4e9ZLuTAKqWW03F9
+
+Voice 19: Lily
+   ID: pFZP5JQG7iQjIQuC4Bku
+
+Voice 20: Bill
+   ID: pqHfZKP75CvOlQylNhV4
+
+Voice 21: [Additional voice - run test-narrator.ts to see full details]
+
+================================================================================
+HOW TO USE DIFFERENT VOICES
+================================================================================
+
+Method 1: Specify when creating narrator
+```typescript
+import { createNarrator } from "./voice-narrator";
+const narrator = createNarrator("N2lVS1w4EtoT3dr4eOWO"); // Callum
+```
+
+Method 2: Change voice after creation
+```typescript
+const narrator = createNarrator();
+narrator.setVoice("EXAVITQu4vr4xnSDxMaL"); // Sarah
+```
+
+Method 3: Use VoiceNarrator constructor
+```typescript
+import { VoiceNarrator } from "./voice-narrator";
+const narrator = new VoiceNarrator({
+  apiKey: process.env.ELEVENLABS_API_KEY!,
+  voiceId: "TX3LPaxmHKxFdv7VOQHJ", // Liam
+});
+```
+
+================================================================================
+VOICE PERSONALITY GUIDE
+================================================================================
+
+For DAWG AI Character:
+- Friendly: Charlie, Alice, Sarah
+- Energetic: Charlie ⭐, Harry, George
+- Professional: Brian, Daniel, Roger
+- Dramatic: Callum, Eric
+- Casual: Liam, Will, River
+
+Female Voices:
+- Sarah, Laura, Alice, Matilda, Jessica, Lily
+
+Male Voices:
+- Clyde, Roger, Charlie, George, Callum, River, Harry, Liam
+- Will, Eric, Chris, Brian, Daniel, Bill
+
+================================================================================
+TESTING VOICES
+================================================================================
+
+To hear all voices, modify test-narrator.ts:
+
+```typescript
+// Test different voices
+const testVoices = [
+  { name: "Charlie", id: "IKne3meq5aSn9XLyUdCD" },
+  { name: "Callum", id: "N2lVS1w4EtoT3dr4eOWO" },
+  { name: "Sarah", id: "EXAVITQu4vr4xnSDxMaL" },
+];
+
+for (const voice of testVoices) {
+  narrator.setVoice(voice.id);
+  await narrator.generateTestAudio(
+    "Hey, I'm DAWG AI!",
+    `test-${voice.name}.mp3`
+  );
+}
+```
+
+================================================================================

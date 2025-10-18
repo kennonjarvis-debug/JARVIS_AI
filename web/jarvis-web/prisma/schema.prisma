@@ -1,0 +1,399 @@
+// Prisma Schema for Jarvis AI Web Application
+// Database: PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model with 2FA support
+model User {
+  id                String    @id @default(cuid())
+  email             String    @unique
+  name              String?
+  image             String?
+  emailVerified     DateTime?
+  two_factor_enabled Boolean   @default(false)
+  created_at        DateTime  @default(now())
+  updated_at        DateTime  @updatedAt
+
+  // Relations
+  accounts          Account[]
+  sessions          Session[]
+  twoFactorSecret   TwoFactorSecret?
+  backupCodes       BackupCode[]
+  twoFactorLogs     TwoFactorLog[]
+
+  @@index([email])
+}
+
+// NextAuth Account model
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+// NextAuth Session model
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  twoFactorVerified Boolean @default(false)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// NextAuth Verification Token model
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// TOTP Secret for 2FA
+model TwoFactorSecret {
+  id         String   @id @default(cuid())
+  userId     String   @unique
+  secret     String   // Base32-encoded TOTP secret
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// Backup codes for 2FA recovery
+model BackupCode {
+  id         String    @id @default(cuid())
+  userId     String
+  code_hash  String    // Bcrypt hash of the backup code
+  used_at    DateTime? // NULL if unused
+  created_at DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, used_at])
+}
+
+// Audit log for 2FA events
+model TwoFactorLog {
+  id         String   @id @default(cuid())
+  userId     String
+  eventType  String   // enabled, disabled, login_success, login_failure, backup_used
+  success    Boolean
+  ipAddress  String?
+  userAgent  String?
+  metadata   Json?
+  created_at DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, created_at])
+  @@index([eventType])
+}
+
+// DAWG AI Integration Models
+
+// DAWG AI OAuth connection
+model DawgAIConnection {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  accessToken     String    @db.Text // Encrypted
+  refreshToken    String    @db.Text // Encrypted
+  expiresAt       DateTime
+  tokenIv         String    // Encryption IV
+  tokenAuthTag    String    // Encryption auth tag
+  tokenDataKey    String    @db.Text // Encrypted data key
+  scope           String?
+  connected       Boolean   @default(true)
+  lastSync        DateTime?
+  disconnectedAt  DateTime?
+  metadata        Json?     // Store plan info, limits, etc.
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([connected])
+}
+
+// DAWG AI Projects
+model DawgAIProject {
+  id          String   @id @default(cuid())
+  userId      String
+  externalId  String   // Project ID in DAWG AI system
+  name        String
+  description String?  @db.Text
+  status      String   // active, archived, completed
+  metadata    Json     // genre, bpm, key, tags, etc.
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workflows   DawgAIWorkflow[]
+
+  @@unique([userId, externalId])
+  @@index([userId])
+  @@index([status])
+  @@index([userId, status])
+}
+
+// DAWG AI Workflows
+model DawgAIWorkflow {
+  id          String    @id @default(cuid())
+  userId      String
+  projectId   String?
+  name        String
+  description String?   @db.Text
+  config      Json      // Workflow steps and trigger configuration
+  status      String    // active, paused, archived
+  lastRun     DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  project     DawgAIProject? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  executions  DawgAIWorkflowExecution[]
+
+  @@index([userId])
+  @@index([projectId])
+  @@index([status])
+}
+
+// DAWG AI Workflow Executions
+model DawgAIWorkflowExecution {
+  id          String    @id @default(cuid())
+  workflowId  String
+  userId      String
+  status      String    // running, completed, failed
+  context     Json      // Execution context/parameters
+  logs        Json      // Execution logs
+  error       String?   @db.Text
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+
+  workflow    DawgAIWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  @@index([workflowId])
+  @@index([userId])
+  @@index([status])
+  @@index([startedAt])
+}
+
+// DAWG AI Automation Rules
+model DawgAIAutomation {
+  id          String   @id @default(cuid())
+  userId      String
+  projectId   String?
+  name        String
+  description String?  @db.Text
+  trigger     Json     // Trigger configuration
+  action      Json     // Action configuration
+  enabled     Boolean  @default(true)
+  lastTriggered DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([projectId])
+  @@index([enabled])
+}
+
+// DAWG AI Analytics and Usage Tracking
+model DawgAIAnalytics {
+  id           String   @id @default(cuid())
+  userId       String
+  eventType    String   // api_call, project_created, workflow_executed, etc.
+  endpoint     String?
+  method       String?
+  statusCode   Int?
+  responseTime Int?     // milliseconds
+  success      Boolean
+  metadata     Json?
+  timestamp    DateTime @default(now())
+
+  @@index([userId])
+  @@index([eventType])
+  @@index([timestamp])
+  @@index([userId, timestamp])
+}
+
+// Social Listening System Models
+
+// Discovered posts from social platforms
+model SocialListeningPost {
+  id               String   @id @default(cuid())
+  userId           String   // User who owns this listening session
+  platform         String   // twitter, threads, instagram, facebook, reddit, linkedin
+  externalId       String   // Original post ID from platform
+  authorId         String   // Author's ID on platform
+  authorUsername   String
+  authorDisplayName String
+  authorFollowers  Int?
+  authorVerified   Boolean  @default(false)
+  authorBio        String?  @db.Text
+  authorLocation   String?
+  content          String   @db.Text
+  detectedIntents  Json     // Array of detected intents
+  primaryIntent    String   // Primary detected intent
+  confidence       Float    // Confidence score (0-1)
+  qualityScore     Float    // Overall quality score (0-1)
+  engagementLikes  Int      @default(0)
+  engagementRetweets Int    @default(0)
+  engagementReplies Int     @default(0)
+  engagementViews  Int?
+  postUrl          String
+  language         String   @default("en")
+  hashtags         Json?    // Array of hashtags
+  mentions         Json?    // Array of mentions
+  mediaUrls        Json?    // Array of media URLs
+  postedAt         DateTime // When the post was originally created
+  discoveredAt     DateTime @default(now())
+  processed        Boolean  @default(false)
+  processedAt      DateTime?
+
+  // Relations
+  responses        SocialListeningResponse[]
+  engagements      SocialListeningEngagement[]
+
+  @@unique([platform, externalId])
+  @@index([userId])
+  @@index([platform])
+  @@index([primaryIntent])
+  @@index([qualityScore])
+  @@index([discoveredAt])
+  @@index([userId, platform])
+  @@index([userId, processed])
+}
+
+// Generated responses for social posts
+model SocialListeningResponse {
+  id               String   @id @default(cuid())
+  postId           String
+  userId           String
+  responseText     String   @db.Text
+  qualityScore     Float    // Response quality score (0-1)
+  status           String   // pending, approved, rejected, posted
+  generatedAt      DateTime @default(now())
+  approvedAt       DateTime?
+  approvedBy       String?
+  rejectedAt       DateTime?
+  rejectedBy       String?
+  rejectionReason  String?  @db.Text
+  postedAt         DateTime?
+  scheduledFor     DateTime? // When to post (for delayed responses)
+  metadata         Json?    // AI model used, temperature, tokens, etc.
+
+  // Relations
+  post             SocialListeningPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  engagement       SocialListeningEngagement?
+
+  @@index([postId])
+  @@index([userId])
+  @@index([status])
+  @@index([scheduledFor])
+  @@index([userId, status])
+}
+
+// Actual engagements made on social platforms
+model SocialListeningEngagement {
+  id               String   @id @default(cuid())
+  postId           String
+  responseId       String   @unique
+  userId           String
+  platform         String
+  engagementType   String   // reply, like, retweet, dm
+  externalId       String?  // ID of the reply/engagement on platform
+  success          Boolean
+  error            String?  @db.Text
+  performedAt      DateTime @default(now())
+
+  // Engagement metrics
+  likesReceived    Int?
+  repliesReceived  Int?
+  retweetsReceived Int?
+  viewsReceived    Int?
+
+  // Track outcomes
+  authorReplied    Boolean  @default(false)
+  conversationStarted Boolean @default(false)
+  leadGenerated    Boolean  @default(false)
+
+  metadata         Json?    // Additional platform-specific data
+
+  // Relations
+  post             SocialListeningPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  response         SocialListeningResponse @relation(fields: [responseId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+  @@index([responseId])
+  @@index([userId])
+  @@index([platform])
+  @@index([engagementType])
+  @@index([performedAt])
+  @@index([userId, success])
+}
+
+// Social listening analytics and performance tracking
+model SocialListeningAnalytics {
+  id               String   @id @default(cuid())
+  userId           String
+  platform         String
+  metricType       String   // scan_completed, posts_discovered, responses_generated, engagement_made
+  metricValue      Float    // Count or score
+  dimension1       String?  // e.g., intent type
+  dimension2       String?  // e.g., quality tier
+  metadata         Json?
+  timestamp        DateTime @default(now())
+
+  @@index([userId])
+  @@index([platform])
+  @@index([metricType])
+  @@index([timestamp])
+  @@index([userId, platform, timestamp])
+}
+
+// Social listening configuration per user
+model SocialListeningConfig {
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  platforms             Json     // Array of enabled platforms
+  scanInterval          Int      @default(15) // minutes
+  maxPostsPerScan       Int      @default(20)
+  minQualityScore       Float    @default(0.6)
+  autoEngageEnabled     Boolean  @default(false)
+  requireApproval       Boolean  @default(true)
+  enabledIntents        Json     // Array of intents to listen for
+  customKeywords        Json?    // User-defined keywords
+  excludedAuthors       Json?    // Authors to ignore
+  minAuthorFollowers    Int?     // Minimum follower count
+  maxResponseDelay      Int      @default(30) // Maximum response delay in minutes
+  dailyEngagementLimit  Int      @default(50) // Max engagements per day
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([userId])
+}

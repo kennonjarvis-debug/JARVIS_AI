@@ -1,15 +1,15 @@
-# Jarvis V2 Testing Infrastructure
+# Jarvis Testing Infrastructure
 
-Complete automated testing infrastructure for Jarvis V2 AI DAWG Controller System.
+Complete automated testing infrastructure for Jarvis AI Control Plane.
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Overview](#overview)
 - [Test Structure](#test-structure)
 - [Running Tests](#running-tests)
+- [New Testing Setup (Week 4)](#new-testing-setup-week-4)
 - [CI/CD Integration](#cicd-integration)
 - [Coverage Requirements](#coverage-requirements)
-- [Slack Reporting](#slack-reporting)
 - [Writing Tests](#writing-tests)
 
 ## 🎯 Overview
@@ -48,30 +48,66 @@ tests/
 └── README.md
 ```
 
-## 🚀 Running Tests
+## New Testing Setup (Week 4)
+
+### Key Files Added
+
+1. **`/jest.config.js`** - Main Jest configuration for unit and integration tests
+2. **`/tests/setup.ts`** - Global test setup with utilities
+3. **`/tests/unit/auth.test.ts`** - Example unit test for authentication
+4. **`/tests/integration/api.test.ts`** - Example integration test for API Gateway
+5. **`/docs/TESTING.md`** - Comprehensive testing documentation
+
+### Test Commands
+
+```bash
+# All tests
+npm test
+
+# Unit tests only
+npm test -- --testPathPattern=tests/unit
+
+# Integration tests
+npm run test:integration
+
+# E2E tests
+npm run test:e2e
+
+# With coverage
+npm test -- --coverage
+
+# Watch mode
+npm test -- --watch
+```
+
+### Dependencies Installed
+
+All required dependencies are already installed:
+- jest (^29.7.0)
+- @types/jest (^29.5.14)
+- ts-jest (^29.1.1)
+- supertest (^7.1.4)
+- @types/supertest (^6.0.3)
+
+## Running Tests
 
 ### All Tests
 
 ```bash
 npm test                    # Run all test suites
-npm run test:all           # Same as above
 ```
 
 ### Unit Tests
 
 ```bash
-npm run test:unit          # Run both Vitest and Jest
-npm run test:unit:vitest   # Run Vitest only
-npm run test:unit:jest     # Run Jest only
-npm run test:unit:watch    # Watch mode
+npm test -- --testPathPattern=tests/unit  # Run unit tests
+npm test -- --watch                       # Watch mode
 ```
 
 ### E2E Tests
 
 ```bash
 npm run test:e2e           # Run all E2E tests
-npm run test:e2e:ui        # Run with UI mode
-npm run test:e2e:debug     # Run in debug mode
 ```
 
 ### API Tests

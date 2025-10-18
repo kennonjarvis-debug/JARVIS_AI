@@ -1,0 +1,251 @@
+{
+  "title": "DAWG AI: AI Production Tools",
+  "duration": 180,
+  "product": "ai-dawg",
+  "narration": [
+    {
+      "text": "Welcome to DAWG AI's AI Production Tools. These five features replace thousands of dollars worth of plugins and years of engineering experience.",
+      "timing": 0
+    },
+    {
+      "text": "Let's start with AI Comp. I've recorded multiple vocal takes here. Watch as AI analyzes every take and automatically creates the perfect comp.",
+      "timing": 10
+    },
+    {
+      "text": "Select multiple clips, open the AI menu, and click AI Comp. The AI listens to pitch accuracy, timing, energy, and tone - then picks the best moments from each take.",
+      "timing": 20
+    },
+    {
+      "text": "In seconds, we have a flawless vocal comp that would take a professional engineer 30 minutes to create manually.",
+      "timing": 35
+    },
+    {
+      "text": "Next is AI Pitch Correct. This isn't your typical auto-tune that sounds robotic. Our AI understands natural vocal vibrato and expression.",
+      "timing": 45
+    },
+    {
+      "text": "Select your vocal clip, choose AI Pitch Correct, set the key to C major, and adjust the amount. Watch as it corrects pitch while preserving the emotional performance.",
+      "timing": 55
+    },
+    {
+      "text": "Perfect pitch without losing the soul of the performance. That's the difference between AI and traditional auto-tune.",
+      "timing": 70
+    },
+    {
+      "text": "Now AI Time Align. This is where things get really impressive. Traditional quantization either sounds too robotic or doesn't fix enough.",
+      "timing": 78
+    },
+    {
+      "text": "Our AI Time Align understands musical context. It aligns to the grid while preserving intentional timing variations that make music feel human.",
+      "timing": 88
+    },
+    {
+      "text": "Listen to this before and after. The groove is locked in, but it still feels natural and alive.",
+      "timing": 100
+    },
+    {
+      "text": "AI Mix is where studio engineering meets artificial intelligence. Select your tracks and let AI analyze frequency masks, dynamic range, and stereo field.",
+      "timing": 110
+    },
+    {
+      "text": "It automatically sets levels, applies EQ to eliminate frequency conflicts, adds compression for consistency, and creates a balanced stereo image.",
+      "timing": 122
+    },
+    {
+      "text": "In 10 seconds, you get a mix that would cost hundreds of dollars at a professional studio.",
+      "timing": 135
+    },
+    {
+      "text": "Finally, AI Master - the finishing touch. This applies the same techniques used in mastering studios that charge $100 per song.",
+      "timing": 145
+    },
+    {
+      "text": "The AI targets streaming standards - negative 14 LUFS for Spotify, Apple Music, and YouTube. It adds sparkle with an exciter, width with stereo enhancement, and warmth with analog saturation.",
+      "timing": 155
+    },
+    {
+      "text": "Your track goes from bedroom demo to radio-ready in seconds. Five AI tools that replace thousands in plugins and years of experience. This is DAWG AI.",
+      "timing": 170
+    }
+  ],
+  "actions": [
+    {
+      "type": "wait",
+      "duration": 2000,
+      "timing": 0,
+      "description": "Initial wait"
+    },
+    {
+      "type": "click",
+      "selector": ".timeline-clip:first-child",
+      "timing": 12,
+      "description": "Select first clip",
+      "highlight": true
+    },
+    {
+      "type": "click",
+      "selector": ".timeline-clip:nth-child(2)",
+      "timing": 14,
+      "description": "Select second clip",
+      "highlight": true,
+      "waitAfter": 1000
+    },
+    {
+      "type": "click",
+      "selector": "button[aria-label='AI']",
+      "timing": 22,
+      "description": "Open AI menu",
+      "highlight": true
+    },
+    {
+      "type": "click",
+      "selector": "button:has-text('AI Comp')",
+      "timing": 25,
+      "description": "Click AI Comp",
+      "highlight": true
+    },
+    {
+      "type": "wait",
+      "duration": 8000,
+      "timing": 27,
+      "description": "AI processing comp"
+    },
+    {
+      "type": "click",
+      "selector": ".timeline-clip:first-child",
+      "timing": 48,
+      "description": "Select vocal clip",
+      "highlight": true
+    },
+    {
+      "type": "click",
+      "selector": "button:has-text('AI Pitch Correct')",
+      "timing": 57,
+      "description": "Open AI Pitch",
+      "highlight": true
+    },
+    {
+      "type": "type",
+      "selector": "select[name='key']",
+      "text": "C",
+      "timing": 60,
+      "description": "Set key to C"
+    },
+    {
+      "type": "click",
+      "selector": "input[name='amount']",
+      "timing": 62,
+      "description": "Adjust amount"
+    },
+    {
+      "type": "click",
+      "selector": "button:has-text('Apply')",
+      "timing": 65,
+      "description": "Apply pitch correction",
+      "highlight": true
+    },
+    {
+      "type": "wait",
+      "duration": 6000,
+      "timing": 66,
+      "description": "AI processing pitch"
+    },
+    {
+      "type": "click",
+      "selector": ".timeline-clip:first-child",
+      "timing": 82,
+      "description": "Select clip for time align",
+      "highlight": true
+    },
+    {
+      "type": "click",
+      "selector": "button:has-text('AI Time Align')",
+      "timing": 90,
+      "description": "Click AI Time Align",
+      "highlight": true
+    },
+    {
+      "type": "wait",
+      "duration": 8000,
+      "timing": 92,
+      "description": "AI time aligning"
+    },
+    {
+      "type": "click",
+      "selector": ".track:first-child",
+      "timing": 112,
+      "description": "Select tracks for mixing",
+      "highlight": true
+    },
+    {
+      "type": "click",
+      "selector": "button:has-text('AI Mix')",
+      "timing": 124,
+      "description": "Click AI Mix",
+      "highlight": true
+    },
+    {
+      "type": "wait",
+      "duration": 10000,
+      "timing": 126,
+      "description": "AI mixing tracks"
+    },
+    {
+      "type": "click",
+      "selector": "button:has-text('AI Master')",
+      "timing": 147,
+      "description": "Click AI Master",
+      "highlight": true
+    },
+    {
+      "type": "wait",
+      "duration": 12000,
+      "timing": 149,
+      "description": "AI mastering"
+    }
+  ],
+  "callouts": [
+    {
+      "text": "Multiple Takes Selected",
+      "position": { "x": 400, "y": 400 },
+      "timing": 14,
+      "duration": 6
+    },
+    {
+      "text": "AI Analyzing Pitch, Timing, Energy, Tone",
+      "position": { "x": 960, "y": 300 },
+      "timing": 27,
+      "duration": 8
+    },
+    {
+      "text": "Perfect Comp in Seconds",
+      "position": { "x": 960, "y": 500 },
+      "timing": 36,
+      "duration": 5
+    },
+    {
+      "text": "Natural Vibrato Preserved",
+      "position": { "x": 1200, "y": 400 },
+      "timing": 66,
+      "duration": 6
+    },
+    {
+      "text": "Groove Locked, Feel Maintained",
+      "position": { "x": 960, "y": 500 },
+      "timing": 100,
+      "duration": 6
+    },
+    {
+      "text": "Analyzing Frequency Masks",
+      "position": { "x": 960, "y": 300 },
+      "timing": 126,
+      "duration": 9
+    },
+    {
+      "text": "-14 LUFS Streaming Standard",
+      "position": { "x": 960, "y": 600 },
+      "timing": 156,
+      "duration": 8
+    }
+  ]
+}

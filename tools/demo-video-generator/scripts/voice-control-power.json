@@ -1,0 +1,290 @@
+{
+  "title": "DAWG AI: Voice Control Power",
+  "duration": 180,
+  "product": "ai-dawg",
+  "narration": [
+    {
+      "text": "This is DAWG AI, where your voice controls everything. Watch as I create an entire track using nothing but voice commands.",
+      "timing": 0
+    },
+    {
+      "text": "First, let's open the AI panel and start voice control. Just click the microphone icon.",
+      "timing": 8
+    },
+    {
+      "text": "Now I'll say 'create track drums' - and watch, a drum track appears instantly.",
+      "timing": 15
+    },
+    {
+      "text": "Let's set the tempo. I'll say 'set tempo to 140 BPM' - perfect for a high-energy track.",
+      "timing": 22
+    },
+    {
+      "text": "Now the fun part - 'generate beat like Metro Boomin'. DAWG AI analyzes Metro's signature sound and creates a custom beat in seconds.",
+      "timing": 30
+    },
+    {
+      "text": "While that generates, let me create more tracks. 'Create track bass' - there it is.",
+      "timing": 45
+    },
+    {
+      "text": "'Create track melody' - and another track ready to go.",
+      "timing": 52
+    },
+    {
+      "text": "Now let's start recording. 'Arm track for recording' - the track is armed and ready.",
+      "timing": 58
+    },
+    {
+      "text": "'Start recording' - and we're rolling. This is how easy it is to capture your ideas.",
+      "timing": 65
+    },
+    {
+      "text": "'Stop recording' - perfect take captured. Now let's add some effects.",
+      "timing": 75
+    },
+    {
+      "text": "'Add reverb to track one, amount 50' - instant studio reverb applied.",
+      "timing": 82
+    },
+    {
+      "text": "'Add compression to track one, threshold negative 12, ratio 4' - professional compression dialed in with voice.",
+      "timing": 90
+    },
+    {
+      "text": "Let's mix this track. 'Set volume track one to negative 6 dB' - perfect level.",
+      "timing": 100
+    },
+    {
+      "text": "'Set pan track two to 30 left' - spreading the stereo field with just my voice.",
+      "timing": 108
+    },
+    {
+      "text": "Now for AI magic. 'Auto tune track one, key C major, amount 70' - pitch perfect vocals in seconds.",
+      "timing": 115
+    },
+    {
+      "text": "'Time align track one' - everything locked to the grid with natural feel.",
+      "timing": 125
+    },
+    {
+      "text": "'Generate harmony for track one' - AI creates vocal harmonies that complement the lead perfectly.",
+      "timing": 132
+    },
+    {
+      "text": "Let's finish with mastering. 'Master track' - AI applies professional mastering for radio-ready sound.",
+      "timing": 145
+    },
+    {
+      "text": "'Save project' - everything saved automatically to the cloud.",
+      "timing": 158
+    },
+    {
+      "text": "That's 57 voice commands at your fingertips. From track creation to final master, your voice is the only tool you need. This is DAWG AI - where AI meets music production.",
+      "timing": 165
+    }
+  ],
+  "actions": [
+    {
+      "type": "wait",
+      "duration": 2000,
+      "timing": 0,
+      "description": "Wait for page load"
+    },
+    {
+      "type": "click",
+      "selector": "button[aria-label='AI']",
+      "timing": 10,
+      "description": "Open AI panel",
+      "highlight": true
+    },
+    {
+      "type": "click",
+      "selector": "button[aria-label='Start voice chat']",
+      "timing": 12,
+      "description": "Click microphone to start voice",
+      "highlight": true
+    },
+    {
+      "type": "annotation",
+      "text": "Voice command: 'create track drums'",
+      "position": { "x": 100, "y": 100 },
+      "timing": 16,
+      "duration": 4
+    },
+    {
+      "type": "wait",
+      "duration": 2000,
+      "timing": 18,
+      "description": "Wait for track creation"
+    },
+    {
+      "type": "annotation",
+      "text": "Voice command: 'set tempo to 140'",
+      "position": { "x": 100, "y": 150 },
+      "timing": 23,
+      "duration": 4
+    },
+    {
+      "type": "wait",
+      "duration": 2000,
+      "timing": 25,
+      "description": "Tempo updates"
+    },
+    {
+      "type": "annotation",
+      "text": "Voice command: 'generate beat like Metro Boomin'",
+      "position": { "x": 100, "y": 100 },
+      "timing": 32,
+      "duration": 6
+    },
+    {
+      "type": "wait",
+      "duration": 10000,
+      "timing": 35,
+      "description": "AI generates beat"
+    },
+    {
+      "type": "annotation",
+      "text": "Voice command: 'create track bass'",
+      "position": { "x": 100, "y": 200 },
+      "timing": 46,
+      "duration": 4
+    },
+    {
+      "type": "wait",
+      "duration": 2000,
+      "timing": 48,
+      "description": "Bass track created"
+    },
+    {
+      "type": "annotation",
+      "text": "Voice command: 'create track melody'",
+      "position": { "x": 100, "y": 250 },
+      "timing": 53,
+      "duration": 4
+    },
+    {
+      "type": "annotation",
+      "text": "Voice command: 'arm track for recording'",
+      "position": { "x": 100, "y": 100 },
+      "timing": 59,
+      "duration": 4
+    },
+    {
+      "type": "annotation",
+      "text": "Voice command: 'start recording'",
+      "position": { "x": 100, "y": 150 },
+      "timing": 66,
+      "duration": 6
+    },
+    {
+      "type": "annotation",
+      "text": "Voice command: 'stop recording'",
+      "position": { "x": 100, "y": 150 },
+      "timing": 76,
+      "duration": 4
+    },
+    {
+      "type": "annotation",
+      "text": "Voice command: 'add reverb to track one, amount 50'",
+      "position": { "x": 100, "y": 200 },
+      "timing": 83,
+      "duration": 5
+    },
+    {
+      "type": "annotation",
+      "text": "Voice command: 'add compression'",
+      "position": { "x": 100, "y": 200 },
+      "timing": 91,
+      "duration": 6
+    },
+    {
+      "type": "annotation",
+      "text": "Voice command: 'set volume track one to -6 dB'",
+      "position": { "x": 100, "y": 100 },
+      "timing": 101,
+      "duration": 5
+    },
+    {
+      "type": "annotation",
+      "text": "Voice command: 'set pan track two to 30 left'",
+      "position": { "x": 100, "y": 150 },
+      "timing": 109,
+      "duration": 5
+    },
+    {
+      "type": "annotation",
+      "text": "Voice command: 'auto tune track one, key C major'",
+      "position": { "x": 100, "y": 100 },
+      "timing": 116,
+      "duration": 7
+    },
+    {
+      "type": "annotation",
+      "text": "Voice command: 'time align track one'",
+      "position": { "x": 100, "y": 150 },
+      "timing": 126,
+      "duration": 5
+    },
+    {
+      "type": "annotation",
+      "text": "Voice command: 'generate harmony for track one'",
+      "position": { "x": 100, "y": 100 },
+      "timing": 133,
+      "duration": 8
+    },
+    {
+      "type": "annotation",
+      "text": "Voice command: 'master track'",
+      "position": { "x": 100, "y": 100 },
+      "timing": 146,
+      "duration": 8
+    },
+    {
+      "type": "annotation",
+      "text": "Voice command: 'save project'",
+      "position": { "x": 100, "y": 100 },
+      "timing": 159,
+      "duration": 5
+    }
+  ],
+  "callouts": [
+    {
+      "text": "57 Voice Commands Available",
+      "position": { "x": 960, "y": 100 },
+      "timing": 5,
+      "duration": 8
+    },
+    {
+      "text": "Track Created Instantly",
+      "position": { "x": 200, "y": 400 },
+      "timing": 18,
+      "duration": 4
+    },
+    {
+      "text": "AI Generating Beat...",
+      "position": { "x": 960, "y": 300 },
+      "timing": 35,
+      "duration": 10
+    },
+    {
+      "text": "Professional Effects Applied",
+      "position": { "x": 1400, "y": 400 },
+      "timing": 85,
+      "duration": 6
+    },
+    {
+      "text": "AI Harmony Generation",
+      "position": { "x": 960, "y": 500 },
+      "timing": 135,
+      "duration": 8
+    },
+    {
+      "text": "Radio-Ready Master",
+      "position": { "x": 960, "y": 600 },
+      "timing": 150,
+      "duration": 8
+    }
+  ]
+}

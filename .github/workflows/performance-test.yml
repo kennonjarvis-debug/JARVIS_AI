@@ -1,0 +1,323 @@
+name: Performance Testing
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Run weekly on Sundays at 3 AM UTC
+    - cron: '0 3 * * 0'
+  workflow_dispatch:
+    inputs:
+      duration:
+        description: 'Test duration in minutes'
+        required: false
+        default: '5'
+      users:
+        description: 'Number of virtual users'
+        required: false
+        default: '100'
+
+env:
+  NODE_VERSION: '20.x'
+
+jobs:
+  load-test:
+    name: Load Testing with k6
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup k6
+        run: |
+          sudo gpg -k
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install k6
+
+      - name: Create k6 test script
+        run: |
+          cat > load-test.js << 'EOF'
+          import http from 'k6/http';
+          import { check, sleep } from 'k6';
+          import { Rate } from 'k6/metrics';
+
+          const errorRate = new Rate('errors');
+          const BASE_URL = __ENV.BASE_URL || 'http://localhost:3000';
+
+          export const options = {
+            stages: [
+              { duration: '2m', target: 50 },   // Ramp up
+              { duration: '5m', target: 100 },  // Stay at peak
+              { duration: '2m', target: 0 },    // Ramp down
+            ],
+            thresholds: {
+              http_req_duration: ['p(95)<500', 'p(99)<1000'],
+              http_req_failed: ['rate<0.05'],
+              errors: ['rate<0.1'],
+            },
+          };
+
+          export default function () {
+            // Health check
+            let res = http.get(`${BASE_URL}/health`);
+            check(res, {
+              'health check status 200': (r) => r.status === 200,
+              'health check response time < 200ms': (r) => r.timings.duration < 200,
+            }) || errorRate.add(1);
+
+            // API endpoints
+            res = http.get(`${BASE_URL}/api/agents`);
+            check(res, {
+              'agents list status 200': (r) => r.status === 200,
+            }) || errorRate.add(1);
+
+            sleep(1);
+          }
+          EOF
+
+      - name: Run load test
+        run: |
+          k6 run --out json=results.json load-test.js
+        env:
+          BASE_URL: https://staging.jarvis-ai.app
+        continue-on-error: true
+
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: load-test-results
+          path: results.json
+          retention-days: 30
+
+      - name: Parse and report results
+        if: always()
+        run: |
+          echo "## Load Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Test completed. See artifacts for detailed results." >> $GITHUB_STEP_SUMMARY
+
+  lighthouse-test:
+    name: Lighthouse Performance Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit
+
+      - name: Build application
+        run: npm run build
+
+      - name: Run Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v11
+        with:
+          urls: |
+            https://staging.jarvis-ai.app
+            https://staging.jarvis-ai.app/dashboard
+          budgetPath: ./lighthouse-budget.json
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+
+  benchmark:
+    name: API Benchmark Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: jarvis_test
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: jarvis_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit
+
+      - name: Setup test environment
+        run: |
+          cp .env.example .env.test
+          echo "DATABASE_URL=postgresql://jarvis_test:test_password@localhost:5432/jarvis_test" >> .env.test
+          echo "REDIS_URL=redis://localhost:6379" >> .env.test
+
+      - name: Run database migrations
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: postgresql://jarvis_test:test_password@localhost:5432/jarvis_test
+
+      - name: Create benchmark script
+        run: |
+          cat > benchmark.js << 'EOF'
+          const axios = require('axios');
+          const { performance } = require('perf_hooks');
+
+          const BASE_URL = 'http://localhost:3000';
+          const ITERATIONS = 1000;
+
+          async function benchmark(name, fn) {
+            const times = [];
+            for (let i = 0; i < ITERATIONS; i++) {
+              const start = performance.now();
+              await fn();
+              const end = performance.now();
+              times.push(end - start);
+            }
+
+            times.sort((a, b) => a - b);
+            const avg = times.reduce((a, b) => a + b, 0) / times.length;
+            const p50 = times[Math.floor(times.length * 0.5)];
+            const p95 = times[Math.floor(times.length * 0.95)];
+            const p99 = times[Math.floor(times.length * 0.99)];
+
+            console.log(`${name}:`);
+            console.log(`  Avg: ${avg.toFixed(2)}ms`);
+            console.log(`  P50: ${p50.toFixed(2)}ms`);
+            console.log(`  P95: ${p95.toFixed(2)}ms`);
+            console.log(`  P99: ${p99.toFixed(2)}ms`);
+
+            return { name, avg, p50, p95, p99 };
+          }
+
+          async function runBenchmarks() {
+            console.log('Starting API benchmarks...\n');
+
+            const results = [];
+
+            // Health check benchmark
+            results.push(await benchmark('Health Check', async () => {
+              await axios.get(`${BASE_URL}/health`);
+            }));
+
+            // Agent list benchmark
+            results.push(await benchmark('Agent List', async () => {
+              await axios.get(`${BASE_URL}/api/agents`);
+            }));
+
+            // Write results
+            require('fs').writeFileSync('benchmark-results.json', JSON.stringify(results, null, 2));
+
+            console.log('\nBenchmark completed!');
+          }
+
+          runBenchmarks().catch(console.error);
+          EOF
+
+      - name: Start server
+        run: npm start &
+        env:
+          NODE_ENV: test
+          DATABASE_URL: postgresql://jarvis_test:test_password@localhost:5432/jarvis_test
+
+      - name: Wait for server
+        run: |
+          timeout 60 bash -c 'until curl -f http://localhost:3000/health; do sleep 2; done'
+
+      - name: Run benchmarks
+        run: node benchmark.js
+        timeout-minutes: 10
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: benchmark-results
+          path: benchmark-results.json
+          retention-days: 30
+
+  memory-profiling:
+    name: Memory Profiling
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit
+
+      - name: Install clinic.js
+        run: npm install -g clinic autocannon
+
+      - name: Build application
+        run: npm run build
+
+      - name: Run memory profiling
+        run: |
+          # Start server with clinic doctor
+          clinic doctor --on-port 'autocannon -c 10 -d 30 http://localhost:3000/health' -- node dist/main.js
+        continue-on-error: true
+        timeout-minutes: 5
+
+      - name: Upload profiling results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: memory-profile
+          path: .clinic/
+          retention-days: 7
+
+  performance-summary:
+    name: Performance Summary
+    runs-on: ubuntu-latest
+    needs: [load-test, lighthouse-test, benchmark, memory-profiling]
+    if: always()
+
+    steps:
+      - name: Create summary
+        run: |
+          echo "## Performance Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Test Type | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Load Test | ${{ needs.load-test.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Lighthouse | ${{ needs.lighthouse-test.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Benchmarks | ${{ needs.benchmark.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Memory Profiling | ${{ needs.memory-profiling.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Performance Baselines" >> $GITHUB_STEP_SUMMARY
+          echo "- API Response Time P95: < 500ms" >> $GITHUB_STEP_SUMMARY
+          echo "- API Response Time P99: < 1000ms" >> $GITHUB_STEP_SUMMARY
+          echo "- Error Rate: < 5%" >> $GITHUB_STEP_SUMMARY
+          echo "- Lighthouse Score: > 90" >> $GITHUB_STEP_SUMMARY

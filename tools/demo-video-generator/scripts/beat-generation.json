@@ -1,0 +1,332 @@
+{
+  "title": "DAWG AI: Beat Generation",
+  "duration": 180,
+  "product": "ai-dawg",
+  "narration": [
+    {
+      "text": "This is DAWG AI Beat Generation. We've trained AI models on the production styles of the world's top beat makers. Let me show you what that means.",
+      "timing": 0
+    },
+    {
+      "text": "Open the AI menu and select Generate Beat. You're greeted with six legendary producer styles: Metro Boomin, 808 Mafia, Timbaland, Pharrell, Southside, and Pierre Bourne.",
+      "timing": 10
+    },
+    {
+      "text": "Let's start with Metro Boomin. His signature sound - dark, atmospheric, with heavy 808s and crispy hi-hats. Set the BPM to 140, genre to trap, and generate.",
+      "timing": 22
+    },
+    {
+      "text": "Listen to that. Deep sub bass, layered atmospherics, and that iconic Metro bounce. This could be on a Future album.",
+      "timing": 38
+    },
+    {
+      "text": "Now let's try 808 Mafia. Known for aggressive, in-your-face production with hard-hitting drums. Set BPM to 145, genre to trap, mood to aggressive.",
+      "timing": 50
+    },
+    {
+      "text": "Pure aggression. That's 808 Mafia. The kind of beat Gucci Mane and Migos would jump on immediately.",
+      "timing": 66
+    },
+    {
+      "text": "Let me show you something different - Timbaland. Completely unique rhythms, unexpected sounds, genre-defying production. BPM 95, genre hip-hop, mood experimental.",
+      "timing": 76
+    },
+    {
+      "text": "That's Timbaland. Those syncopated rhythms and weird sounds that somehow make perfect sense. This is the sound that defined early 2000s hip-hop and R&B.",
+      "timing": 92
+    },
+    {
+      "text": "Now Pharrell - minimalist, funky, groove-focused. His beats have space to breathe. BPM 105, genre funk, mood happy.",
+      "timing": 106
+    },
+    {
+      "text": "Simple but infectious. That's the Pharrell formula. Less is more when the groove is this tight.",
+      "timing": 120
+    },
+    {
+      "text": "Southside brings that authentic Atlanta trap sound. Heavy on the bass, minimal melodies, all about that pocket. BPM 130, genre trap.",
+      "timing": 130
+    },
+    {
+      "text": "That's the sound of Atlanta. This is what you hear on every rap radio station.",
+      "timing": 144
+    },
+    {
+      "text": "Finally, Pierre Bourne - melodic, dreamy, with unique sound selection. The sound of the new generation. BPM 135, genre melodic trap, mood chill.",
+      "timing": 154
+    },
+    {
+      "text": "Playboy Carti vibes. That's Pierre Bourne - melodic, spacey, and instantly recognizable. Six legendary producers, infinite possibilities. This is DAWG AI Beat Generation.",
+      "timing": 168
+    }
+  ],
+  "actions": [
+    {
+      "type": "wait",
+      "duration": 2000,
+      "timing": 0,
+      "description": "Initial wait"
+    },
+    {
+      "type": "click",
+      "selector": "button[aria-label='AI']",
+      "timing": 12,
+      "description": "Open AI menu",
+      "highlight": true
+    },
+    {
+      "type": "click",
+      "selector": "button:has-text('Generate Beat')",
+      "timing": 14,
+      "description": "Click Generate Beat",
+      "highlight": true
+    },
+    {
+      "type": "click",
+      "selector": "button:has-text('Metro Boomin')",
+      "timing": 24,
+      "description": "Select Metro Boomin style",
+      "highlight": true
+    },
+    {
+      "type": "type",
+      "selector": "input[name='bpm']",
+      "text": "140",
+      "timing": 26,
+      "description": "Set BPM to 140"
+    },
+    {
+      "type": "click",
+      "selector": "select[name='genre']",
+      "timing": 28,
+      "description": "Open genre dropdown"
+    },
+    {
+      "type": "click",
+      "selector": "option[value='trap']",
+      "timing": 29,
+      "description": "Select trap genre"
+    },
+    {
+      "type": "click",
+      "selector": "button:has-text('Generate')",
+      "timing": 32,
+      "description": "Generate Metro beat",
+      "highlight": true
+    },
+    {
+      "type": "wait",
+      "duration": 12000,
+      "timing": 33,
+      "description": "AI generating beat"
+    },
+    {
+      "type": "click",
+      "selector": "button:has-text('Generate Beat')",
+      "timing": 52,
+      "description": "Open generator again"
+    },
+    {
+      "type": "click",
+      "selector": "button:has-text('808 Mafia')",
+      "timing": 54,
+      "description": "Select 808 Mafia",
+      "highlight": true
+    },
+    {
+      "type": "type",
+      "selector": "input[name='bpm']",
+      "text": "145",
+      "timing": 56,
+      "description": "Set BPM to 145"
+    },
+    {
+      "type": "click",
+      "selector": "button:has-text('Generate')",
+      "timing": 60,
+      "description": "Generate 808 Mafia beat",
+      "highlight": true
+    },
+    {
+      "type": "wait",
+      "duration": 12000,
+      "timing": 61,
+      "description": "AI generating beat"
+    },
+    {
+      "type": "click",
+      "selector": "button:has-text('Generate Beat')",
+      "timing": 78,
+      "description": "Open generator"
+    },
+    {
+      "type": "click",
+      "selector": "button:has-text('Timbaland')",
+      "timing": 80,
+      "description": "Select Timbaland",
+      "highlight": true
+    },
+    {
+      "type": "type",
+      "selector": "input[name='bpm']",
+      "text": "95",
+      "timing": 82,
+      "description": "Set BPM to 95"
+    },
+    {
+      "type": "click",
+      "selector": "button:has-text('Generate')",
+      "timing": 86,
+      "description": "Generate Timbaland beat",
+      "highlight": true
+    },
+    {
+      "type": "wait",
+      "duration": 12000,
+      "timing": 87,
+      "description": "AI generating beat"
+    },
+    {
+      "type": "click",
+      "selector": "button:has-text('Generate Beat')",
+      "timing": 108,
+      "description": "Open generator"
+    },
+    {
+      "type": "click",
+      "selector": "button:has-text('Pharrell')",
+      "timing": 110,
+      "description": "Select Pharrell",
+      "highlight": true
+    },
+    {
+      "type": "type",
+      "selector": "input[name='bpm']",
+      "text": "105",
+      "timing": 112,
+      "description": "Set BPM to 105"
+    },
+    {
+      "type": "click",
+      "selector": "button:has-text('Generate')",
+      "timing": 116,
+      "description": "Generate Pharrell beat",
+      "highlight": true
+    },
+    {
+      "type": "wait",
+      "duration": 12000,
+      "timing": 117,
+      "description": "AI generating beat"
+    },
+    {
+      "type": "click",
+      "selector": "button:has-text('Generate Beat')",
+      "timing": 132,
+      "description": "Open generator"
+    },
+    {
+      "type": "click",
+      "selector": "button:has-text('Southside')",
+      "timing": 134,
+      "description": "Select Southside",
+      "highlight": true
+    },
+    {
+      "type": "click",
+      "selector": "button:has-text('Generate')",
+      "timing": 138,
+      "description": "Generate Southside beat",
+      "highlight": true
+    },
+    {
+      "type": "wait",
+      "duration": 12000,
+      "timing": 139,
+      "description": "AI generating beat"
+    },
+    {
+      "type": "click",
+      "selector": "button:has-text('Generate Beat')",
+      "timing": 156,
+      "description": "Open generator"
+    },
+    {
+      "type": "click",
+      "selector": "button:has-text('Pierre Bourne')",
+      "timing": 158,
+      "description": "Select Pierre Bourne",
+      "highlight": true
+    },
+    {
+      "type": "type",
+      "selector": "input[name='bpm']",
+      "text": "135",
+      "timing": 160,
+      "description": "Set BPM to 135"
+    },
+    {
+      "type": "click",
+      "selector": "button:has-text('Generate')",
+      "timing": 164,
+      "description": "Generate Pierre beat",
+      "highlight": true
+    },
+    {
+      "type": "wait",
+      "duration": 12000,
+      "timing": 165,
+      "description": "AI generating beat"
+    }
+  ],
+  "callouts": [
+    {
+      "text": "6 Legendary Producer Styles",
+      "position": { "x": 960, "y": 200 },
+      "timing": 14,
+      "duration": 8
+    },
+    {
+      "text": "Metro Boomin: Dark Atmospheric Trap",
+      "position": { "x": 960, "y": 300 },
+      "timing": 24,
+      "duration": 12
+    },
+    {
+      "text": "Deep 808s + Layered Atmospherics",
+      "position": { "x": 960, "y": 500 },
+      "timing": 40,
+      "duration": 8
+    },
+    {
+      "text": "808 Mafia: Aggressive Hard-Hitting",
+      "position": { "x": 960, "y": 300 },
+      "timing": 54,
+      "duration": 12
+    },
+    {
+      "text": "Timbaland: Unique Rhythms",
+      "position": { "x": 960, "y": 300 },
+      "timing": 80,
+      "duration": 12
+    },
+    {
+      "text": "Pharrell: Minimalist Funk",
+      "position": { "x": 960, "y": 300 },
+      "timing": 110,
+      "duration": 10
+    },
+    {
+      "text": "Southside: Atlanta Trap",
+      "position": { "x": 960, "y": 300 },
+      "timing": 134,
+      "duration": 10
+    },
+    {
+      "text": "Pierre Bourne: Melodic Dreamy",
+      "position": { "x": 960, "y": 300 },
+      "timing": 158,
+      "duration": 10
+    }
+  ]
+}

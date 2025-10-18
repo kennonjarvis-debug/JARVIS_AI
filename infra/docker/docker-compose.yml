@@ -2,9 +2,72 @@ version: '3.8'
 
 # Jarvis Control Plane - Docker Compose Configuration
 # Orchestration layer for AI DAWG autonomous management
-# Last Updated: 2025-10-09
+# Last Updated: 2025-10-17 - Added TLS/HTTPS enforcement
 
 services:
+  # ==================== NGINX REVERSE PROXY (TLS TERMINATION) ====================
+
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: jarvis-nginx
+    ports:
+      - "80:80"      # HTTP (redirects to HTTPS)
+      - "443:443"    # HTTPS
+    volumes:
+      # Nginx configuration
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+
+      # SSL certificates from Let's Encrypt
+      - letsencrypt_certs:/etc/letsencrypt:ro
+      - letsencrypt_www:/var/www/certbot:ro
+
+      # SSL configuration files (DH params, default certs)
+      - nginx_ssl:/etc/nginx/ssl:ro
+
+      # Logs
+      - nginx_logs:/var/log/nginx
+    networks:
+      - jarvis-network
+    depends_on:
+      - jarvis
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # ==================== CERTBOT (SSL CERTIFICATE MANAGEMENT) ====================
+
+  certbot:
+    image: certbot/certbot:latest
+    container_name: jarvis-certbot
+    volumes:
+      # Share certificate storage with nginx
+      - letsencrypt_certs:/etc/letsencrypt
+      - letsencrypt_www:/var/www/certbot
+
+      # Renewal script
+      - ./certbot/renew-cert.sh:/usr/local/bin/renew-cert.sh:ro
+
+      # Logs
+      - certbot_logs:/var/log/certbot
+    environment:
+      # Certificate configuration
+      DOMAINS: ${DOMAINS:-jarvis.ai,www.jarvis.ai,api.jarvis.ai}
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL:-admin@jarvis.ai}
+      STAGING: ${LETSENCRYPT_STAGING:-0}
+
+      # Notification settings
+      ENABLE_EMAIL_NOTIFICATIONS: ${ENABLE_EMAIL_NOTIFICATIONS:-false}
+      NOTIFICATION_EMAIL: ${NOTIFICATION_EMAIL}
+      SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL}
+    networks:
+      - jarvis-network
+    # Run certificate renewal twice daily
+    entrypoint: /bin/sh -c "trap exit TERM; while :; do certbot renew --webroot --webroot-path=/var/www/certbot; sleep 12h & wait $${!}; done;"
+    restart: unless-stopped
+
   # ==================== JARVIS CONTROL PLANE ====================
 
   jarvis:
@@ -12,6 +75,10 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: jarvis-control-plane
+    # No longer expose directly - nginx handles external traffic
+    expose:
+      - "4000"
+    # Keep localhost binding for development/debugging only
     ports:
       - "127.0.0.1:4000:4000"
     environment:
@@ -115,6 +182,7 @@ services:
       - standalone
 
 volumes:
+  # Application volumes
   jarvis_data:
     driver: local
   jarvis_logs:
@@ -122,6 +190,18 @@ volumes:
   postgres_data:
     driver: local
   redis_data:
+    driver: local
+
+  # TLS/HTTPS volumes
+  letsencrypt_certs:
+    driver: local
+  letsencrypt_www:
+    driver: local
+  nginx_ssl:
+    driver: local
+  nginx_logs:
+    driver: local
+  certbot_logs:
     driver: local
 
 networks:

@@ -1,0 +1,346 @@
+{
+  "name": "Jarvis AI Platform CDN Configuration",
+  "description": "Cloudflare CDN configuration for optimal performance",
+  "version": "1.0.0",
+
+  "zones": [
+    {
+      "name": "jarvis.ai",
+      "type": "full",
+      "plan": "pro"
+    }
+  ],
+
+  "cache": {
+    "level": "aggressive",
+    "browser_ttl": 14400,
+    "edge_ttl": 7200,
+    "cache_everything": false,
+
+    "cache_rules": [
+      {
+        "name": "Static Assets - Long Cache",
+        "description": "Cache static assets for 1 year",
+        "match": "*.{css,js,jpg,jpeg,png,gif,ico,svg,woff,woff2,ttf,eot,webp,avif}",
+        "edge_ttl": 31536000,
+        "browser_ttl": 31536000,
+        "cache_level": "cache_everything"
+      },
+      {
+        "name": "Next.js Static Assets",
+        "description": "Cache Next.js static files",
+        "match": "/_next/static/*",
+        "edge_ttl": 31536000,
+        "browser_ttl": 31536000,
+        "cache_level": "cache_everything"
+      },
+      {
+        "name": "Images - Medium Cache",
+        "description": "Cache optimized images",
+        "match": "/_next/image*",
+        "edge_ttl": 86400,
+        "browser_ttl": 86400,
+        "cache_level": "cache_everything"
+      },
+      {
+        "name": "API - Short Cache",
+        "description": "Cache API responses briefly",
+        "match": "/api/*",
+        "edge_ttl": 300,
+        "browser_ttl": 60,
+        "cache_level": "bypass",
+        "bypass_cache_on_cookie": true
+      },
+      {
+        "name": "HTML - No Cache",
+        "description": "Don't cache HTML pages",
+        "match": "*.html",
+        "edge_ttl": 0,
+        "browser_ttl": 0,
+        "cache_level": "bypass"
+      }
+    ],
+
+    "bypass_rules": [
+      {
+        "description": "Bypass cache for authenticated users",
+        "cookie_regex": "session|auth|token"
+      },
+      {
+        "description": "Bypass cache for admin panel",
+        "path_regex": "/admin/*"
+      },
+      {
+        "description": "Bypass cache for POST/PUT/DELETE requests",
+        "methods": ["POST", "PUT", "DELETE", "PATCH"]
+      }
+    ]
+  },
+
+  "performance": {
+    "minify": {
+      "javascript": true,
+      "css": true,
+      "html": true
+    },
+
+    "brotli": true,
+
+    "early_hints": true,
+
+    "http2": true,
+    "http3": true,
+
+    "auto_minify": {
+      "javascript": true,
+      "css": true,
+      "html": true
+    },
+
+    "rocket_loader": false,
+
+    "mirage": true,
+
+    "polish": "lossless",
+
+    "webp": true,
+
+    "prefetch_preload": true
+  },
+
+  "security": {
+    "ssl": {
+      "mode": "full_strict",
+      "min_tls_version": "1.2",
+      "tls_1_3": true
+    },
+
+    "always_use_https": true,
+
+    "automatic_https_rewrites": true,
+
+    "hsts": {
+      "enabled": true,
+      "max_age": 31536000,
+      "include_subdomains": true,
+      "preload": true
+    },
+
+    "waf": {
+      "enabled": true,
+      "mode": "on"
+    },
+
+    "rate_limiting": {
+      "enabled": true,
+      "rules": [
+        {
+          "description": "API rate limit",
+          "match": "/api/*",
+          "threshold": 100,
+          "period": 60,
+          "action": "challenge"
+        },
+        {
+          "description": "Login rate limit",
+          "match": "/api/auth/login",
+          "threshold": 5,
+          "period": 300,
+          "action": "block"
+        }
+      ]
+    },
+
+    "bot_management": {
+      "enabled": true,
+      "fight_mode": false
+    }
+  },
+
+  "geographic_distribution": {
+    "argo": {
+      "enabled": true,
+      "smart_routing": true,
+      "tiered_caching": true
+    },
+
+    "load_balancing": {
+      "enabled": true,
+      "pools": [
+        {
+          "name": "us-east",
+          "origins": [
+            "us-east-1.jarvis.ai",
+            "us-east-2.jarvis.ai"
+          ],
+          "monitor": "/health",
+          "notification_email": "devops@jarvis.ai"
+        },
+        {
+          "name": "us-west",
+          "origins": [
+            "us-west-1.jarvis.ai",
+            "us-west-2.jarvis.ai"
+          ],
+          "monitor": "/health",
+          "notification_email": "devops@jarvis.ai"
+        },
+        {
+          "name": "eu",
+          "origins": [
+            "eu-west-1.jarvis.ai",
+            "eu-central-1.jarvis.ai"
+          ],
+          "monitor": "/health",
+          "notification_email": "devops@jarvis.ai"
+        }
+      ],
+
+      "geo_steering": {
+        "enabled": true,
+        "regions": {
+          "NA": "us-east",
+          "EU": "eu",
+          "AS": "us-west"
+        }
+      }
+    }
+  },
+
+  "page_rules": [
+    {
+      "target": "www.jarvis.ai/*",
+      "actions": [
+        {
+          "id": "forwarding_url",
+          "value": {
+            "url": "https://jarvis.ai/$1",
+            "status_code": 301
+          }
+        }
+      ]
+    },
+    {
+      "target": "jarvis.ai/static/*",
+      "actions": [
+        {
+          "id": "cache_level",
+          "value": "cache_everything"
+        },
+        {
+          "id": "edge_cache_ttl",
+          "value": 31536000
+        }
+      ]
+    },
+    {
+      "target": "jarvis.ai/api/*",
+      "actions": [
+        {
+          "id": "cache_level",
+          "value": "bypass"
+        }
+      ]
+    }
+  ],
+
+  "workers": {
+    "enabled": true,
+    "routes": [
+      {
+        "pattern": "jarvis.ai/api/*",
+        "script": "api-optimizer"
+      },
+      {
+        "pattern": "jarvis.ai/_next/image*",
+        "script": "image-optimizer"
+      }
+    ]
+  },
+
+  "analytics": {
+    "web_analytics": true,
+    "performance_monitoring": true,
+    "custom_events": [
+      "api_call",
+      "page_view",
+      "user_action",
+      "error"
+    ]
+  },
+
+  "optimization_notes": {
+    "cache_hit_ratio_target": ">85%",
+    "ttfb_target": "<200ms",
+    "time_to_interactive_target": "<2s",
+    "bandwidth_savings_target": ">40%",
+
+    "recommendations": [
+      "Enable Argo Smart Routing for 30% faster response times",
+      "Use Tiered Caching to reduce origin requests by 60%",
+      "Enable Polish for automatic image optimization",
+      "Use Early Hints for faster page loads",
+      "Enable HTTP/3 for improved performance on mobile networks",
+      "Use Workers for edge computing and API optimization",
+      "Configure custom cache keys for better cache hit rates",
+      "Enable Mirage for automatic image optimization on slow connections"
+    ]
+  },
+
+  "monitoring": {
+    "health_checks": [
+      {
+        "name": "API Health",
+        "endpoint": "https://jarvis.ai/api/health",
+        "interval": 60,
+        "timeout": 5,
+        "retries": 2,
+        "expected_status": 200
+      },
+      {
+        "name": "Web Health",
+        "endpoint": "https://jarvis.ai/",
+        "interval": 60,
+        "timeout": 5,
+        "retries": 2,
+        "expected_status": 200
+      }
+    ],
+
+    "alerts": [
+      {
+        "type": "health_check_failure",
+        "threshold": 3,
+        "notification": "email,slack"
+      },
+      {
+        "type": "cache_hit_rate",
+        "threshold": 70,
+        "notification": "email"
+      },
+      {
+        "type": "origin_error_rate",
+        "threshold": 5,
+        "notification": "email,slack,pagerduty"
+      }
+    ]
+  },
+
+  "purge_strategies": {
+    "on_deploy": {
+      "purge_everything": false,
+      "purge_tags": ["static", "api"],
+      "purge_files": [
+        "/_next/static/*",
+        "/static/*"
+      ]
+    },
+
+    "on_content_update": {
+      "purge_tags": ["api"],
+      "purge_files": [
+        "/api/*"
+      ]
+    }
+  }
+}

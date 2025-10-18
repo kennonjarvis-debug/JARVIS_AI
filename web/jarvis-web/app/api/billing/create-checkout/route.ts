@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 
 // Initialize Stripe
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2024-11-20.acacia',
+  apiVersion: '2025-09-30.clover',
 });
 
 // Stripe Price IDs (you'll get these after creating products in Stripe)
@@ -72,8 +72,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           userId: userId || '',
           planId,
         },
-        // 7-day trial already used, start subscription immediately
-        trial_period_days: 0,
+        // 7-day free trial for all new subscriptions
+        trial_period_days: 7,
       },
       // Collect billing address for tax purposes
       billing_address_collection: 'required',

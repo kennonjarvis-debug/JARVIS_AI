@@ -337,3 +337,49 @@ model ApiKey {
   @@index([active])
   @@map("api_keys")
 }
+
+// ==========================================
+// RATE LIMITING
+// ==========================================
+
+// Rate limit violations tracking (for analytics and ban enforcement)
+model RateLimitViolation {
+  id          String   @id @default(uuid())
+  userId      String?
+  ipAddress   String?
+  endpoint    String
+  limit       Int
+  attempted   Int
+  timestamp   DateTime @default(now())
+
+  @@index([userId])
+  @@index([ipAddress])
+  @@index([timestamp])
+  @@map("rate_limit_violations")
+}
+
+// Whitelisted IPs (bypass rate limiting)
+model WhitelistedIP {
+  id        String   @id @default(uuid())
+  ip        String   @unique
+  reason    String?
+  addedBy   String
+  createdAt DateTime @default(now())
+
+  @@index([ip])
+  @@map("whitelisted_ips")
+}
+
+// Temporary rate limit bypasses (for debugging/support)
+model RateLimitBypass {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  reason    String
+  createdBy String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("rate_limit_bypasses")
+}

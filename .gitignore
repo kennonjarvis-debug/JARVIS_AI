@@ -12,10 +12,15 @@ logs/
 *.log
 npm-debug.log*
 
-# Environment files
+# Environment files - exclude ALL .env files except .env.example
 .env
+.env.*
+!.env.example
 .env.local
-.env.*.local
+.env.production
+.env.development
+.env.test
+.env.backup
 
 # IDE
 .vscode/
@@ -42,3 +47,4 @@ external/
 
 # Local Netlify folder
 .netlify
+SUPERADMIN_CREDENTIALS.txt
