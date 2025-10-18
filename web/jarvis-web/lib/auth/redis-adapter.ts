@@ -278,13 +278,14 @@ export function RedisAdapter(options: RedisAdapterOptions): Adapter {
       identifier: string;
       expires: Date;
       token: string;
-    }): Promise<void> {
+    }) {
       const ttl = Math.floor((verificationToken.expires.getTime() - Date.now()) / 1000);
       await redis.setex(
         `verification:${verificationToken.token}`,
         ttl,
         JSON.stringify(verificationToken)
       );
+      return verificationToken;
     },
 
     async useVerificationToken({
