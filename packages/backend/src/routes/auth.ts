@@ -29,7 +29,9 @@ router.get('/twitter', async (req: Request, res: Response) => {
     }
 
     const clientId = process.env.TWITTER_OAUTH_CLIENT_ID;
-    const callbackURL = process.env.NETLIFY || process.env.NODE_ENV === 'production'
+    // In Netlify, URL is always set to the site URL
+    const isProduction = process.env.URL?.includes('jarvis-ai.co') || process.env.NODE_ENV === 'production';
+    const callbackURL = isProduction
       ? 'https://jarvis-ai.co/api/auth/twitter/callback'
       : 'http://localhost:3001/api/auth/twitter/callback';
 
@@ -90,7 +92,9 @@ router.get('/twitter/callback', async (req: Request, res: Response) => {
 
     const clientId = process.env.TWITTER_OAUTH_CLIENT_ID;
     const clientSecret = process.env.TWITTER_OAUTH_CLIENT_SECRET;
-    const callbackURL = process.env.NETLIFY || process.env.NODE_ENV === 'production'
+    // In Netlify, URL is always set to the site URL
+    const isProduction = process.env.URL?.includes('jarvis-ai.co') || process.env.NODE_ENV === 'production';
+    const callbackURL = isProduction
       ? 'https://jarvis-ai.co/api/auth/twitter/callback'
       : 'http://localhost:3001/api/auth/twitter/callback';
 
