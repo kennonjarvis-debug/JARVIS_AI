@@ -8,6 +8,8 @@ import DashboardPage from './pages/DashboardPage';
 import AuthCallbackPage from './pages/AuthCallbackPage';
 import ConnectPage from './pages/ConnectPage';
 import SettingsPage from './pages/SettingsPage';
+import PrivacyPage from './pages/PrivacyPage';
+import TermsPage from './pages/TermsPage';
 
 function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -66,6 +68,8 @@ function App() {
           path="/settings"
           element={user ? <SettingsPage /> : <Navigate to="/login" />}
         />
+        <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/terms" element={<TermsPage />} />
       </Routes>
     </Router>
   );
