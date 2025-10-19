@@ -20,9 +20,6 @@
   node_bundler = "esbuild"
   included_files = ["packages/shared/dist/**"]
 
-[[functions.api]]
-  external_node_modules = []
-
 [context.production.environment]
   # Frontend
   VITE_SUPABASE_URL = "https://nzmzmsmxbiptilzgdmgt.supabase.co"
