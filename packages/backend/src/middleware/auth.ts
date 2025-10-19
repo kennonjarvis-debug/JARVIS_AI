@@ -40,16 +40,25 @@ export async function requireAuth(
 
     const token = authHeader.substring(7);
 
-    // Initialize Supabase client
-    const supabaseUrl = process.env.SUPABASE_URL;
-    const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
+    // Get Supabase credentials from environment
+    // These are set in netlify.toml for production
+    const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+    const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
 
     if (!supabaseUrl || !supabaseAnonKey) {
-      logger.error('Supabase credentials not configured');
-      res.status(500).json({ error: 'Authentication service not configured' });
+      logger.error('Supabase credentials not configured', {
+        hasUrl: !!supabaseUrl,
+        hasKey: !!supabaseAnonKey,
+        env: process.env.NODE_ENV
+      });
+      res.status(500).json({
+        error: 'Authentication service not configured',
+        message: 'Please contact support'
+      });
       return;
     }
 
+    // Create Supabase client for this request
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
     // Verify token and get user
@@ -97,8 +106,8 @@ export async function optionalAuth(
     }
 
     const token = authHeader.substring(7);
-    const supabaseUrl = process.env.SUPABASE_URL;
-    const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
+    const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+    const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
 
     if (!supabaseUrl || !supabaseAnonKey) {
       next();
