@@ -20,6 +20,7 @@ import {
   Mic,
   FileText,
 } from 'lucide-react';
+import TwitterWidget from '../components/TwitterWidget';
 
 interface ObservatoryData {
   observatory_id: string;
@@ -279,6 +280,15 @@ export default function DashboardPage({ user }: { user: User }) {
             color="orange"
           />
         </div>
+
+        {/* Twitter Widget - Show if Twitter is connected */}
+        {integrations.find(i => i.platform.toLowerCase() === 'twitter') && (
+          <div className="mb-8">
+            <TwitterWidget
+              integrationId={integrations.find(i => i.platform.toLowerCase() === 'twitter')!.id}
+            />
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Connected Accounts */}
