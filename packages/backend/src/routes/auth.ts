@@ -56,8 +56,8 @@ router.get('/twitter', async (req: Request, res: Response) => {
     const client = new TwitterApi({ clientId });
 
     // Generate OAuth 2.0 authorization link
-    const { url, codeVerifier, state } = client.generateOAuth2AuthLink(callbackURL, {
-      scope: ['tweet.read', 'tweet.write', 'users.read', 'offline.access'],
+    const { url, codeVerifier, state} = client.generateOAuth2AuthLink(callbackURL, {
+      scope: ['tweet.read', 'tweet.write', 'users.read', 'offline.access', 'dm.read', 'dm.write'],
     });
 
     // Store state and code verifier in Supabase
