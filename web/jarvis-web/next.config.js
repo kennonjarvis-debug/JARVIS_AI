@@ -21,7 +21,6 @@ const nextConfig = {
   // Experimental features - consolidated
   experimental: {
     missingSuspenseWithCSRBailout: false,
-    optimizeCss: true,
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
   },
 
