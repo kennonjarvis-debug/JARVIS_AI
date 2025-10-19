@@ -111,6 +111,202 @@ function detectMusicIntent(message: string): {
   };
 }
 
+/**
+ * Detect lyrics-related commands
+ */
+function detectLyricsIntent(message: string): {
+  isLyrics: boolean;
+  action?: 'save' | 'clear' | 'copy' | 'show' | 'export';
+  projectId?: string;
+} {
+  const lowerMessage = message.toLowerCase();
+
+  const lyricsKeywords = ['lyrics', 'lyric', 'words', 'text', 'lines'];
+  const hasLyricsKeyword = lyricsKeywords.some(kw => lowerMessage.includes(kw));
+
+  if (!hasLyricsKeyword) return { isLyrics: false };
+
+  // Detect action
+  if (lowerMessage.includes('save') || lowerMessage.includes('export')) {
+    return { isLyrics: true, action: 'save' };
+  }
+  if (lowerMessage.includes('clear') || lowerMessage.includes('delete')) {
+    return { isLyrics: true, action: 'clear' };
+  }
+  if (lowerMessage.includes('copy')) {
+    return { isLyrics: true, action: 'copy' };
+  }
+  if (lowerMessage.includes('show') || lowerMessage.includes('display')) {
+    return { isLyrics: true, action: 'show' };
+  }
+
+  return { isLyrics: true };
+}
+
+/**
+ * Detect project management commands
+ */
+function detectProjectIntent(message: string): {
+  isProject: boolean;
+  action?: 'list' | 'create' | 'delete' | 'update' | 'show' | 'open';
+  projectName?: string;
+  projectId?: string;
+} {
+  const lowerMessage = message.toLowerCase();
+
+  const projectKeywords = ['project', 'projects'];
+  const hasProjectKeyword = projectKeywords.some(kw => lowerMessage.includes(kw));
+
+  if (!hasProjectKeyword) return { isProject: false };
+
+  // Detect action
+  if (lowerMessage.includes('list') || lowerMessage.includes('show all') || lowerMessage.includes('my projects')) {
+    return { isProject: true, action: 'list' };
+  }
+  if (lowerMessage.includes('create new') || lowerMessage.includes('new project')) {
+    // Extract project name if provided
+    const nameMatch = message.match(/(?:create|new)\s+project\s+(?:called|named)?\s*["']?([^"']+)["']?/i);
+    return {
+      isProject: true,
+      action: 'create',
+      projectName: nameMatch ? nameMatch[1].trim() : undefined
+    };
+  }
+  if (lowerMessage.includes('delete') || lowerMessage.includes('remove')) {
+    return { isProject: true, action: 'delete' };
+  }
+  if (lowerMessage.includes('update') || lowerMessage.includes('edit') || lowerMessage.includes('rename')) {
+    return { isProject: true, action: 'update' };
+  }
+  if (lowerMessage.includes('open')) {
+    return { isProject: true, action: 'open' };
+  }
+
+  return { isProject: true, action: 'show' };
+}
+
+/**
+ * Detect workflow/automation commands
+ */
+function detectWorkflowIntent(message: string): {
+  isWorkflow: boolean;
+  action?: 'list' | 'create' | 'run' | 'stop' | 'show';
+  workflowName?: string;
+} {
+  const lowerMessage = message.toLowerCase();
+
+  const workflowKeywords = ['workflow', 'automation', 'automate'];
+  const hasWorkflowKeyword = workflowKeywords.some(kw => lowerMessage.includes(kw));
+
+  if (!hasWorkflowKeyword) return { isWorkflow: false };
+
+  // Detect action
+  if (lowerMessage.includes('list') || lowerMessage.includes('show all')) {
+    return { isWorkflow: true, action: 'list' };
+  }
+  if (lowerMessage.includes('create') || lowerMessage.includes('new')) {
+    return { isWorkflow: true, action: 'create' };
+  }
+  if (lowerMessage.includes('run') || lowerMessage.includes('execute') || lowerMessage.includes('start')) {
+    return { isWorkflow: true, action: 'run' };
+  }
+  if (lowerMessage.includes('stop') || lowerMessage.includes('cancel')) {
+    return { isWorkflow: true, action: 'stop' };
+  }
+
+  return { isWorkflow: true, action: 'show' };
+}
+
+/**
+ * Detect analytics/stats queries
+ */
+function detectAnalyticsIntent(message: string): {
+  isAnalytics: boolean;
+  query?: 'stats' | 'projects' | 'tracks' | 'activity' | 'summary';
+} {
+  const lowerMessage = message.toLowerCase();
+
+  const analyticsKeywords = [
+    'stats', 'statistics', 'analytics', 'summary',
+    'how many', 'count', 'total', 'show me'
+  ];
+  const hasAnalyticsKeyword = analyticsKeywords.some(kw => lowerMessage.includes(kw));
+
+  if (!hasAnalyticsKeyword) return { isAnalytics: false };
+
+  // Determine query type
+  if (lowerMessage.includes('project')) {
+    return { isAnalytics: true, query: 'projects' };
+  }
+  if (lowerMessage.includes('track')) {
+    return { isAnalytics: true, query: 'tracks' };
+  }
+  if (lowerMessage.includes('activity')) {
+    return { isAnalytics: true, query: 'activity' };
+  }
+  if (lowerMessage.includes('summary') || lowerMessage.includes('overview')) {
+    return { isAnalytics: true, query: 'summary' };
+  }
+
+  return { isAnalytics: true, query: 'stats' };
+}
+
+/**
+ * Detect transport/playback control commands
+ */
+function detectTransportIntent(message: string): {
+  isTransport: boolean;
+  action?: 'setBpm' | 'setKey' | 'play' | 'pause' | 'stop' | 'record';
+  bpm?: number;
+  key?: string;
+} {
+  const lowerMessage = message.toLowerCase();
+
+  const transportKeywords = [
+    'bpm', 'tempo', 'key', 'play', 'pause', 'stop', 'record',
+    'playback', 'transport'
+  ];
+  const hasTransportKeyword = transportKeywords.some(kw => lowerMessage.includes(kw));
+
+  if (!hasTransportKeyword) return { isTransport: false };
+
+  // Detect BPM change
+  const bpmMatch = message.match(/(?:set|change)?\s*(?:bpm|tempo)\s*(?:to)?\s*(\d+)/i);
+  if (bpmMatch) {
+    return {
+      isTransport: true,
+      action: 'setBpm',
+      bpm: parseInt(bpmMatch[1])
+    };
+  }
+
+  // Detect key change
+  const keyMatch = message.match(/(?:set|change)?\s*key\s*(?:to)?\s*([A-G][#b]?\s*(?:major|minor|maj|min))/i);
+  if (keyMatch) {
+    return {
+      isTransport: true,
+      action: 'setKey',
+      key: keyMatch[1]
+    };
+  }
+
+  // Detect playback controls
+  if (lowerMessage.includes('play') && !lowerMessage.includes('playback')) {
+    return { isTransport: true, action: 'play' };
+  }
+  if (lowerMessage.includes('pause')) {
+    return { isTransport: true, action: 'pause' };
+  }
+  if (lowerMessage.includes('stop')) {
+    return { isTransport: true, action: 'stop' };
+  }
+  if (lowerMessage.includes('record')) {
+    return { isTransport: true, action: 'record' };
+  }
+
+  return { isTransport: true };
+}
+
 export function initializeChatAPI(
   aiRouterService: AIRouterService,
   memoryService: MemoryService
@@ -136,8 +332,112 @@ router.post('/', async (req: Request, res: Response) => {
     // Get the latest user message
     const userMessage = messages[messages.length - 1].content;
 
-    // Check if this is a music generation request
+    // Check for all intent types (order matters - check most specific first)
+    const lyricsIntent = detectLyricsIntent(userMessage);
+    const projectIntent = detectProjectIntent(userMessage);
+    const workflowIntent = detectWorkflowIntent(userMessage);
+    const analyticsIntent = detectAnalyticsIntent(userMessage);
+    const transportIntent = detectTransportIntent(userMessage);
     const musicIntent = detectMusicIntent(userMessage);
+
+    // Handle project management commands
+    if (projectIntent.isProject && userId) {
+      logger.info('📁 Project management request detected', projectIntent);
+
+      try {
+        const projectsService = new DawgAIProjectsService();
+
+        if (projectIntent.action === 'list') {
+          const { projects, total } = await projectsService.listProjects(userId);
+          const projectList = projects.map(p => `• ${p.name} (${p.status})`).join('\n');
+
+          return res.json({
+            content: `📁 Your Projects (${total} total):\n\n${projectList || 'No projects yet.'}`,
+            type: 'project_list',
+            projects,
+            cost: 0,
+            tokens: 0
+          });
+        }
+
+        if (projectIntent.action === 'show') {
+          const recent = await projectsService.getRecentProjects(userId, 5);
+          const projectList = recent.map(p => `• ${p.name}`).join('\n');
+
+          return res.json({
+            content: `📁 Recent Projects:\n\n${projectList || 'No projects yet.'}`,
+            type: 'project_list',
+            projects: recent,
+            cost: 0,
+            tokens: 0
+          });
+        }
+      } catch (error: any) {
+        logger.error('Project management failed', { error: error.message });
+      }
+    }
+
+    // Handle analytics queries
+    if (analyticsIntent.isAnalytics && userId) {
+      logger.info('📊 Analytics query detected', analyticsIntent);
+
+      try {
+        const projectsService = new DawgAIProjectsService();
+        const stats = await projectsService.getProjectStats(userId);
+
+        const statsMessage = `📊 Your DAWG-AI Stats:\n\n` +
+          `📁 Projects: ${stats.totalProjects} total (${stats.activeProjects} active, ${stats.completedProjects} completed)\n` +
+          `🎵 Tracks: ${stats.totalTracks}\n` +
+          `👥 Collaborators: ${stats.totalCollaborators}`;
+
+        return res.json({
+          content: statsMessage,
+          type: 'analytics',
+          stats,
+          cost: 0,
+          tokens: 0
+        });
+      } catch (error: any) {
+        logger.error('Analytics query failed', { error: error.message });
+      }
+    }
+
+    // Handle transport/playback commands
+    if (transportIntent.isTransport) {
+      logger.info('🎮 Transport control detected', transportIntent);
+
+      // Return a response that the UI can handle
+      return res.json({
+        content: transportIntent.action === 'setBpm'
+          ? `🎵 Setting BPM to ${transportIntent.bpm}`
+          : transportIntent.action === 'setKey'
+          ? `🎹 Setting key to ${transportIntent.key}`
+          : `🎮 Transport command: ${transportIntent.action}`,
+        type: 'transport_control',
+        transportIntent,
+        cost: 0,
+        tokens: 0
+      });
+    }
+
+    // Handle lyrics commands (mostly client-side, but acknowledge)
+    if (lyricsIntent.isLyrics) {
+      logger.info('📝 Lyrics command detected', lyricsIntent);
+
+      return res.json({
+        content: lyricsIntent.action === 'save'
+          ? '📝 Saving lyrics...'
+          : lyricsIntent.action === 'clear'
+          ? '🗑️ Clearing lyrics...'
+          : lyricsIntent.action === 'copy'
+          ? '📋 Copying lyrics to clipboard...'
+          : '📝 Lyrics widget ready',
+        type: 'lyrics_action',
+        lyricsIntent,
+        cost: 0,
+        tokens: 0
+      });
+    }
 
     if (musicIntent.isMusic) {
       logger.info('🎵 Music generation request detected', musicIntent);
