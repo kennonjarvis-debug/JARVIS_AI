@@ -193,9 +193,6 @@ export default defineConfig({
   // Preserve output between runs
   preserveOutput: 'always',
 
-  // Ignore HTTPS errors in test environment
-  ignoreHTTPSErrors: true,
-
   // Snapshot path template
   snapshotPathTemplate: '{testDir}/__snapshots__/{testFilePath}/{projectName}/{arg}{ext}',
 });
