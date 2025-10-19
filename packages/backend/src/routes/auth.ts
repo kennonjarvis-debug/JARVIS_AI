@@ -7,12 +7,28 @@ import { Router, type Request, type Response } from 'express';
 import { TwitterApi } from 'twitter-api-v2';
 import { Logger } from '@jarvis/shared';
 import { integrationManager } from '../services/IntegrationManager.js';
+import { getSupabaseClient } from '../lib/supabase.js';
 
 const router = Router();
 const logger = new Logger('AuthRoutes');
 
-// In-memory store for OAuth state (in production, use Redis or database)
-const oauthStates = new Map<string, { codeVerifier: string; userId?: string; observatoryId?: string }>();
+// Helper function to determine callback URL
+const getCallbackURL = () => {
+  const isProduction = process.env.NODE_ENV === 'production' ||
+                       process.env.URL?.includes('jarvis-ai.co') ||
+                       process.env.NETLIFY === 'true';
+  return isProduction
+    ? 'https://jarvis-ai.co/api/auth/twitter/callback'
+    : 'http://localhost:3001/api/auth/twitter/callback';
+};
+
+// Helper function to get frontend URL
+const getFrontendURL = () => {
+  const isProduction = process.env.NODE_ENV === 'production';
+  return isProduction
+    ? 'https://jarvis-ai.co'
+    : 'http://localhost:5173';
+};
 
 /**
  * GET /api/auth/twitter
@@ -29,17 +45,13 @@ router.get('/twitter', async (req: Request, res: Response) => {
     }
 
     const clientId = process.env.TWITTER_OAUTH_CLIENT_ID;
-    // In Netlify, URL is always set to the site URL
-    const isProduction = process.env.URL?.includes('jarvis-ai.co') || process.env.NODE_ENV === 'production';
-    const callbackURL = isProduction
-      ? 'https://jarvis-ai.co/api/auth/twitter/callback'
-      : 'http://localhost:3001/api/auth/twitter/callback';
+    const callbackURL = getCallbackURL();
 
     if (!clientId) {
       throw new Error('TWITTER_OAUTH_CLIENT_ID not configured');
     }
 
-    logger.info('Initiating Twitter OAuth flow', { observatory_id });
+    logger.info('Initiating Twitter OAuth flow', { observatory_id, callbackURL });
 
     const client = new TwitterApi({ clientId });
 
@@ -48,14 +60,25 @@ router.get('/twitter', async (req: Request, res: Response) => {
       scope: ['tweet.read', 'tweet.write', 'users.read', 'offline.access'],
     });
 
-    // Store state and code verifier
-    oauthStates.set(state, {
-      codeVerifier,
-      observatoryId: observatory_id as string,
-    });
+    // Store state and code verifier in Supabase
+    const supabase = getSupabaseClient();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 minutes from now
 
-    // Clean up old states (older than 10 minutes)
-    setTimeout(() => oauthStates.delete(state), 10 * 60 * 1000);
+    const { error: insertError } = await supabase
+      .from('oauth_states')
+      .insert({
+        state,
+        code_verifier: codeVerifier,
+        observatory_id: observatory_id as string,
+        expires_at: expiresAt,
+      });
+
+    if (insertError) {
+      logger.error('Failed to store OAuth state', insertError);
+      throw new Error('Failed to store OAuth state');
+    }
+
+    logger.info('OAuth state stored', { state });
 
     // Redirect user to Twitter authorization page
     res.redirect(url);
@@ -73,30 +96,47 @@ router.get('/twitter', async (req: Request, res: Response) => {
  * Twitter OAuth 2.0 callback
  */
 router.get('/twitter/callback', async (req: Request, res: Response) => {
+  const frontendURL = getFrontendURL();
+
   try {
-    const { state, code } = req.query;
+    const { state, code, error, error_description } = req.query;
+
+    // Handle OAuth errors from Twitter (e.g., user denied authorization)
+    if (error) {
+      logger.error('Twitter OAuth error', { error, error_description });
+      const errorMsg = error_description || error || 'Authorization denied';
+      return res.redirect(`${frontendURL}/dashboard?twitter_error=${encodeURIComponent(errorMsg as string)}`);
+    }
 
     if (!state || !code) {
       return res.status(400).send('Missing OAuth parameters');
     }
 
-    // Retrieve stored OAuth state
-    const storedState = oauthStates.get(state as string);
+    // Retrieve stored OAuth state from Supabase
+    const supabase = getSupabaseClient();
+    const { data: storedState, error: fetchError } = await supabase
+      .from('oauth_states')
+      .select('*')
+      .eq('state', state as string)
+      .gt('expires_at', new Date().toISOString())
+      .single();
 
-    if (!storedState) {
-      return res.status(400).send('Invalid or expired OAuth state');
+    if (fetchError || !storedState) {
+      logger.error('Invalid or expired OAuth state', { state, error: fetchError });
+      return res.redirect(`${frontendURL}/dashboard?twitter_error=${encodeURIComponent('Invalid or expired OAuth state')}`);
     }
 
-    const { codeVerifier, observatoryId } = storedState;
-    oauthStates.delete(state as string);
+    const { code_verifier: codeVerifier, observatory_id: observatoryId } = storedState;
+
+    // Delete the used state
+    await supabase
+      .from('oauth_states')
+      .delete()
+      .eq('state', state as string);
 
     const clientId = process.env.TWITTER_OAUTH_CLIENT_ID;
     const clientSecret = process.env.TWITTER_OAUTH_CLIENT_SECRET;
-    // In Netlify, URL is always set to the site URL
-    const isProduction = process.env.URL?.includes('jarvis-ai.co') || process.env.NODE_ENV === 'production';
-    const callbackURL = isProduction
-      ? 'https://jarvis-ai.co/api/auth/twitter/callback'
-      : 'http://localhost:3001/api/auth/twitter/callback';
+    const callbackURL = getCallbackURL();
 
     if (!clientId || !clientSecret) {
       throw new Error('Twitter OAuth credentials not configured');
@@ -144,17 +184,9 @@ router.get('/twitter/callback', async (req: Request, res: Response) => {
     logger.info('Twitter integration created', { integration_id: record.id });
 
     // Redirect to success page
-    const frontendURL = process.env.NODE_ENV === 'production'
-      ? 'https://jarvis-ai.co'
-      : 'http://localhost:5173';
-
     res.redirect(`${frontendURL}/dashboard?twitter_connected=true`);
   } catch (error) {
     logger.error('Twitter OAuth callback failed', error);
-
-    const frontendURL = process.env.NODE_ENV === 'production'
-      ? 'https://jarvis-ai.co'
-      : 'http://localhost:5173';
 
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     res.redirect(`${frontendURL}/dashboard?twitter_error=${encodeURIComponent(errorMessage)}`);
