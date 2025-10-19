@@ -31,11 +31,19 @@ function getStripe(): Stripe {
   return stripeInstance;
 }
 
-// Initialize Supabase
-const supabase = createClient(
-  process.env.SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_KEY || ''
-);
+// Initialize Supabase lazily to avoid module-load errors
+let supabase: ReturnType<typeof createClient> | null = null;
+function getSupabase() {
+  if (!supabase) {
+    const url = process.env.SUPABASE_URL || '';
+    const key = process.env.SUPABASE_SERVICE_KEY || '';
+    if (!url || !key) {
+      throw new Error('Supabase credentials not configured');
+    }
+    supabase = createClient(url, key);
+  }
+  return supabase;
+}
 
 // Price IDs for subscription tiers
 const PRICE_IDS = {
@@ -59,7 +67,7 @@ router.post('/create-checkout-session', requireAuth, async (req: Request, res: R
     }
 
     // Get or create Stripe customer
-    const { data: userData, error: userError } = await supabase
+    const { data: userData, error: userError} = await getSupabase()
       .from('users')
       .select('email, stripe_customer_id')
       .eq('id', user_id)
@@ -83,7 +91,7 @@ router.post('/create-checkout-session', requireAuth, async (req: Request, res: R
       customerId = customer.id;
 
       // Save customer ID to database
-      await supabase
+      await getSupabase()
         .from('users')
         .update({ stripe_customer_id: customerId })
         .eq('id', user_id);
