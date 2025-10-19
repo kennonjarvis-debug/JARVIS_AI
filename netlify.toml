@@ -1,5 +1,5 @@
 [build]
-  command = "npm run build:frontend"
+  command = "npm run build:shared && npm run build:frontend"
   publish = "packages/frontend/dist"
   functions = "netlify/functions"
 
@@ -18,6 +18,10 @@
 
 [functions]
   node_bundler = "esbuild"
+  included_files = ["packages/shared/dist/**"]
+
+[[functions.api]]
+  external_node_modules = []
 
 [context.production.environment]
   # Frontend

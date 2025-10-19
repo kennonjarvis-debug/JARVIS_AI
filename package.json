@@ -10,6 +10,7 @@
     "dev:backend": "npm run dev --workspace=@jarvis/backend",
     "dev:frontend": "npm run dev --workspace=@jarvis/frontend",
     "build": "npm run build --workspaces",
+    "build:shared": "npm run build --workspace=@jarvis/shared",
     "build:backend": "npm run build --workspace=@jarvis/backend",
     "build:frontend": "npm run build --workspace=@jarvis/frontend",
     "start:backend": "npm run start --workspace=@jarvis/backend",
