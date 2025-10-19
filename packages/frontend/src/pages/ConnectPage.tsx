@@ -30,9 +30,9 @@ export default function ConnectPage() {
     },
   });
 
-  // Fetch observatory ID for current user
+  // Fetch or create observatory for current user
   useEffect(() => {
-    async function fetchObservatory() {
+    async function fetchOrCreateObservatory() {
       try {
         const { data: { user } } = await supabase.auth.getUser();
 
@@ -42,25 +42,41 @@ export default function ConnectPage() {
           return;
         }
 
-        const { data, error } = await supabase
+        // Try to fetch existing observatory
+        let { data, error } = await supabase
           .from('observatories')
           .select('id')
           .eq('user_id', user.id)
           .single();
 
+        // If no observatory exists, create one
         if (error || !data) {
-          setError('Observatory not found. Please contact support.');
-          return;
+          const { data: newObservatory, error: createError } = await supabase
+            .from('observatories')
+            .insert({
+              user_id: user.id,
+              name: `${user.email?.split('@')[0] || 'My'} Observatory`,
+            })
+            .select('id')
+            .single();
+
+          if (createError || !newObservatory) {
+            console.error('Failed to create observatory:', createError);
+            setError('Failed to create workspace. Please refresh the page.');
+            return;
+          }
+
+          data = newObservatory;
         }
 
         setObservatoryId(data.id);
       } catch (err) {
-        console.error('Failed to fetch observatory:', err);
+        console.error('Failed to load observatory:', err);
         setError('Failed to load your workspace');
       }
     }
 
-    fetchObservatory();
+    fetchOrCreateObservatory();
   }, [navigate]);
 
   const handleTwitterConnect = () => {
