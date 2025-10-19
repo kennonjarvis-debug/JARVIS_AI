@@ -30,7 +30,7 @@ router.get('/twitter', async (req: Request, res: Response) => {
 
     const clientId = process.env.TWITTER_OAUTH_CLIENT_ID;
     const callbackURL = process.env.NODE_ENV === 'production'
-      ? 'https://dawg-ai.com/api/auth/twitter/callback'
+      ? 'https://jarvis-ai.co/api/auth/twitter/callback'
       : 'http://localhost:3001/api/auth/twitter/callback';
 
     if (!clientId) {
@@ -91,7 +91,7 @@ router.get('/twitter/callback', async (req: Request, res: Response) => {
     const clientId = process.env.TWITTER_OAUTH_CLIENT_ID;
     const clientSecret = process.env.TWITTER_OAUTH_CLIENT_SECRET;
     const callbackURL = process.env.NODE_ENV === 'production'
-      ? 'https://dawg-ai.com/api/auth/twitter/callback'
+      ? 'https://jarvis-ai.co/api/auth/twitter/callback'
       : 'http://localhost:3001/api/auth/twitter/callback';
 
     if (!clientId || !clientSecret) {
@@ -141,7 +141,7 @@ router.get('/twitter/callback', async (req: Request, res: Response) => {
 
     // Redirect to success page
     const frontendURL = process.env.NODE_ENV === 'production'
-      ? 'https://dawg-ai.com'
+      ? 'https://jarvis-ai.co'
       : 'http://localhost:5173';
 
     res.redirect(`${frontendURL}/dashboard?twitter_connected=true`);
@@ -149,7 +149,7 @@ router.get('/twitter/callback', async (req: Request, res: Response) => {
     logger.error('Twitter OAuth callback failed', error);
 
     const frontendURL = process.env.NODE_ENV === 'production'
-      ? 'https://dawg-ai.com'
+      ? 'https://jarvis-ai.co'
       : 'http://localhost:5173';
 
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
