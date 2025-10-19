@@ -8,6 +8,7 @@ import { integrationManager } from '../services/IntegrationManager.js';
 import { TwitterIntegration } from '../integrations/twitter/index.js';
 import { Logger, JarvisError, ErrorCode } from '@jarvis/shared';
 import { requireAuth } from '../middleware/auth.js';
+import { getSupabaseClient } from '../lib/supabase.js';
 
 const router = Router();
 const logger = new Logger('IntegrationRoutes');
@@ -296,6 +297,162 @@ router.get('/stats', (_req: Request, res: Response) => {
     logger.error('Failed to get stats', error);
     res.status(500).json({
       error: 'Failed to get statistics',
+      message: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
+});
+
+/**
+ * GET /api/integrations/:integration_id/metrics
+ * Get live metrics for an integration (currently supports Twitter)
+ */
+router.get('/:integration_id/metrics', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { integration_id } = req.params;
+
+    logger.info('Fetching live metrics for integration', { integrationId: integration_id });
+
+    // Fetch integration from database
+    const supabase = getSupabaseClient();
+    const { data: integration, error: fetchError } = await supabase
+      .from('integrations')
+      .select('*')
+      .eq('id', integration_id)
+      .single();
+
+    if (fetchError || !integration) {
+      return res.status(404).json({
+        error: 'Integration not found',
+        message: 'The requested integration does not exist',
+      });
+    }
+
+    // Currently only support Twitter metrics
+    if (integration.platform !== 'twitter') {
+      return res.status(400).json({
+        error: 'Unsupported platform',
+        message: `Live metrics are not yet available for ${integration.platform}`,
+      });
+    }
+
+    // Load or get Twitter integration
+    let twitterIntegration = integrationManager.getIntegration(
+      integration.observatory_id,
+      'twitter',
+      integration.account_id
+    );
+
+    if (!twitterIntegration) {
+      twitterIntegration = await integrationManager.loadIntegration(integration);
+    }
+
+    const twitter = twitterIntegration as TwitterIntegration;
+
+    // Fetch profile metrics
+    const profile = await twitter.getAuthenticatedUser();
+
+    // Fetch recent tweets with engagement
+    const recentTweets = await twitter.getRecentTweets(10);
+
+    // Calculate engagement rate
+    let totalEngagement = 0;
+    let totalImpressions = 0;
+    let tweetsWithImpressions = 0;
+
+    for (const tweet of recentTweets) {
+      const engagement =
+        tweet.public_metrics.like_count +
+        tweet.public_metrics.retweet_count +
+        tweet.public_metrics.reply_count +
+        tweet.public_metrics.quote_count;
+
+      totalEngagement += engagement;
+      totalImpressions += tweet.public_metrics.impression_count;
+
+      if (tweet.public_metrics.impression_count > 0) {
+        tweetsWithImpressions++;
+      }
+    }
+
+    const engagementRate =
+      totalImpressions > 0 ? ((totalEngagement / totalImpressions) * 100).toFixed(2) : '0.00';
+
+    const averageEngagement = recentTweets.length > 0 ? Math.round(totalEngagement / recentTweets.length) : 0;
+
+    const averageImpressions =
+      tweetsWithImpressions > 0 ? Math.round(totalImpressions / tweetsWithImpressions) : 0;
+
+    // Return comprehensive metrics
+    res.json({
+      integration_id: integration_id,
+      platform: 'twitter',
+      account: {
+        id: profile.id,
+        username: profile.username,
+        name: profile.name,
+        profile_image_url: profile.profile_image_url,
+        description: profile.description,
+        verified: profile.verified,
+      },
+      metrics: {
+        followers_count: profile.public_metrics.followers_count,
+        following_count: profile.public_metrics.following_count,
+        tweet_count: profile.public_metrics.tweet_count,
+        listed_count: profile.public_metrics.listed_count,
+      },
+      engagement: {
+        engagement_rate: parseFloat(engagementRate),
+        average_engagement_per_tweet: averageEngagement,
+        average_impressions_per_tweet: averageImpressions,
+        total_engagement_last_10_tweets: totalEngagement,
+        total_impressions_last_10_tweets: totalImpressions,
+      },
+      recent_tweets: recentTweets.map(tweet => ({
+        id: tweet.id,
+        text: tweet.text.substring(0, 100) + (tweet.text.length > 100 ? '...' : ''),
+        created_at: tweet.created_at,
+        metrics: {
+          likes: tweet.public_metrics.like_count,
+          retweets: tweet.public_metrics.retweet_count,
+          replies: tweet.public_metrics.reply_count,
+          quotes: tweet.public_metrics.quote_count,
+          impressions: tweet.public_metrics.impression_count,
+          engagement_rate:
+            tweet.public_metrics.impression_count > 0
+              ? (
+                  ((tweet.public_metrics.like_count +
+                    tweet.public_metrics.retweet_count +
+                    tweet.public_metrics.reply_count +
+                    tweet.public_metrics.quote_count) /
+                    tweet.public_metrics.impression_count) *
+                  100
+                ).toFixed(2)
+              : '0.00',
+        },
+      })),
+      fetched_at: new Date().toISOString(),
+    });
+
+    logger.info('Successfully fetched live metrics', {
+      integrationId: integration_id,
+      username: profile.username,
+      followers: profile.public_metrics.followers_count,
+      engagementRate,
+    });
+  } catch (error) {
+    logger.error('Failed to fetch integration metrics', error);
+
+    // Check if it's a Twitter API error (e.g., token expired)
+    if (error instanceof Error && error.message.includes('401')) {
+      return res.status(401).json({
+        error: 'Authentication failed',
+        message: 'Twitter access token may be expired. Please reconnect your account.',
+        needs_reconnect: true,
+      });
+    }
+
+    res.status(500).json({
+      error: 'Failed to fetch metrics',
       message: error instanceof Error ? error.message : 'Unknown error',
     });
   }

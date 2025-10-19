@@ -6,7 +6,7 @@
 import { Router, type Request, type Response } from 'express';
 import Stripe from 'stripe';
 import { Logger } from '@jarvis/shared';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabaseClient } from '../lib/supabase.js';
 import { requireAuth } from '../middleware/auth.js';
 
 const router = Router();
@@ -31,19 +31,6 @@ function getStripe(): Stripe {
   return stripeInstance;
 }
 
-// Initialize Supabase lazily to avoid module-load errors
-let supabase: ReturnType<typeof createClient> | null = null;
-function getSupabase() {
-  if (!supabase) {
-    const url = process.env.SUPABASE_URL || '';
-    const key = process.env.SUPABASE_SERVICE_KEY || '';
-    if (!url || !key) {
-      throw new Error('Supabase credentials not configured');
-    }
-    supabase = createClient(url, key);
-  }
-  return supabase;
-}
 
 // Price IDs for subscription tiers
 const PRICE_IDS = {
@@ -67,7 +54,7 @@ router.post('/create-checkout-session', requireAuth, async (req: Request, res: R
     }
 
     // Get or create Stripe customer
-    const { data: userData, error: userError} = await getSupabase()
+    const { data: userData, error: userError} = await getSupabaseClient()
       .from('users')
       .select('email, stripe_customer_id')
       .eq('id', user_id)
@@ -91,7 +78,7 @@ router.post('/create-checkout-session', requireAuth, async (req: Request, res: R
       customerId = customer.id;
 
       // Save customer ID to database
-      await getSupabase()
+      await getSupabaseClient()
         .from('users')
         .update({ stripe_customer_id: customerId })
         .eq('id', user_id);
@@ -218,7 +205,7 @@ router.get('/subscription', requireAuth, async (req: Request, res: Response) => 
     }
 
     // Get subscription from database
-    const { data: subscriptionData, error: subError } = await supabase
+    const { data: subscriptionData, error: subError } = await getSupabaseClient()
       .from('subscriptions')
       .select('*')
       .eq('user_id', user_id)
@@ -260,7 +247,7 @@ router.post('/portal', requireAuth, async (req: Request, res: Response) => {
     }
 
     // Get Stripe customer ID
-    const { data: userData, error: userError } = await supabase
+    const { data: userData, error: userError } = await getSupabaseClient()
       .from('users')
       .select('stripe_customer_id')
       .eq('id', user_id)
@@ -307,7 +294,7 @@ router.post('/cancel', requireAuth, async (req: Request, res: Response) => {
     }
 
     // Get subscription
-    const { data: subscriptionData, error: subError } = await supabase
+    const { data: subscriptionData, error: subError } = await getSupabaseClient()
       .from('subscriptions')
       .select('stripe_subscription_id')
       .eq('user_id', user_id)
@@ -329,7 +316,7 @@ router.post('/cancel', requireAuth, async (req: Request, res: Response) => {
     );
 
     // Update database
-    await supabase
+    await getSupabaseClient()
       .from('subscriptions')
       .update({
         cancel_at_period_end: true,
@@ -371,7 +358,7 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
   const customerId = subscription.customer as string;
 
   // Get user from customer ID
-  const { data: userData, error: userError } = await supabase
+  const { data: userData, error: userError } = await getSupabaseClient()
     .from('users')
     .select('id')
     .eq('stripe_customer_id', customerId)
@@ -397,7 +384,7 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
   }
 
   // Upsert subscription in database
-  const { error: subError } = await supabase
+  const { error: subError } = await getSupabaseClient()
     .from('subscriptions')
     .upsert({
       user_id: userId,
@@ -423,7 +410,7 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
 
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   // Update subscription status to cancelled
-  const { error: subError } = await supabase
+  const { error: subError } = await getSupabaseClient()
     .from('subscriptions')
     .update({
       status: 'cancelled',

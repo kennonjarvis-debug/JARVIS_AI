@@ -3,8 +3,9 @@
  * Loads, initializes, and manages all platform integrations
  */
 
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { type SupabaseClient } from '@supabase/supabase-js';
 import { Logger, JarvisError, ErrorCode } from '@jarvis/shared';
+import { getSupabaseClient } from '../lib/supabase.js';
 import type { BaseIntegration } from '../integrations/base/BaseIntegration.js';
 
 export interface IntegrationRecord {
@@ -30,20 +31,17 @@ export class IntegrationManager {
   constructor() {
     this.logger = new Logger('IntegrationManager');
 
-    // Initialize Supabase client
-    const supabaseUrl = process.env.SUPABASE_URL;
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
-
-    if (!supabaseUrl || !supabaseServiceKey) {
+    // Use shared Supabase client
+    try {
+      this.supabase = getSupabaseClient();
+      this.logger.info('IntegrationManager initialized');
+    } catch (error) {
       throw new JarvisError(
         ErrorCode.INTEGRATION_ERROR,
-        'Supabase credentials not configured',
-        { supabaseUrl: !!supabaseUrl, supabaseServiceKey: !!supabaseServiceKey }
+        'Failed to initialize IntegrationManager: Supabase credentials not configured',
+        { error: error instanceof Error ? error.message : 'Unknown error' }
       );
     }
-
-    this.supabase = createClient(supabaseUrl, supabaseServiceKey);
-    this.logger.info('IntegrationManager initialized');
   }
 
   /**

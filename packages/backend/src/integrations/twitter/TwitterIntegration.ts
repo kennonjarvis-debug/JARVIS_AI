@@ -4,7 +4,7 @@
  * Ported and adapted from Jarvis-v0
  */
 
-import { TwitterApi, type TweetV2PostTweetResult } from 'twitter-api-v2';
+import { TwitterApi, type TwitterApiReadWrite, type TweetV2PostTweetResult } from 'twitter-api-v2';
 import { promises as fs } from 'fs';
 import { BaseIntegration, type IntegrationConfig } from '../base/index.js';
 import { JarvisError, ErrorCode } from '@jarvis/shared';
@@ -33,7 +33,7 @@ export interface TwitterPostResult {
  */
 export class TwitterIntegration extends BaseIntegration {
   private client!: TwitterApi;
-  private rwClient!: TwitterApi;
+  private rwClient!: TwitterApiReadWrite;
   private username?: string;
 
   get name(): string {
@@ -313,6 +313,127 @@ export class TwitterIntegration extends BaseIntegration {
       throw new JarvisError(
         ErrorCode.API_ERROR,
         'Failed to get Twitter user info',
+        { error: error instanceof Error ? error.message : error }
+      );
+    }
+  }
+
+  /**
+   * Get authenticated user profile with public metrics
+   */
+  async getAuthenticatedUser(): Promise<{
+    id: string;
+    username: string;
+    name: string;
+    profile_image_url: string;
+    description: string;
+    verified: boolean;
+    public_metrics: {
+      followers_count: number;
+      following_count: number;
+      tweet_count: number;
+      listed_count: number;
+    };
+  }> {
+    try {
+      if (!this.isInitialized) {
+        throw new JarvisError(
+          ErrorCode.INTEGRATION_ERROR,
+          'Twitter client not initialized'
+        );
+      }
+
+      const { data } = await this.client.v2.me({
+        'user.fields': ['profile_image_url', 'description', 'public_metrics', 'verified', 'created_at'],
+      });
+
+      this.logger.info('Retrieved authenticated user profile', {
+        username: data.username,
+        followers: data.public_metrics?.followers_count,
+      });
+
+      return {
+        id: data.id,
+        username: data.username,
+        name: data.name,
+        profile_image_url: data.profile_image_url || '',
+        description: data.description || '',
+        verified: data.verified || false,
+        public_metrics: {
+          followers_count: data.public_metrics?.followers_count || 0,
+          following_count: data.public_metrics?.following_count || 0,
+          tweet_count: data.public_metrics?.tweet_count || 0,
+          listed_count: data.public_metrics?.listed_count || 0,
+        },
+      };
+    } catch (error) {
+      this.logger.error('Failed to get authenticated user profile', error);
+      throw new JarvisError(
+        ErrorCode.API_ERROR,
+        'Failed to get Twitter user profile',
+        { error: error instanceof Error ? error.message : error }
+      );
+    }
+  }
+
+  /**
+   * Get recent tweets with engagement metrics
+   */
+  async getRecentTweets(maxResults: number = 10): Promise<Array<{
+    id: string;
+    text: string;
+    created_at: string;
+    public_metrics: {
+      like_count: number;
+      retweet_count: number;
+      reply_count: number;
+      quote_count: number;
+      impression_count: number;
+    };
+  }>> {
+    try {
+      if (!this.isInitialized) {
+        throw new JarvisError(
+          ErrorCode.INTEGRATION_ERROR,
+          'Twitter client not initialized'
+        );
+      }
+
+      // Get authenticated user ID
+      const me = await this.client.v2.me();
+      const userId = me.data.id;
+
+      // Fetch user's recent tweets
+      const timeline = await this.client.v2.userTimeline(userId, {
+        max_results: Math.min(maxResults, 100),
+        'tweet.fields': ['created_at', 'public_metrics', 'author_id'],
+        exclude: ['retweets', 'replies'], // Only get original tweets
+      });
+
+      const tweets = timeline.data.data || [];
+
+      this.logger.info('Retrieved recent tweets', {
+        count: tweets.length,
+        username: this.username,
+      });
+
+      return tweets.map(tweet => ({
+        id: tweet.id,
+        text: tweet.text,
+        created_at: tweet.created_at || new Date().toISOString(),
+        public_metrics: {
+          like_count: tweet.public_metrics?.like_count || 0,
+          retweet_count: tweet.public_metrics?.retweet_count || 0,
+          reply_count: tweet.public_metrics?.reply_count || 0,
+          quote_count: tweet.public_metrics?.quote_count || 0,
+          impression_count: tweet.public_metrics?.impression_count || 0,
+        },
+      }));
+    } catch (error) {
+      this.logger.error('Failed to get recent tweets', error);
+      throw new JarvisError(
+        ErrorCode.API_ERROR,
+        'Failed to get recent tweets',
         { error: error instanceof Error ? error.message : error }
       );
     }
