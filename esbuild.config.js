@@ -8,6 +8,6 @@ const __dirname = path.dirname(__filename);
 export default {
   plugins: [],
   alias: {
-    '@jarvis/shared': path.resolve(__dirname, '../../packages/shared/dist/index.js'),
+    '@jarvis/shared': path.resolve(__dirname, './packages/shared/dist/index.js'),
   },
 };
