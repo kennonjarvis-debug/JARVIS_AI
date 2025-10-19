@@ -1,19 +1,20 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-} from "chart.js";
-import { Line, Bar } from "react-chartjs-2";
+// TODO: Re-enable with dynamic imports to avoid SSR issues
+// import {
+//   Chart as ChartJS,
+//   CategoryScale,
+//   LinearScale,
+//   PointElement,
+//   LineElement,
+//   BarElement,
+//   Title,
+//   Tooltip,
+//   Legend,
+//   Filler,
+// } from "chart.js";
+// import { Line, Bar } from "react-chartjs-2";
 
 interface AnalyticsData {
   timeRange: {
@@ -51,20 +52,20 @@ export default function DawgAIAnalytics() {
   const [period, setPeriod] = useState<"day" | "week" | "month">("month");
   const [loading, setLoading] = useState(true);
 
-  // Register Chart.js components on client-side only
-  useEffect(() => {
-    ChartJS.register(
-      CategoryScale,
-      LinearScale,
-      PointElement,
-      LineElement,
-      BarElement,
-      Title,
-      Tooltip,
-      Legend,
-      Filler
-    );
-  }, []);
+  // TODO: Re-enable Chart.js registration with dynamic imports
+  // useEffect(() => {
+  //   ChartJS.register(
+  //     CategoryScale,
+  //     LinearScale,
+  //     PointElement,
+  //     LineElement,
+  //     BarElement,
+  //     Title,
+  //     Tooltip,
+  //     Legend,
+  //     Filler
+  //   );
+  // }, []);
 
   useEffect(() => {
     loadAnalytics();
