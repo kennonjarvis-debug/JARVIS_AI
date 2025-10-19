@@ -58,7 +58,7 @@ export async function middleware(request: NextRequest) {
     }
 
     // Check if token is expired
-    if (token.exp && typeof token.exp === 'number' && Date.now() >= token.exp * 1000) {
+    if (token.exp && Date.now() >= (token.exp as number) * 1000) {
       // Token expired, redirect to login
       const loginUrl = new URL("/login", request.url);
       loginUrl.searchParams.set("callbackUrl", pathname);
