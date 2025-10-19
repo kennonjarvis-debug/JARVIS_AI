@@ -9,6 +9,7 @@
 import { logger } from '../utils/logger.js';
 import { PrismaClient } from '@prisma/client';
 import { getDawgAIService } from './dawg-ai.service.js';
+import { audioAnalysisService, type AudioAnalysisResult } from './audio-analysis.service.js';
 
 const prisma = new PrismaClient();
 
@@ -38,6 +39,24 @@ export interface UpdateProjectInput {
   description?: string;
   status?: string;
   metadata?: any;
+}
+
+export interface ProjectTrack {
+  id: string;
+  name: string;
+  audioPath: string;
+  audioUrl?: string;
+  duration?: number;
+  startTime?: number;
+  metadata?: {
+    genre?: string;
+    bpm?: number;
+    key?: string;
+    chordProgressions?: any;
+    instruments?: string[];
+  };
+  analysis?: AudioAnalysisResult; // Auto-detected BPM/key
+  createdAt: Date;
 }
 
 export interface ProjectStats {
@@ -236,18 +255,25 @@ export class DawgAIProjectsService {
    */
   async getProjectStats(userId: string): Promise<ProjectStats> {
     try {
-      const [total, active, completed, workflows] = await Promise.all([
+      const [total, active, completed, workflows, projects] = await Promise.all([
         prisma.dawgAIProject.count({ where: { userId } }),
         prisma.dawgAIProject.count({ where: { userId, status: 'active' } }),
         prisma.dawgAIProject.count({ where: { userId, status: 'completed' } }),
         prisma.dawgAIWorkflow.count({ where: { userId } }),
+        prisma.dawgAIProject.findMany({ where: { userId }, select: { metadata: true } }),
       ]);
+
+      // Count total tracks across all projects
+      const totalTracks = projects.reduce((count, project) => {
+        const tracks = project.metadata?.tracks || [];
+        return count + tracks.length;
+      }, 0);
 
       return {
         totalProjects: total,
         activeProjects: active,
         completedProjects: completed,
-        totalTracks: 0, // Could be calculated from metadata
+        totalTracks,
         totalCollaborators: 0, // Could be fetched from API
       };
     } catch (error: any) {
@@ -356,6 +382,131 @@ export class DawgAIProjectsService {
     } catch (error: any) {
       logger.error('Failed to get recent DAWG AI projects:', error);
       throw new Error(`Failed to get recent projects: ${error.message}`);
+    }
+  }
+
+  /**
+   * Add a track to a project
+   */
+  async addTrackToProject(
+    userId: string,
+    projectId: string,
+    track: Omit<ProjectTrack, 'id' | 'createdAt'>
+  ): Promise<ProjectTrack> {
+    try {
+      const project = await this.getProject(userId, projectId);
+      if (!project) {
+        throw new Error('Project not found');
+      }
+
+      // Analyze audio file for BPM/key detection
+      let analysis: AudioAnalysisResult | undefined;
+      try {
+        if (track.audioPath) {
+          logger.info('🔍 Analyzing audio for BPM/key detection', { audioPath: track.audioPath });
+          analysis = await audioAnalysisService.analyzeAudioFile(track.audioPath);
+          logger.info('✅ Audio analysis complete', analysis);
+        } else if (track.audioUrl) {
+          logger.info('🔍 Analyzing audio from URL', { audioUrl: track.audioUrl });
+          analysis = await audioAnalysisService.analyzeAudioFromUrl(track.audioUrl);
+          logger.info('✅ Audio analysis complete', analysis);
+        }
+      } catch (analysisError: any) {
+        logger.warn('Audio analysis failed, continuing without analysis', {
+          error: analysisError.message
+        });
+        // Continue without analysis if it fails
+      }
+
+      // Get existing tracks from metadata
+      const tracks: ProjectTrack[] = project.metadata?.tracks || [];
+
+      // Create new track with analysis results
+      const newTrack: ProjectTrack = {
+        ...track,
+        id: `track-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        analysis, // Include auto-detected BPM/key
+        createdAt: new Date(),
+      };
+
+      // Add to tracks array
+      tracks.push(newTrack);
+
+      // Update project metadata
+      await this.updateProject(userId, projectId, {
+        metadata: {
+          ...project.metadata,
+          tracks,
+        },
+      });
+
+      logger.info(`✅ Track added to project with analysis`, {
+        trackId: newTrack.id,
+        projectId,
+        detectedBpm: analysis?.bpm,
+        detectedKey: analysis?.key,
+      });
+      return newTrack;
+    } catch (error: any) {
+      logger.error('Failed to add track to project:', error);
+      throw new Error(`Failed to add track: ${error.message}`);
+    }
+  }
+
+  /**
+   * Get all tracks for a project
+   */
+  async getProjectTracks(userId: string, projectId: string): Promise<ProjectTrack[]> {
+    try {
+      const project = await this.getProject(userId, projectId);
+      if (!project) {
+        throw new Error('Project not found');
+      }
+
+      return project.metadata?.tracks || [];
+    } catch (error: any) {
+      logger.error('Failed to get project tracks:', error);
+      throw new Error(`Failed to get tracks: ${error.message}`);
+    }
+  }
+
+  /**
+   * Get a specific track by ID
+   */
+  async getTrack(userId: string, projectId: string, trackId: string): Promise<ProjectTrack | null> {
+    try {
+      const tracks = await this.getProjectTracks(userId, projectId);
+      return tracks.find(t => t.id === trackId) || null;
+    } catch (error: any) {
+      logger.error('Failed to get track:', error);
+      throw new Error(`Failed to get track: ${error.message}`);
+    }
+  }
+
+  /**
+   * Delete a track from a project
+   */
+  async deleteTrack(userId: string, projectId: string, trackId: string): Promise<void> {
+    try {
+      const project = await this.getProject(userId, projectId);
+      if (!project) {
+        throw new Error('Project not found');
+      }
+
+      const tracks: ProjectTrack[] = project.metadata?.tracks || [];
+      const filteredTracks = tracks.filter(t => t.id !== trackId);
+
+      await this.updateProject(userId, projectId, {
+        metadata: {
+          ...project.metadata,
+          tracks: filteredTracks,
+        },
+      });
+
+      logger.info(`Track deleted from project: ${projectId}`, { trackId });
+    } catch (error: any) {
+      logger.error('Failed to delete track:', error);
+      throw new Error(`Failed to delete track: ${error.message}`);
     }
   }
 }

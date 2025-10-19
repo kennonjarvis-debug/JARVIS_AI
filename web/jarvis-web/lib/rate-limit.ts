@@ -156,7 +156,7 @@ export async function applyRateLimit(
   const result = await rateLimit(config);
 
   // Prepare headers
-  const headers = {
+  const headers: Record<string, string> = {
     'X-RateLimit-Limit': result.limit.toString(),
     'X-RateLimit-Remaining': result.remaining.toString(),
     'X-RateLimit-Reset': result.reset.toString(),

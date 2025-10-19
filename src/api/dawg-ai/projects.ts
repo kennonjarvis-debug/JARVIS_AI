@@ -326,4 +326,131 @@ router.get('/:id/export', async (req: AuthRequest, res: Response) => {
   }
 });
 
+/**
+ * GET /api/dawg-ai/projects/:id/tracks
+ * Get all tracks for a project
+ */
+router.get('/:id/tracks', async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId;
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const tracks = await projectsService.getProjectTracks(userId, req.params.id);
+
+    res.json({
+      success: true,
+      data: tracks,
+    });
+  } catch (error: any) {
+    logger.error('Failed to get project tracks:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+});
+
+/**
+ * POST /api/dawg-ai/projects/:id/tracks
+ * Add a track to a project
+ */
+router.post('/:id/tracks', async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId;
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const { name, audioPath, audioUrl, duration, startTime, metadata } = req.body;
+
+    if (!name || !audioPath) {
+      return res.status(400).json({
+        success: false,
+        error: 'Track name and audioPath are required',
+      });
+    }
+
+    const track = await projectsService.addTrackToProject(userId, req.params.id, {
+      name,
+      audioPath,
+      audioUrl,
+      duration,
+      startTime,
+      metadata,
+    });
+
+    res.status(201).json({
+      success: true,
+      data: track,
+    });
+  } catch (error: any) {
+    logger.error('Failed to add track to project:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+});
+
+/**
+ * GET /api/dawg-ai/projects/:id/tracks/:trackId
+ * Get a specific track
+ */
+router.get('/:id/tracks/:trackId', async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId;
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const track = await projectsService.getTrack(userId, req.params.id, req.params.trackId);
+
+    if (!track) {
+      return res.status(404).json({
+        success: false,
+        error: 'Track not found',
+      });
+    }
+
+    res.json({
+      success: true,
+      data: track,
+    });
+  } catch (error: any) {
+    logger.error('Failed to get track:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+});
+
+/**
+ * DELETE /api/dawg-ai/projects/:id/tracks/:trackId
+ * Delete a track from a project
+ */
+router.delete('/:id/tracks/:trackId', async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId;
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    await projectsService.deleteTrack(userId, req.params.id, req.params.trackId);
+
+    res.json({
+      success: true,
+      message: 'Track deleted successfully',
+    });
+  } catch (error: any) {
+    logger.error('Failed to delete track:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+});
+
 export default router;

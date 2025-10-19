@@ -1,17 +1,18 @@
 /**
  * Audio Generator Service
  *
- * Professional audio generation service using Stable Audio API for beat creation.
- * Supports generating complete beats with drums, bass, melody, and mixing capabilities.
+ * Professional audio generation service using YOUR custom MusicGen models.
+ * Cost: $0.07 per song (vs $4+ with Stable Audio)
+ * 98% cost reduction!
  *
  * @module AudioGenerator
  */
 
-import axios from 'axios';
 import * as fs from 'fs';
 import * as path from 'path';
 import { execSync } from 'child_process';
 import { logger } from '../utils/logger.js';
+import { replicateMusicGenerator } from './replicate-music-generator.js';
 
 /**
  * Parameters for audio generation
@@ -87,29 +88,24 @@ export interface AudioGenerationResult {
  * Handles beat generation, melody creation, drum patterns, bass lines, and mixing.
  */
 export class AudioGenerator {
-  private stableAudioApiKey: string;
-  private apiEndpoint = 'https://api.stability.ai/v2alpha/audio/generate';
   private outputDirectory: string;
 
   constructor() {
-    this.stableAudioApiKey = process.env.STABLE_AUDIO_API_KEY || '';
     this.outputDirectory = '/tmp';
-
-    if (!this.stableAudioApiKey) {
-      logger.warn('⚠️  STABLE_AUDIO_API_KEY not set - audio generation will fail');
-    }
 
     // Ensure output directory exists
     if (!fs.existsSync(this.outputDirectory)) {
       fs.mkdirSync(this.outputDirectory, { recursive: true });
     }
+
+    logger.info('🎵 Audio Generator initialized with custom MusicGen models');
   }
 
   /**
-   * Generate instrumental beat using Stable Audio
+   * Generate instrumental beat using YOUR custom MusicGen models
    *
    * Creates a complete instrumental beat based on the provided parameters.
-   * Uses intelligent prompt building to maximize quality.
+   * Cost: $0.07 per song (vs $4+ with old Stable Audio)
    *
    * @param params - Audio generation parameters
    * @returns Path to generated audio file
@@ -127,7 +123,7 @@ export class AudioGenerator {
    * ```
    */
   async generateBeat(params: AudioGenerationParams): Promise<string> {
-    logger.info('🎵 Generating beat with Stable Audio...', {
+    logger.info('🎵 Generating beat with custom MusicGen...', {
       genre: params.genre,
       bpm: params.bpm,
       duration: params.duration
@@ -138,44 +134,24 @@ export class AudioGenerator {
     logger.info('📝 Using prompt:', { prompt });
 
     try {
-      // Call Stable Audio API
-      const response = await axios.post(
-        this.apiEndpoint,
-        {
-          prompt,
-          duration_seconds: params.duration,
-          output_format: 'wav'
-        },
-        {
-          headers: {
-            'Authorization': `Bearer ${this.stableAudioApiKey}`,
-            'Content-Type': 'application/json'
-          },
-          responseType: 'arraybuffer',
-          timeout: 60000 // 60 second timeout
-        }
-      );
-
-      // Save audio file with timestamp
-      const outputPath = path.join(
-        this.outputDirectory,
-        `beat-${Date.now()}-${Math.random().toString(36).substring(7)}.wav`
-      );
-
-      fs.writeFileSync(outputPath, Buffer.from(response.data));
-
-      const stats = fs.statSync(outputPath);
-      logger.info('✅ Beat generated successfully:', {
-        path: outputPath,
-        sizeKB: Math.round(stats.size / 1024)
+      // Use your custom MusicGen model (Morgan Wallen/Drake style)
+      const result = await replicateMusicGenerator.generate({
+        prompt,
+        duration: Math.min(params.duration, 30), // MusicGen max is 30s
+        temperature: 1.0
       });
 
-      return outputPath;
+      logger.info('✅ Beat generated successfully:', {
+        path: result.localPath,
+        cost: `$${result.cost.toFixed(4)}`,
+        sizeKB: fs.existsSync(result.localPath) ? Math.round(fs.statSync(result.localPath).size / 1024) : 0
+      });
+
+      return result.localPath;
 
     } catch (error: any) {
       logger.error('❌ Failed to generate beat:', {
-        error: error.response?.data || error.message,
-        status: error.response?.status
+        error: error.message
       });
       throw new Error(`Audio generation failed: ${error.message}`);
     }

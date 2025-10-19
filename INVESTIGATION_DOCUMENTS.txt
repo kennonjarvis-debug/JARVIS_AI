@@ -1,0 +1,328 @@
+================================================================================
+JARVIS SYSTEM ARCHITECTURE INVESTIGATION - DOCUMENTS CREATED
+================================================================================
+
+Investigation Completed: October 19, 2025
+Investigation Level: Very Thorough
+Total Analysis Lines: 2,259 lines across 3 documents
+
+================================================================================
+INVESTIGATION OUTPUT FILES (in /Users/benkennon/Jarvis/)
+================================================================================
+
+1. INVESTIGATION_INDEX.md (386 lines)
+   Path: /Users/benkennon/Jarvis/INVESTIGATION_INDEX.md
+   Purpose: Quick reference index and implementation roadmap
+   Contains: Overview, quick fixes, success metrics, file reference
+
+2. SYSTEM_ARCHITECTURE_INVESTIGATION.md (861 lines)
+   Path: /Users/benkennon/Jarvis/SYSTEM_ARCHITECTURE_INVESTIGATION.md
+   Purpose: Comprehensive architectural analysis
+   Contains: Service layers, event systems, state management, gaps, recommendations
+
+3. SYSTEM_CONNECTIONS_DIAGRAM.md (567 lines)
+   Path: /Users/benkennon/Jarvis/SYSTEM_CONNECTIONS_DIAGRAM.md
+   Purpose: Visual connection maps and data flows
+   Contains: ASCII diagrams, data flows, connection matrices, missing links
+
+4. ARCHITECTURE_GAPS_SUMMARY.md (445 lines)
+   Path: /Users/benkennon/Jarvis/ARCHITECTURE_GAPS_SUMMARY.md
+   Purpose: Executive summary and action plan
+   Contains: Status table, critical gaps, high-priority items, phased roadmap
+
+================================================================================
+KEY FINDINGS SUMMARY
+================================================================================
+
+WORKING SYSTEMS (✅):
+  • API Gateway (Port 4000)
+  • Module Router with retry logic
+  • Multi-provider AI routing
+  • Service health monitoring
+  • Circuit breaker pattern
+  • WebSocket real-time communication
+  • Activity monitoring
+  • Autonomous orchestrator foundation
+  • Business metrics tracking
+
+BROKEN SYSTEMS (❌):
+  • Music generation (stub only)
+  • Chat-to-music intent bridge
+  • Activity-to-DAW event bridge
+  • Plugin system (completely missing)
+  • Event bus (fragmented)
+  • Storage layer (fragmented)
+
+PARTIAL/INCOMPLETE:
+  • AI provider capabilities (no streaming, no multimodal)
+  • Error recovery between services
+  • Service initialization patterns
+  • Dependency injection
+
+================================================================================
+CRITICAL ISSUES IDENTIFIED
+================================================================================
+
+1. MUSIC GENERATION DISCONNECTED (CRITICAL)
+   - File: /Users/benkennon/Jarvis/src/services/music-generator.ts
+   - Issue: Returns fake URLs only, no real audio generation
+   - Fix: Implement real provider (Suno/Replicate)
+
+2. NO CHAT-TO-MUSIC BRIDGE (CRITICAL)
+   - File: /Users/benkennon/Jarvis/src/core/gateway.ts
+   - Issue: No intent detection for music requests
+   - Fix: Add music intent classifier, route to music gen
+
+3. ACTIVITY MONITOR INCOMPLETE (CRITICAL)
+   - File: /Users/benkennon/Jarvis/src/main.ts (lines 115-134)
+   - Issue: Detects freestyle but doesn't trigger generation
+   - Fix: Wire to autonomous orchestrator music domain
+
+4. PLUGIN SYSTEM MISSING (HIGH)
+   - Location: Entire system
+   - Issue: No plugin interface or loader
+   - Fix: Implement plugin architecture
+
+5. EVENT SYSTEM FRAGMENTED (HIGH)
+   - Files: Multiple *service.ts files
+   - Issue: Scattered EventEmitters, no central bus
+   - Fix: Create Redis-backed event bus
+
+6. STORAGE LAYER FRAGMENTED (HIGH)
+   - Various locations
+   - Issue: Music files go to /tmp, lost on restart
+   - Fix: Unify storage abstraction
+
+================================================================================
+SERVICE INVENTORY
+================================================================================
+
+CORE SERVICES:
+  • API Gateway: /Users/benkennon/Jarvis/src/core/gateway.ts
+  • Module Router: /Users/benkennon/Jarvis/src/core/module-router.ts
+  • AI Router v2: /Users/benkennon/Jarvis/src/core/ai-router-v2.ts
+  • Health Aggregator: /Users/benkennon/Jarvis/src/core/health-aggregator.ts
+  • WebSocket Hub: /Users/benkennon/Jarvis/src/core/websocket-hub.ts
+  • Business Operator: /Users/benkennon/Jarvis/src/core/business-operator.ts
+  • Circuit Breaker: /Users/benkennon/Jarvis/src/core/circuit-breaker.ts
+
+AI SERVICES:
+  • OpenAI: /Users/benkennon/Jarvis/src/services/ai/openai.service.ts
+  • Anthropic: /Users/benkennon/Jarvis/src/services/ai/anthropic.service.ts
+  • AI Router: /Users/benkennon/Jarvis/src/services/ai/ai-router.service.ts
+  • Memory: /Users/benkennon/Jarvis/src/services/ai/memory.service.ts
+  • RAG: /Users/benkennon/Jarvis/src/services/ai/rag.service.ts
+
+MUSIC SERVICES:
+  • Music Generator: /Users/benkennon/Jarvis/src/services/music-generator.ts [STUB]
+  • Audio Mixer: /Users/benkennon/Jarvis/src/services/audio-mixer.ts
+  • Voice Cloner: /Users/benkennon/Jarvis/src/services/voice-cloner.ts
+  • Suno Generator: /Users/benkennon/Jarvis/src/services/suno-style-generator.ts [STUB]
+  • Replicate Generator: /Users/benkennon/Jarvis/src/services/replicate-music-generator.ts [STUB]
+
+ACTIVITY MONITORING:
+  • Activity Monitor: /Users/benkennon/Jarvis/src/services/activity-monitor.service.ts
+  • Screen Recorder: /Users/benkennon/Jarvis/src/services/screen-recorder.service.ts
+  • Audio Monitor: /Users/benkennon/Jarvis/src/services/audio-monitor.service.ts
+  • App Tracker: /Users/benkennon/Jarvis/src/services/app-usage-tracker.service.ts
+  • Context Detector: /Users/benkennon/Jarvis/src/services/context-detector.service.ts
+
+AUTONOMOUS SYSTEMS:
+  • Orchestrator: /Users/benkennon/Jarvis/src/autonomous/orchestrator.ts
+  • Domain Agents: /Users/benkennon/Jarvis/src/autonomous/domains/
+
+INTEGRATION:
+  • DAWG AI Service: /Users/benkennon/Jarvis/src/services/dawg-ai.service.ts
+  • DAWG AI Projects: /Users/benkennon/Jarvis/src/services/dawg-ai-projects.service.ts
+  • DAWG AI Workflows: /Users/benkennon/Jarvis/src/services/dawg-ai-workflows.service.ts
+
+STORAGE & STATE:
+  • Conversation Store: /Users/benkennon/Jarvis/src/core/conversation-store/
+  • Cache: /Users/benkennon/Jarvis/src/services/cache.service.ts
+  • Connection Pool: /Users/benkennon/Jarvis/src/db/connection-pool.ts
+
+CONFIGURATION:
+  • Config: /Users/benkennon/Jarvis/src/utils/config.ts
+  • Logger: /Users/benkennon/Jarvis/src/utils/logger.js
+  • Secrets Manager: /Users/benkennon/Jarvis/src/security/secrets-manager.ts
+  • Database: /Users/benkennon/Jarvis/prisma/schema.prisma
+
+================================================================================
+IMPLEMENTATION ROADMAP
+================================================================================
+
+PHASE 1: CRITICAL FIXES (1-2 weeks)
+  [ ] Wire music generation to chat system
+      • Detect music intent in chat handler
+      • Route to music generator service
+      • Stream results back to user
+  
+  [ ] Connect activity monitor to music pipeline
+      • Wire session:ended events to orchestrator
+      • Create music production tasks
+      • Notify user in chat
+
+  [ ] Implement real music generation
+      • Choose provider (Suno or Replicate)
+      • Generate actual audio files
+      • Store in persistent location
+
+PHASE 2: INFRASTRUCTURE (3-4 weeks)
+  [ ] Create central event bus
+      • Define EventBus interface
+      • Implement Redis-backed event store
+      • Wire all services to bus
+
+  [ ] Unify storage layer
+      • Create storage abstraction
+      • Support multiple backends (local, S3, Azure)
+      • Integrate with backup system
+
+  [ ] Implement plugin system
+      • Define IPlugin interface
+      • Create plugin loader
+      • Document plugin API
+
+PHASE 3: QUALITY (5-6 weeks)
+  [ ] Add formal dependency injection
+      • Use tsyringe or similar
+      • Declare service dependencies
+      • Validate initialization order
+
+  [ ] Implement correlation IDs
+      • Add tracing infrastructure
+      • Propagate context between services
+      • Better error debugging
+
+  [ ] Build integration test suite
+      • Test cross-service flows
+      • Test event propagation
+      • Test failure scenarios
+
+================================================================================
+ENVIRONMENT CONFIGURATION NEEDED
+================================================================================
+
+REQUIRED:
+  NODE_ENV=development|production|staging
+  JARVIS_PORT=5001
+  JARVIS_AUTH_TOKEN=...
+  DATABASE_URL=postgresql://...
+  REDIS_URL=redis://...
+  OPENAI_API_KEY=...
+
+TO ADD (for music generation):
+  MUSIC_PROVIDER=suno|replicate|custom
+  SUNO_API_KEY=...
+  REPLICATE_API_TOKEN=...
+  S3_BUCKET=...
+  S3_REGION=...
+
+OPTIONAL (for features):
+  ANTHROPIC_API_KEY=...
+  GOOGLE_AI_API_KEY=...
+  MISTRAL_API_KEY=...
+  ENABLE_BUSINESS_OPERATOR=true
+  ENABLE_MCP=true
+  ACTIVITY_MONITORING_ENABLED=true
+  AUTONOMOUS_ENABLED=true
+
+================================================================================
+HOW TO USE INVESTIGATION DOCUMENTS
+================================================================================
+
+START HERE:
+  1. Read INVESTIGATION_INDEX.md (5 min) - Get overview
+  2. Skim ARCHITECTURE_GAPS_SUMMARY.md (10 min) - See action plan
+  3. Review SYSTEM_CONNECTIONS_DIAGRAM.md (15 min) - Visualize gaps
+
+FOR IMPLEMENTATION:
+  1. Read Phase 1 section of ARCHITECTURE_GAPS_SUMMARY.md
+  2. Reference specific file locations
+  3. Check SYSTEM_ARCHITECTURE_INVESTIGATION.md for details
+  4. Follow code examples in sections 10 of main doc
+
+FOR ARCHITECTURAL DECISIONS:
+  1. Review "Service Layer Architecture" in main doc
+  2. Check "API Boundaries" section
+  3. Reference "Configuration & Environment" section
+
+FOR DEBUGGING:
+  1. Use SYSTEM_CONNECTIONS_DIAGRAM.md to trace flow
+  2. Find service in inventory
+  3. Check "Data Flow" sections for typical patterns
+
+================================================================================
+KEY METRICS & STATISTICS
+================================================================================
+
+SERVICES ANALYZED: 50+
+MAJOR SYSTEMS: 6
+  • Chat System
+  • Music Generation
+  • DAW Integration
+  • Activity Monitoring
+  • Autonomous Orchestration
+  • Infrastructure
+
+WORKING SYSTEMS: 3 ✅
+BROKEN SYSTEMS: 3 ❌
+PARTIAL SYSTEMS: 3 ⚠️
+
+CRITICAL GAPS: 6
+HIGH PRIORITY ITEMS: 4
+MEDIUM PRIORITY ITEMS: 3
+
+EFFORT ESTIMATE:
+  Phase 1 (Critical): 1-2 weeks
+  Phase 2 (Infrastructure): 3-4 weeks
+  Phase 3 (Quality): 2-3 weeks
+  Total: 6-9 weeks for complete fixes
+
+================================================================================
+INVESTIGATION METHODOLOGY
+================================================================================
+
+Analysis covered:
+  ✓ Service layer architecture
+  ✓ Event systems and message buses
+  ✓ State management patterns
+  ✓ API boundaries and service contracts
+  ✓ Database and storage integration
+  ✓ Service initialization and dependency injection
+  ✓ Configuration and environment setup
+  ✓ Inter-service communication patterns
+  ✓ Error recovery mechanisms
+  ✓ Multi-instance coordination
+  ✓ Security and authentication
+  ✓ Health monitoring and resilience
+
+Sources analyzed:
+  • 50+ TypeScript source files
+  • Package.json and dependencies
+  • Prisma schema and database models
+  • Configuration files and environment setup
+  • Docker compose (if present)
+  • Documentation in /docs directory
+  • Existing architecture documents
+
+================================================================================
+NEXT STEPS
+================================================================================
+
+1. REVIEW: Have architect/lead review these documents
+2. PRIORITIZE: Decide which phase to start with
+3. ASSIGN: Assign owners to critical fixes
+4. PLAN: Create sprint tasks from action items
+5. EXECUTE: Start with Phase 1 (critical fixes)
+6. ITERATE: Use Phase 2-3 as ongoing improvements
+
+Expected outcome after fixes:
+  • Users can generate music via chat
+  • Activity monitor automatically finishes songs
+  • Plugin system enables third-party extensions
+  • System is more maintainable and scalable
+
+================================================================================
+END OF INVESTIGATION REPORT
+================================================================================

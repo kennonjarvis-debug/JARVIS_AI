@@ -1,12 +1,46 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import BpmKeyConfirmDialog from '../BpmKeyConfirmDialog';
 
 interface Message {
   role: 'user' | 'assistant' | 'system';
   content: string;
   timestamp: Date;
   cost?: number;
+  type?: string;
+  audioUrl?: string;
+  localPath?: string;
+  metadata?: {
+    genre?: string;
+    tempo?: number;
+    key?: string;
+    instruments?: string[];
+    chordProgressions?: any;
+    songStructure?: any;
+  };
+  project?: {
+    id: string;
+    name: string;
+    bpm?: number;
+    key?: string;
+  };
+  track?: {
+    id: string;
+    name: string;
+    audioPath?: string;
+    audioUrl?: string;
+    duration?: number;
+    analysis?: {
+      bpm?: number;
+      key?: string;
+      duration?: number;
+      confidence?: {
+        bpm?: number;
+        key?: number;
+      };
+    };
+  };
 }
 
 interface AIChatProps {
@@ -28,6 +62,16 @@ export default function AIChat({
   const [streaming, setStreaming] = useState(false);
   const [totalCost, setTotalCost] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // BPM/Key confirmation dialog state
+  const [showBpmKeyDialog, setShowBpmKeyDialog] = useState(false);
+  const [pendingAnalysis, setPendingAnalysis] = useState<{
+    detectedBpm?: number;
+    detectedKey?: string;
+    currentBpm?: number;
+    currentKey?: string;
+    projectId?: string;
+  } | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -73,6 +117,12 @@ export default function AIChat({
           content: data.content,
           timestamp: new Date(),
           cost: data.cost,
+          type: data.type,
+          audioUrl: data.audioUrl,
+          localPath: data.localPath,
+          metadata: data.metadata,
+          project: data.project,
+          track: data.track,
         };
 
         setMessages(prev => [...prev, assistantMessage]);
@@ -83,6 +133,25 @@ export default function AIChat({
             if (onCostUpdate) onCostUpdate(newTotal);
             return newTotal;
           });
+        }
+
+        // Check if we have audio analysis results
+        if (data.track?.analysis) {
+          const analysis = data.track.analysis;
+          const currentBpm = data.project?.metadata?.bpm || data.project?.bpm;
+          const currentKey = data.project?.metadata?.key || data.project?.key;
+
+          // Show dialog if BPM or key detected
+          if (analysis.bpm || analysis.key) {
+            setPendingAnalysis({
+              detectedBpm: analysis.bpm,
+              detectedKey: analysis.key,
+              currentBpm,
+              currentKey,
+              projectId: data.project?.id,
+            });
+            setShowBpmKeyDialog(true);
+          }
         }
       } else {
         throw new Error(data.error || 'Failed to send message');
@@ -194,6 +263,39 @@ export default function AIChat({
     }
   };
 
+  const handleBpmKeyConfirm = async (updateSettings: boolean) => {
+    setShowBpmKeyDialog(false);
+
+    if (updateSettings && pendingAnalysis) {
+      try {
+        // Update project settings via API
+        const response = await fetch(`/api/dawg-ai/projects/${pendingAnalysis.projectId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            metadata: {
+              bpm: pendingAnalysis.detectedBpm,
+              key: pendingAnalysis.detectedKey,
+            },
+          }),
+        });
+
+        if (response.ok) {
+          console.log('✅ Project settings updated with detected BPM/key');
+          // TODO: Show success notification to user
+        } else {
+          console.error('Failed to update project settings');
+          // TODO: Show error notification to user
+        }
+      } catch (error) {
+        console.error('Failed to update project settings', error);
+        // TODO: Show error notification to user
+      }
+    }
+
+    setPendingAnalysis(null);
+  };
+
   return (
     <div className="flex flex-col h-full bg-white dark:bg-gray-900 rounded-lg shadow-lg">
       {/* Header */}
@@ -229,6 +331,80 @@ export default function AIChat({
               }`}
             >
               <p className="whitespace-pre-wrap">{message.content}</p>
+
+              {/* Music Generation: Track Widget */}
+              {message.type === 'track_creation_with_music' && message.audioUrl && (
+                <div className="mt-4 p-4 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+                  {/* Project Info */}
+                  {message.project && (
+                    <div className="mb-3 pb-3 border-b border-gray-200 dark:border-gray-700">
+                      <div className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        Project: {message.project.name}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        {message.project.bpm && `${message.project.bpm} BPM`}
+                        {message.project.key && ` • ${message.project.key}`}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Track Info */}
+                  {message.track && (
+                    <div className="mb-3">
+                      <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        {message.track.name}
+                      </div>
+                      {message.track.duration && (
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          Duration: {Math.floor(message.track.duration / 60)}:{String(message.track.duration % 60).padStart(2, '0')}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Audio Player */}
+                  <audio
+                    controls
+                    className="w-full mb-3"
+                    src={message.audioUrl}
+                  >
+                    Your browser does not support the audio element.
+                  </audio>
+
+                  {/* Metadata */}
+                  {message.metadata && (
+                    <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+                      {message.metadata.genre && (
+                        <div>Genre: {message.metadata.genre}</div>
+                      )}
+                      {message.metadata.tempo && (
+                        <div>Tempo: {message.metadata.tempo} BPM</div>
+                      )}
+                      {message.metadata.key && (
+                        <div>Key: {message.metadata.key}</div>
+                      )}
+                      {message.metadata.instruments && message.metadata.instruments.length > 0 && (
+                        <div>Instruments: {message.metadata.instruments.join(', ')}</div>
+                      )}
+                      {message.metadata.chordProgressions && (
+                        <div className="mt-2">
+                          <div className="font-semibold">Chord Progressions:</div>
+                          {message.metadata.chordProgressions.verse && (
+                            <div>Verse: {message.metadata.chordProgressions.verse.join(' - ')}</div>
+                          )}
+                          {message.metadata.chordProgressions.chorus && (
+                            <div>Chorus: {message.metadata.chordProgressions.chorus.join(' - ')}</div>
+                          )}
+                          {message.metadata.chordProgressions.bridge && (
+                            <div>Bridge: {message.metadata.chordProgressions.bridge.join(' - ')}</div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="mt-1 text-xs opacity-70">
                 {message.timestamp.toLocaleTimeString()}
                 {message.cost && ` • $${message.cost.toFixed(4)}`}
@@ -279,6 +455,21 @@ export default function AIChat({
           </button>
         </div>
       </div>
+
+      {/* BPM/Key confirmation dialog */}
+      {showBpmKeyDialog && pendingAnalysis && (
+        <BpmKeyConfirmDialog
+          detectedBpm={pendingAnalysis.detectedBpm}
+          detectedKey={pendingAnalysis.detectedKey}
+          currentBpm={pendingAnalysis.currentBpm}
+          currentKey={pendingAnalysis.currentKey}
+          onConfirm={handleBpmKeyConfirm}
+          onCancel={() => {
+            setShowBpmKeyDialog(false);
+            setPendingAnalysis(null);
+          }}
+        />
+      )}
     </div>
   );
 }

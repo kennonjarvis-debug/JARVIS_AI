@@ -84,8 +84,9 @@ async function main() {
       logger.info('🔍 Starting Activity Monitoring System...');
 
       const { activityMonitor, MonitoringLevel } = await import('./services/activity-monitor.service.js');
-      const { proactiveActions } = await import('./services/proactive-action.service.js');
+      const { proactiveActions, ActionType } = await import('./services/proactive-action.service.js');
       const { deviceSync } = await import('./services/device-sync.service.js');
+      const { musicGenerator } = await import('./services/music-generator.js');
 
       // Configure activity monitoring
       activityMonitor.updateConfig({
@@ -125,10 +126,46 @@ async function main() {
           // Auto-create action
           const action = proactiveActions.createAction(opp.id);
 
-          // Auto-approve low-risk actions
+          // Auto-approve and EXECUTE low-risk actions
           if (opp.clearanceRequired <= 2) { // MODIFY_SAFE or lower
             proactiveActions.approveAction(action.id);
             logger.info(`✅ Action auto-approved: ${action.id}`);
+
+            // EXECUTE THE ACTION
+            if (opp.type === ActionType.FINISH_SONG) {
+              logger.info(`🎵 Executing FINISH_SONG action...`);
+
+              try {
+                // Generate music using custom MusicGen
+                const result = await musicGenerator.generateBeat({
+                  genre: 'hip-hop', // Could be extracted from session metadata
+                  bpm: 120,
+                  mood: 'energetic',
+                  duration: 30
+                });
+
+                logger.info(`✅ Music generated: ${result.localPath}`);
+
+                // Mark action as completed
+                proactiveActions.completeAction(action.id, {
+                  audioPath: result.localPath,
+                  audioUrl: result.audioUrl,
+                  metadata: result.metadata
+                });
+
+                // Notify user (via device sync if enabled)
+                if (deviceSync.getStatus().enabled) {
+                  await deviceSync.sendNotification(userId, {
+                    title: '🎵 Your freestyle is ready!',
+                    body: `Generated a ${result.metadata.genre} beat from your freestyle session`,
+                    data: { audioPath: result.localPath }
+                  });
+                }
+              } catch (error: any) {
+                logger.error(`❌ Failed to execute FINISH_SONG action: ${error.message}`);
+                proactiveActions.failAction(action.id, error.message);
+              }
+            }
           }
         }
       });

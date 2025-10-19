@@ -126,6 +126,58 @@ export class ModuleRouter {
       return await this.routeToService('freestyle', endpoint, freestyleData);
     }
 
+    // Route music module requests to local music generation service
+    if (command.module === 'music') {
+      logger.info(`Routing ${command.module}.${command.action} to local music generation service`);
+
+      // Import music generator dynamically
+      const { musicGenerator } = await import('../services/music-generator.js');
+
+      try {
+        let result;
+
+        switch (command.action) {
+          case 'generate-beat':
+          case 'generate':
+            result = await musicGenerator.generateBeat({
+              genre: command.params.genre,
+              bpm: command.params.bpm,
+              mood: command.params.mood,
+              duration: command.params.duration || 30
+            });
+            break;
+
+          case 'generate-music':
+            result = await musicGenerator.generateMusic({
+              musicalIntent: command.params.musicalIntent,
+              duration: command.params.duration || 30,
+              includeVocals: command.params.includeVocals || false
+            });
+            break;
+
+          default:
+            return {
+              success: false,
+              error: `Unknown music action: ${command.action}`,
+              timestamp: new Date().toISOString()
+            };
+        }
+
+        return {
+          success: true,
+          data: result,
+          timestamp: new Date().toISOString()
+        };
+      } catch (error: any) {
+        logger.error(`Music generation failed: ${error.message}`);
+        return {
+          success: false,
+          error: error.message,
+          timestamp: new Date().toISOString()
+        };
+      }
+    }
+
     // Default: route through AI DAWG Backend
     let lastError: Error | null = null;
 
