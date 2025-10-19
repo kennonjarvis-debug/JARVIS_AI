@@ -9,6 +9,8 @@
  * - Skeleton loading states
  */
 
+'use client';
+
 import React, { useState, useEffect, useRef, Suspense } from 'react';
 
 // ===========================

@@ -5,9 +5,27 @@ const nextConfig = {
   // Use standalone output for Netlify serverless
   output: 'standalone',
 
-  // Disable static optimization to allow client-side hooks
+  // Transpile packages that use ESM or have SSR issues
+  transpilePackages: [
+    'chart.js',
+    'react-chartjs-2',
+  ],
+
+  // Server-only packages that should never be bundled for client
+  serverComponentsExternalPackages: [
+    'ioredis',
+    '@prisma/client',
+    'bcryptjs',
+    'speakeasy',
+    'qrcode',
+    'ua-parser-js',
+  ],
+
+  // Experimental features - consolidated
   experimental: {
     missingSuspenseWithCSRBailout: false,
+    optimizeCss: true,
+    optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
   },
 
   // Image Optimization
@@ -32,6 +50,17 @@ const nextConfig = {
 
   // Webpack optimizations
   webpack: (config, { dev, isServer }) => {
+    // Prevent server-side bundling of client-only modules
+    if (isServer) {
+      config.externals = config.externals || [];
+      if (Array.isArray(config.externals)) {
+        config.externals.push({
+          'chart.js': 'chart.js',
+          'react-chartjs-2': 'react-chartjs-2',
+        });
+      }
+    }
+
     // Production optimizations
     if (!dev) {
       // Tree shaking
@@ -123,14 +152,6 @@ const nextConfig = {
       },
     ];
   },
-
-  // Enable HTTP/2 server push
-  experimental: {
-    missingSuspenseWithCSRBailout: false,
-    optimizeCss: true,
-    optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
-  },
 };
 
 module.exports = nextConfig;
-

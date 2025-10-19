@@ -1,5 +1,6 @@
 import { Providers } from "./providers";
 import Chatbot from "../components/Chatbot";
+import ServiceWorkerRegister from "../components/ServiceWorkerRegister";
 
 export const metadata = {
   title: "Jarvis",
@@ -17,18 +18,12 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#0b0f17" />
         <link rel="apple-touch-icon" href="/icons/icon-512x512.png" />
-        <script dangerouslySetInnerHTML={{ __html: `
-          if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-              navigator.serviceWorker.register('/sw.js').catch(function(){});
-            });
-          }
-        ` }} />
       </head>
       <body>
         <Providers>
           {children}
           <Chatbot />
+          <ServiceWorkerRegister />
         </Providers>
       </body>
     </html>

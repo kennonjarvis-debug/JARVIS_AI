@@ -31,6 +31,10 @@ export default function CookieConsent() {
 
   useEffect(() => {
     // Check if user has already set preferences
+    if (typeof window === "undefined") {
+      return;
+    }
+
     const savedPreferences = localStorage.getItem("jarvis-cookie-consent");
 
     if (!savedPreferences) {
@@ -79,7 +83,9 @@ export default function CookieConsent() {
 
     try {
       // Save to localStorage
-      localStorage.setItem("jarvis-cookie-consent", JSON.stringify(prefs));
+      if (typeof window !== "undefined") {
+        localStorage.setItem("jarvis-cookie-consent", JSON.stringify(prefs));
+      }
 
       // Send to API
       const response = await fetch("/api/privacy/consent", {
