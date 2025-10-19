@@ -106,20 +106,20 @@ export default function ConnectPage() {
             <IntegrationOption
               icon={<MessageSquare className="w-6 h-6" />}
               name="iMessage"
-              description="Auto-respond to messages intelligently"
-              available
+              description="Requires local Mac app (coming soon)"
+              available={false}
             />
             <IntegrationOption
               icon={<FileText className="w-6 h-6" />}
               name="Notes"
-              description="Create notes from emails & reminders"
-              available
+              description="Requires local Mac app (coming soon)"
+              available={false}
             />
             <IntegrationOption
               icon={<Mic className="w-6 h-6" />}
               name="Voice Memos"
-              description="Transcribe & organize voice memos"
-              available
+              description="Requires local Mac app (coming soon)"
+              available={false}
             />
             <IntegrationOption
               icon={<Mail className="w-6 h-6" />}
