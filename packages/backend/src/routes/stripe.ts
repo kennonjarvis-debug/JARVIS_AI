@@ -11,10 +11,24 @@ import { createClient } from '@supabase/supabase-js';
 const router = Router();
 const logger = new Logger('StripeRoutes');
 
-// Initialize Stripe
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2024-12-18.acacia',
-});
+// Lazy-loaded Stripe instance
+let stripeInstance: Stripe | null = null;
+
+function getStripe(): Stripe {
+  if (!stripeInstance) {
+    const apiKey = process.env.STRIPE_SECRET_KEY;
+
+    if (!apiKey) {
+      throw new Error('STRIPE_SECRET_KEY environment variable is not set');
+    }
+
+    stripeInstance = new Stripe(apiKey, {
+      apiVersion: '2024-12-18.acacia',
+    });
+  }
+
+  return stripeInstance;
+}
 
 // Initialize Supabase
 const supabase = createClient(
@@ -58,7 +72,7 @@ router.post('/create-checkout-session', async (req: Request, res: Response) => {
 
     // Create customer if doesn't exist
     if (!customerId) {
-      const customer = await stripe.customers.create({
+      const customer = await getStripe().customers.create({
         email: userData.email,
         metadata: {
           user_id,
@@ -77,7 +91,7 @@ router.post('/create-checkout-session', async (req: Request, res: Response) => {
     }
 
     // Create checkout session
-    const session = await stripe.checkout.sessions.create({
+    const session = await getStripe().checkout.sessions.create({
       customer: customerId,
       mode: 'subscription',
       payment_method_types: ['card'],
@@ -123,7 +137,7 @@ router.post('/webhook', async (req: Request, res: Response) => {
   let event: Stripe.Event;
 
   try {
-    event = stripe.webhooks.constructEvent(
+    event = getStripe().webhooks.constructEvent(
       req.body,
       sig,
       process.env.STRIPE_WEBHOOK_SECRET || ''
@@ -250,7 +264,7 @@ router.post('/portal', async (req: Request, res: Response) => {
     }
 
     // Create portal session
-    const session = await stripe.billingPortal.sessions.create({
+    const session = await getStripe().billingPortal.sessions.create({
       customer: userData.stripe_customer_id,
       return_url: return_url || `${process.env.FRONTEND_URL || 'http://localhost:5173'}/dashboard`,
     });
@@ -298,7 +312,7 @@ router.post('/cancel', async (req: Request, res: Response) => {
     }
 
     // Cancel at period end
-    const subscription = await stripe.subscriptions.update(
+    const subscription = await getStripe().subscriptions.update(
       subscriptionData.stripe_subscription_id,
       {
         cancel_at_period_end: true,
