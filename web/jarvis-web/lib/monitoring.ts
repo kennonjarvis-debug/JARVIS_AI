@@ -340,15 +340,46 @@ class FrontendMonitoring {
   }
 }
 
-// Singleton instance
-export const monitoring = new FrontendMonitoring();
+// Lazy singleton instance (only created in browser)
+let monitoringInstance: FrontendMonitoring | null = null;
+
+function getMonitoring(): FrontendMonitoring {
+  if (typeof window === 'undefined') {
+    // Return a no-op instance for SSR
+    return {
+      setUserId: () => {},
+      trackPageView: () => {},
+      trackError: () => {},
+      trackEvent: () => {},
+      trackPerformance: () => {},
+      trackApiCall: () => {},
+      getSessionData: () => ({
+        sessionId: '',
+        userId: undefined,
+        errors: [],
+        pageViews: [],
+        performanceMetrics: [],
+        webVitals: {},
+      }),
+    } as any;
+  }
+
+  if (!monitoringInstance) {
+    monitoringInstance = new FrontendMonitoring();
+  }
+
+  return monitoringInstance;
+}
+
+// Export lazy-loaded singleton
+export const monitoring = getMonitoring();
 
 // Export for use in components
-export default monitoring;
+export default getMonitoring();
 
 // Helper hook for React components
 export function useMonitoring() {
-  return monitoring;
+  return getMonitoring();
 }
 
 // Type declarations for window

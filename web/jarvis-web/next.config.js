@@ -6,10 +6,7 @@ const nextConfig = {
   output: 'standalone',
 
   // Transpile packages that use ESM or have SSR issues
-  transpilePackages: [
-    'chart.js',
-    'react-chartjs-2',
-  ],
+  transpilePackages: [],
 
   // Server-only packages that should never be bundled for client
   serverComponentsExternalPackages: [
@@ -48,19 +45,8 @@ const nextConfig = {
   // Font optimization
   optimizeFonts: true,
 
-  // Webpack optimizations
-  webpack: (config, { dev, isServer }) => {
-    // Prevent server-side bundling of client-only modules
-    if (isServer) {
-      config.externals = config.externals || [];
-      if (Array.isArray(config.externals)) {
-        config.externals.push({
-          'chart.js': 'chart.js',
-          'react-chartjs-2': 'react-chartjs-2',
-        });
-      }
-    }
-
+  // Webpack optimizations - Let Next.js handle bundling for App Router
+  webpack: (config, { dev }) => {
     // Production optimizations
     if (!dev) {
       // Tree shaking
@@ -69,38 +55,6 @@ const nextConfig = {
         usedExports: true,
         sideEffects: true,
         minimize: true,
-      };
-
-      // Bundle splitting
-      config.optimization.splitChunks = {
-        chunks: 'all',
-        cacheGroups: {
-          default: false,
-          vendors: false,
-          // Vendor chunk
-          vendor: {
-            name: 'vendor',
-            chunks: 'all',
-            test: /node_modules/,
-            priority: 20,
-          },
-          // Common chunk
-          common: {
-            name: 'common',
-            minChunks: 2,
-            chunks: 'all',
-            priority: 10,
-            reuseExistingChunk: true,
-            enforce: true,
-          },
-          // Styles chunk
-          styles: {
-            name: 'styles',
-            test: /\.(css|scss)$/,
-            chunks: 'all',
-            enforce: true,
-          },
-        },
       };
     }
 
