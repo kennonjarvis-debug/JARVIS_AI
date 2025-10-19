@@ -7,6 +7,7 @@ import { Router, type Request, type Response } from 'express';
 import Stripe from 'stripe';
 import { Logger } from '@jarvis/shared';
 import { createClient } from '@supabase/supabase-js';
+import { requireAuth } from '../middleware/auth.js';
 
 const router = Router();
 const logger = new Logger('StripeRoutes');
@@ -47,7 +48,7 @@ const PRICE_IDS = {
  * POST /api/stripe/create-checkout-session
  * Create a Stripe Checkout session for subscription
  */
-router.post('/create-checkout-session', async (req: Request, res: Response) => {
+router.post('/create-checkout-session', requireAuth, async (req: Request, res: Response) => {
   try {
     const { user_id, price_id, success_url, cancel_url } = req.body;
 
@@ -198,7 +199,7 @@ router.post('/webhook', async (req: Request, res: Response) => {
  * GET /api/stripe/subscription
  * Get user's current subscription
  */
-router.get('/subscription', async (req: Request, res: Response) => {
+router.get('/subscription', requireAuth, async (req: Request, res: Response) => {
   try {
     const { user_id } = req.query;
 
@@ -240,7 +241,7 @@ router.get('/subscription', async (req: Request, res: Response) => {
  * POST /api/stripe/portal
  * Create a Stripe Customer Portal session
  */
-router.post('/portal', async (req: Request, res: Response) => {
+router.post('/portal', requireAuth, async (req: Request, res: Response) => {
   try {
     const { user_id, return_url } = req.body;
 
@@ -287,7 +288,7 @@ router.post('/portal', async (req: Request, res: Response) => {
  * POST /api/stripe/cancel
  * Cancel user's subscription
  */
-router.post('/cancel', async (req: Request, res: Response) => {
+router.post('/cancel', requireAuth, async (req: Request, res: Response) => {
   try {
     const { user_id } = req.body;
 

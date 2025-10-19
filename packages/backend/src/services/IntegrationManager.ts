@@ -220,6 +220,65 @@ export class IntegrationManager {
   }
 
   /**
+   * Update an existing integration
+   */
+  async updateIntegration(
+    integrationId: string,
+    updates: Partial<{
+      accountName: string;
+      accountId: string;
+      credentials: Record<string, any>;
+      config: Record<string, any>;
+      status: 'connected' | 'disconnected' | 'error' | 'pending';
+    }>
+  ): Promise<IntegrationRecord> {
+    try {
+      this.logger.info('Updating integration', { integrationId, updates });
+
+      // Build update object with snake_case keys for database
+      const updateData: Record<string, any> = {};
+      if (updates.accountName !== undefined) updateData.account_name = updates.accountName;
+      if (updates.accountId !== undefined) updateData.account_id = updates.accountId;
+      if (updates.credentials !== undefined) updateData.credentials = updates.credentials;
+      if (updates.config !== undefined) updateData.config = updates.config;
+      if (updates.status !== undefined) updateData.status = updates.status;
+
+      const { data, error } = await this.supabase
+        .from('integrations')
+        .update(updateData)
+        .eq('id', integrationId)
+        .select()
+        .single();
+
+      if (error) {
+        throw new JarvisError(
+          ErrorCode.INTEGRATION_ERROR,
+          'Failed to update integration in database',
+          { error: error.message, integrationId }
+        );
+      }
+
+      // Update cache if integration is loaded
+      const record = data as IntegrationRecord;
+      const cacheKey = `${record.observatory_id}:${record.platform}:${record.account_id || 'default'}`;
+      const integration = this.integrations.get(cacheKey);
+
+      if (integration) {
+        // Reload the integration with new credentials
+        this.integrations.delete(cacheKey);
+        await this.loadIntegration(record);
+        this.logger.info('Integration cache updated', { integrationId });
+      }
+
+      this.logger.info('Integration updated successfully', { integrationId });
+      return record;
+    } catch (error) {
+      this.logger.error('Failed to update integration', error);
+      throw error;
+    }
+  }
+
+  /**
    * Delete an integration
    */
   async deleteIntegration(integrationId: string): Promise<void> {

@@ -7,6 +7,7 @@ import SignupPage from './pages/SignupPage';
 import DashboardPage from './pages/DashboardPage';
 import AuthCallbackPage from './pages/AuthCallbackPage';
 import ConnectPage from './pages/ConnectPage';
+import SettingsPage from './pages/SettingsPage';
 
 function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -60,6 +61,10 @@ function App() {
         <Route
           path="/dashboard"
           element={user ? <DashboardPage user={user} /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/settings"
+          element={user ? <SettingsPage /> : <Navigate to="/login" />}
         />
       </Routes>
     </Router>

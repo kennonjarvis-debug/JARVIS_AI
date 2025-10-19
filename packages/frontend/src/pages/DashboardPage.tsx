@@ -163,10 +163,14 @@ export default function DashboardPage({ user }: { user: User }) {
             </div>
           </div>
           <div className="flex items-center space-x-4">
-            <button className="text-gray-600 hover:text-gray-900">
+            <button
+              onClick={() => navigate('/settings')}
+              className="text-gray-600 hover:text-gray-900"
+              title="Settings"
+            >
               <Settings className="w-6 h-6" />
             </button>
-            <button onClick={handleLogout} className="text-gray-600 hover:text-gray-900">
+            <button onClick={handleLogout} className="text-gray-600 hover:text-gray-900" title="Logout">
               <LogOut className="w-6 h-6" />
             </button>
           </div>

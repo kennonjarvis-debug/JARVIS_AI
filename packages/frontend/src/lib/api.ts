@@ -3,6 +3,8 @@
  * Communicates with the Jarvis backend API
  */
 
+import { supabase } from './supabase';
+
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3100/api';
 
 export interface Integration {
@@ -60,16 +62,32 @@ class ApiClient {
     this.baseUrl = baseUrl;
   }
 
+  private async getAuthHeaders(): Promise<Record<string, string>> {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    // Get the current Supabase session token
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (session?.access_token) {
+      headers['Authorization'] = `Bearer ${session.access_token}`;
+    }
+
+    return headers;
+  }
+
   private async fetch<T>(
     endpoint: string,
     options?: RequestInit
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
+    const authHeaders = await this.getAuthHeaders();
 
     const response = await fetch(url, {
       ...options,
       headers: {
-        'Content-Type': 'application/json',
+        ...authHeaders,
         ...options?.headers,
       },
     });

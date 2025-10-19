@@ -7,6 +7,7 @@ import { Router, type Request, type Response } from 'express';
 import { integrationManager } from '../services/IntegrationManager.js';
 import { TwitterIntegration } from '../integrations/twitter/index.js';
 import { Logger, JarvisError, ErrorCode } from '@jarvis/shared';
+import { requireAuth } from '../middleware/auth.js';
 
 const router = Router();
 const logger = new Logger('IntegrationRoutes');
@@ -53,7 +54,7 @@ router.get('/', (_req: Request, res: Response) => {
  * GET /api/integrations/connected
  * Get all connected integrations for the authenticated user
  */
-router.get('/connected', async (req: Request, res: Response) => {
+router.get('/connected', requireAuth, async (req: Request, res: Response) => {
   try {
     // TODO: Get observatoryId from authenticated user
     // For now, we'll use a placeholder
@@ -94,7 +95,7 @@ router.get('/connected', async (req: Request, res: Response) => {
  * POST /api/integrations/twitter/connect
  * Connect a Twitter account
  */
-router.post('/twitter/connect', async (req: Request, res: Response) => {
+router.post('/twitter/connect', requireAuth, async (req: Request, res: Response) => {
   try {
     const { observatory_id, api_key, api_secret, access_token, access_token_secret, account_name } = req.body;
 
@@ -150,7 +151,7 @@ router.post('/twitter/connect', async (req: Request, res: Response) => {
  * POST /api/integrations/twitter/tweet
  * Post a tweet
  */
-router.post('/twitter/tweet', async (req: Request, res: Response) => {
+router.post('/twitter/tweet', requireAuth, async (req: Request, res: Response) => {
   try {
     const { observatory_id, text, media_path, media_type } = req.body;
 
@@ -198,7 +199,7 @@ router.post('/twitter/tweet', async (req: Request, res: Response) => {
  * GET /api/integrations/twitter/mentions
  * Get Twitter mentions
  */
-router.get('/twitter/mentions', async (req: Request, res: Response) => {
+router.get('/twitter/mentions', requireAuth, async (req: Request, res: Response) => {
   try {
     const observatoryId = req.query.observatory_id as string;
     const maxResults = parseInt(req.query.max_results as string) || 10;
@@ -238,7 +239,7 @@ router.get('/twitter/mentions', async (req: Request, res: Response) => {
  * DELETE /api/integrations/:id
  * Disconnect an integration
  */
-router.delete('/:id', async (req: Request, res: Response) => {
+router.delete('/:id', requireAuth, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
@@ -263,7 +264,7 @@ router.delete('/:id', async (req: Request, res: Response) => {
  * GET /api/integrations/:id/health
  * Check integration health
  */
-router.get('/:id/health', async (req: Request, res: Response) => {
+router.get('/:id/health', requireAuth, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 

@@ -1,9 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bot, Twitter, Mail, CheckCircle, ArrowRight, Loader, MessageSquare, FileText, Mic } from 'lucide-react';
 import { api } from '../lib/api';
-
-const OBSERVATORY_ID = 'd66d0922-a735-4ea5-bd70-daef059e392c'; // Your observatory ID
+import { supabase } from '../lib/supabase';
 
 interface ConnectionForm {
   twitter: {
@@ -20,6 +19,7 @@ export default function ConnectPage() {
   const [step, setStep] = useState<'welcome' | 'twitter' | 'success'>('welcome');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [observatoryId, setObservatoryId] = useState<string | null>(null);
   const [form, setForm] = useState<ConnectionForm>({
     twitter: {
       api_key: '',
@@ -30,10 +30,48 @@ export default function ConnectPage() {
     },
   });
 
+  // Fetch observatory ID for current user
+  useEffect(() => {
+    async function fetchObservatory() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+          setError('Please sign in to continue');
+          navigate('/login');
+          return;
+        }
+
+        const { data, error } = await supabase
+          .from('observatories')
+          .select('id')
+          .eq('user_id', user.id)
+          .single();
+
+        if (error || !data) {
+          setError('Observatory not found. Please contact support.');
+          return;
+        }
+
+        setObservatoryId(data.id);
+      } catch (err) {
+        console.error('Failed to fetch observatory:', err);
+        setError('Failed to load your workspace');
+      }
+    }
+
+    fetchObservatory();
+  }, [navigate]);
+
   const handleTwitterConnect = () => {
+    if (!observatoryId) {
+      setError('Observatory not loaded. Please refresh the page.');
+      return;
+    }
+
     // Redirect to OAuth flow
     const backendURL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
-    window.location.href = `${backendURL}/api/auth/twitter?observatory_id=${OBSERVATORY_ID}`;
+    window.location.href = `${backendURL}/api/auth/twitter?observatory_id=${observatoryId}`;
   };
 
   const handleSkip = () => {
