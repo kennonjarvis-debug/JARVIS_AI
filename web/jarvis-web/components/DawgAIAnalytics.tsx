@@ -15,19 +15,6 @@ import {
 } from "chart.js";
 import { Line, Bar } from "react-chartjs-2";
 
-// Register ChartJS components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-);
-
 interface AnalyticsData {
   timeRange: {
     start: string;
@@ -63,6 +50,21 @@ export default function DawgAIAnalytics() {
   const [usage, setUsage] = useState<UsageMetrics | null>(null);
   const [period, setPeriod] = useState<"day" | "week" | "month">("month");
   const [loading, setLoading] = useState(true);
+
+  // Register Chart.js components on client-side only
+  useEffect(() => {
+    ChartJS.register(
+      CategoryScale,
+      LinearScale,
+      PointElement,
+      LineElement,
+      BarElement,
+      Title,
+      Tooltip,
+      Legend,
+      Filler
+    );
+  }, []);
 
   useEffect(() => {
     loadAnalytics();
