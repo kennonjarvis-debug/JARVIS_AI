@@ -358,22 +358,5 @@ export enum BusinessEvent {
 }
 
 /**
- * Export all types
+ * All types are already exported above with individual export declarations
  */
-export type {
-  IExternalIntegration,
-  MarketingCampaign,
-  CampaignInsight,
-  CRMLead,
-  CRMContact,
-  CRMInteraction,
-  SupportTicket,
-  SupportInsight,
-  BusinessMetrics,
-  AnalyticsTrend,
-  BusinessAutomation,
-  AutomationTrigger,
-  AutomationCondition,
-  AutomationAction,
-  IntegrationConfig
-};

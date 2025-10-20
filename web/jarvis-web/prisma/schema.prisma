@@ -27,8 +27,59 @@ model User {
   twoFactorSecret   TwoFactorSecret?
   backupCodes       BackupCode[]
   twoFactorLogs     TwoFactorLog[]
+  businessMemberships BusinessMember[]
+  ownedBusinesses   Business[]
 
   @@index([email])
+}
+
+// Business/Workspace model for multi-business support
+model Business {
+  id                String    @id @default(cuid())
+  name              String
+  slug              String    @unique  // URL-friendly identifier
+  description       String?   @db.Text
+  logo              String?
+  ownerId           String    // Creator/owner of the business
+  planTier          String    @default("FREE")  // FREE, STARTER, PROFESSIONAL, ENTERPRISE
+  stripeCustomerId  String?   @unique
+  stripeSubscriptionId String? @unique
+  subscriptionStatus String?  // active, canceled, past_due, trialing
+  trialEndsAt       DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  // Relations
+  owner             User              @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  members           BusinessMember[]
+
+  @@index([ownerId])
+  @@index([slug])
+  @@index([stripeCustomerId])
+  @@index([subscriptionStatus])
+}
+
+// Business membership/team members
+model BusinessMember {
+  id          String    @id @default(cuid())
+  businessId  String
+  userId      String
+  role        String    @default("MEMBER")  // OWNER, ADMIN, MEMBER
+  invitedBy   String?
+  invitedAt   DateTime  @default(now())
+  joinedAt    DateTime?
+  status      String    @default("ACTIVE")  // ACTIVE, INACTIVE, PENDING
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  business    Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([businessId, userId])
+  @@index([businessId])
+  @@index([userId])
+  @@index([status])
 }
 
 // NextAuth Account model

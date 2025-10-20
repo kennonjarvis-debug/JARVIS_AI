@@ -247,7 +247,7 @@ export class ShortcutsService extends EventEmitter {
       /**
        * Get daily briefing from Jarvis
        */
-      getDailyBriefi ng: async () => {
+      getDailyBriefing: async () => {
         return this.runJarvisShortcut('Daily Briefing');
       },
     };

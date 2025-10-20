@@ -252,7 +252,7 @@ export class MCPServer {
         }
 
         case 'jarvis_conversation_search': {
-          const conversations = conversationStore.searchConversations(
+          const conversations = await conversationStore.searchConversations(
             args.query
           );
 
@@ -428,15 +428,14 @@ export class MCPServer {
         }
 
         case 'jarvis://conversations': {
-          const conversations = conversationStore
-            .getAllConversations()
-            .map((c) => ({
-              id: c.id,
-              messageCount: c.messages.length,
-              participants: Object.keys(c.participants),
-              created: c.created,
-              updated: c.updated,
-            }));
+          const allConversations = await conversationStore.getAllConversations();
+          const conversations = allConversations.map((c) => ({
+            id: c.id,
+            messageCount: c.messages.length,
+            participants: Object.keys(c.participants),
+            created: c.created,
+            updated: c.updated,
+          }));
 
           return [
             {

@@ -190,6 +190,9 @@ export const defaultLogger = new Logger({
   service: 'jarvis-control-plane',
 });
 
+// Alias for backwards compatibility
+export const logger = defaultLogger;
+
 // HTTP request logging middleware
 export function httpLogger(req: any, res: any, next: any) {
   const start = Date.now();

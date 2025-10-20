@@ -207,7 +207,7 @@ export class ChatConversationDomain extends BaseDomainAgent {
 
   private async getRecentConversations(): Promise<any[]> {
     try {
-      const allConversations = conversationStore.getAllConversations();
+      const allConversations = await conversationStore.getAllConversations();
       const now = Date.now();
       const sevenDaysAgo = now - (7 * 24 * 60 * 60 * 1000);
 
@@ -268,7 +268,7 @@ export class ChatConversationDomain extends BaseDomainAgent {
   }
 
   private async findStaleConversations(): Promise<any[]> {
-    const allConversations = conversationStore.getAllConversations();
+    const allConversations = await conversationStore.getAllConversations();
     const now = Date.now();
     const thirtyDaysAgo = now - (30 * 24 * 60 * 60 * 1000);
 
@@ -342,7 +342,7 @@ export class ChatConversationDomain extends BaseDomainAgent {
     const summaries: any[] = [];
 
     for (const convId of params.conversations || []) {
-      const conversation = conversationStore.getConversation(convId);
+      const conversation = await conversationStore.getConversation(convId);
       if (!conversation) continue;
 
       // Generate summary (production would use AI/LLM)

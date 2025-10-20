@@ -174,7 +174,7 @@ export async function handleChatGPTWebhook(req: Request, res: Response) {
       }
 
       case 'search_conversations': {
-        const conversations = conversationStore.searchConversations(
+        const conversations = await conversationStore.searchConversations(
           parameters.query || ''
         );
         const limited = conversations.slice(0, parameters.limit || 10);

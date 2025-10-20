@@ -17,7 +17,7 @@ export interface SubscriptionLimits {
   storageGB?: number;
 }
 
-const PLAN_LIMITS: Record<Product, Record<PlanTier, Subscription Limits>> = {
+const PLAN_LIMITS: Record<Product, Record<PlanTier, SubscriptionLimits>> = {
   JARVIS: {
     FREE_TRIAL: {
       aiRequestsPerDay: 10,
