@@ -91,13 +91,13 @@ export async function GET(
       success: true,
       business,
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Failed to get business:', error);
     return NextResponse.json(
       {
         success: false,
         error: 'Failed to get business',
-        details: error.message,
+        details: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 }
     );
@@ -190,13 +190,13 @@ export async function PATCH(
       success: true,
       business,
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Failed to update business:', error);
     return NextResponse.json(
       {
         success: false,
         error: 'Failed to update business',
-        details: error.message,
+        details: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 }
     );
@@ -255,13 +255,13 @@ export async function DELETE(
       success: true,
       message: 'Business deleted successfully',
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Failed to delete business:', error);
     return NextResponse.json(
       {
         success: false,
         error: 'Failed to delete business',
-        details: error.message,
+        details: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 }
     );

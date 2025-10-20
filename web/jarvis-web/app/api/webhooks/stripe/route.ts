@@ -84,14 +84,38 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
   const userId = subscription.metadata.userId;
   const planId = subscription.metadata.planId;
+  const businessId = subscription.metadata.businessId;
 
-  if (!userId || !planId) {
-    console.error('Missing userId or planId in subscription metadata');
+  if (!userId) {
+    console.error('Missing userId in subscription metadata');
     return;
   }
 
-  // TODO: Add Subscription model to Prisma schema and implement subscription management
-  console.log(`Subscription created for user ${userId}: ${planId} (not persisted - Subscription model not yet implemented)`);
+  // Handle business subscription
+  if (businessId) {
+    const planTier = subscription.metadata.planTier?.toUpperCase() || 'STARTER';
+
+    await prisma.business.update({
+      where: { id: businessId },
+      data: {
+        planTier,
+        stripeSubscriptionId: subscription.id,
+        stripeCustomerId: typeof subscription.customer === 'string'
+          ? subscription.customer
+          : subscription.customer?.id,
+        subscriptionStatus: subscription.status,
+        trialEndsAt: subscription.trial_end
+          ? new Date(subscription.trial_end * 1000)
+          : null,
+      },
+    });
+
+    console.log(`Business subscription created: ${businessId} - ${planTier}`);
+    return;
+  }
+
+  // Handle user subscription (legacy)
+  console.log(`User subscription created for user ${userId}: ${planId}`);
   console.log(`Subscription details:`, {
     subscriptionId: subscription.id,
     customerId: subscription.customer,
@@ -102,17 +126,52 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
 
 async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
   const stripeSubscriptionId = subscription.id;
+  const businessId = subscription.metadata.businessId;
 
-  // TODO: Add Subscription model to Prisma schema and implement subscription management
-  console.log(`Subscription updated: ${stripeSubscriptionId} (not persisted - Subscription model not yet implemented)`);
+  // Handle business subscription update
+  if (businessId) {
+    const planTier = subscription.metadata.planTier?.toUpperCase() || 'STARTER';
+
+    await prisma.business.update({
+      where: { id: businessId },
+      data: {
+        planTier,
+        subscriptionStatus: subscription.status,
+        trialEndsAt: subscription.trial_end
+          ? new Date(subscription.trial_end * 1000)
+          : null,
+      },
+    });
+
+    console.log(`Business subscription updated: ${businessId} - Status: ${subscription.status}`);
+    return;
+  }
+
+  // Handle user subscription update (legacy)
+  console.log(`User subscription updated: ${stripeSubscriptionId}`);
   console.log(`Updated status: ${subscription.status}`);
 }
 
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   const stripeSubscriptionId = subscription.id;
+  const businessId = subscription.metadata.businessId;
 
-  // TODO: Add Subscription model to Prisma schema and implement subscription management
-  console.log(`Subscription canceled: ${stripeSubscriptionId} (not persisted - Subscription model not yet implemented)`);
+  // Handle business subscription cancellation
+  if (businessId) {
+    await prisma.business.update({
+      where: { id: businessId },
+      data: {
+        subscriptionStatus: 'canceled',
+        planTier: 'FREE',
+      },
+    });
+
+    console.log(`Business subscription canceled: ${businessId}`);
+    return;
+  }
+
+  // Handle user subscription cancellation (legacy)
+  console.log(`User subscription canceled: ${stripeSubscriptionId}`);
 }
 
 async function handlePaymentSucceeded(invoice: Stripe.Invoice) {

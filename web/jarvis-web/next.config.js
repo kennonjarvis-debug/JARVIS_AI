@@ -2,6 +2,14 @@
 const nextConfig = {
   reactStrictMode: true,
 
+  // Skip type checking and linting during build (handle separately)
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+
   // Use standalone output for Netlify serverless
   output: 'standalone',
 

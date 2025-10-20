@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 const prisma = new PrismaClient();
 
 // GET /api/businesses - List all businesses for the current user
-export async function GET(request: NextRequest): Promise<NextResponse> {
+export async function GET(): Promise<NextResponse> {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
@@ -84,13 +84,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       success: true,
       businesses,
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Failed to list businesses:', error);
     return NextResponse.json(
       {
         success: false,
         error: 'Failed to list businesses',
-        details: error.message,
+        details: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 }
     );
@@ -242,13 +242,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       success: true,
       business,
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Failed to create business:', error);
     return NextResponse.json(
       {
         success: false,
         error: 'Failed to create business',
-        details: error.message,
+        details: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 }
     );

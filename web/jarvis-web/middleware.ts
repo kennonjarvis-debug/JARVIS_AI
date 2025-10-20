@@ -14,6 +14,8 @@ const protectedRoutes = [
   "/settings",
   "/api/integrations",
   "/api/sessions",
+  "/api/businesses",
+  "/api/billing",
 ];
 
 // Routes that should not be accessible when authenticated
