@@ -19,6 +19,10 @@ import {
   Zap,
   Mic,
   FileText,
+  Building2,
+  Users,
+  ChevronDown,
+  Briefcase,
 } from 'lucide-react';
 import TwitterWidget from '../components/TwitterWidget';
 
@@ -47,6 +51,8 @@ interface Stats {
 export default function DashboardPage({ user }: { user: User }) {
   const navigate = useNavigate();
   const [observatoryData, setObservatoryData] = useState<ObservatoryData | null>(null);
+  const [businesses, setBusinesses] = useState<ObservatoryData[]>([]);
+  const [showBusinessDropdown, setShowBusinessDropdown] = useState(false);
   const [integrations, setIntegrations] = useState<Integration[]>([]);
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
   const [stats, setStats] = useState<Stats>({
@@ -78,18 +84,24 @@ export default function DashboardPage({ user }: { user: User }) {
 
   const loadDashboardData = async () => {
     try {
-      // Load observatory data
-      const { data: observatories } = await supabase
+      // Load all businesses/observatories for this user
+      const { data: allObservatories } = await supabase
         .from('observatories')
         .select('id, name')
-        .limit(1)
-        .single();
+        .order('created_at', { ascending: true });
 
-      if (observatories) {
-        setObservatoryData({
-          observatory_id: observatories.id,
-          observatory_name: observatories.name,
-        });
+      if (allObservatories && allObservatories.length > 0) {
+        const businessList = allObservatories.map(obs => ({
+          observatory_id: obs.id,
+          observatory_name: obs.name,
+        }));
+        setBusinesses(businessList);
+
+        // Set the first one as active (or could use localStorage to remember last selected)
+        const activeObservatory = businessList[0];
+        setObservatoryData(activeObservatory);
+
+        const observatories = allObservatories[0];
 
         // Load connected integrations
         const connectedIntegrations = await api.getConnectedIntegrations(observatories.id);
@@ -132,6 +144,50 @@ export default function DashboardPage({ user }: { user: User }) {
     }
   };
 
+  const switchBusiness = async (business: ObservatoryData) => {
+    setShowBusinessDropdown(false);
+    setObservatoryData(business);
+    setLoading(true);
+
+    try {
+      // Reload data for the selected business
+      const connectedIntegrations = await api.getConnectedIntegrations(business.observatory_id);
+      setIntegrations(connectedIntegrations);
+
+      const { data: logs } = await supabase
+        .from('activity_logs')
+        .select('*')
+        .eq('observatory_id', business.observatory_id)
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (logs) {
+        setActivityLogs(logs);
+      }
+
+      const { data: posts } = await supabase
+        .from('social_posts')
+        .select('id')
+        .eq('observatory_id', business.observatory_id);
+
+      const { data: messages } = await supabase
+        .from('messages')
+        .select('id')
+        .eq('observatory_id', business.observatory_id);
+
+      setStats({
+        totalPosts: posts?.length || 0,
+        totalMessages: messages?.length || 0,
+        connectedAccounts: connectedIntegrations.length,
+        lastActivity: logs?.[0]?.created_at || null,
+      });
+    } catch (error) {
+      console.error('Error switching business:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate('/');
@@ -160,7 +216,56 @@ export default function DashboardPage({ user }: { user: User }) {
             <Bot className="w-8 h-8 text-primary-600" />
             <div>
               <h1 className="text-xl font-bold text-gray-900">Jarvis AI</h1>
-              <p className="text-sm text-gray-500">{observatoryData?.observatory_name || 'Your Observatory'}</p>
+
+              {/* Business Switcher */}
+              {businesses.length > 1 ? (
+                <div className="relative">
+                  <button
+                    onClick={() => setShowBusinessDropdown(!showBusinessDropdown)}
+                    className="flex items-center space-x-2 text-sm text-gray-600 hover:text-gray-900 transition"
+                  >
+                    <Building2 className="w-4 h-4" />
+                    <span>{observatoryData?.observatory_name || 'Select Business'}</span>
+                    <ChevronDown className="w-4 h-4" />
+                  </button>
+
+                  {showBusinessDropdown && (
+                    <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                      <div className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase border-b border-gray-200">
+                        Switch Business
+                      </div>
+                      {businesses.map((business) => (
+                        <button
+                          key={business.observatory_id}
+                          onClick={() => switchBusiness(business)}
+                          className={`w-full text-left px-4 py-2 hover:bg-gray-50 transition flex items-center space-x-2 ${
+                            business.observatory_id === observatoryData?.observatory_id
+                              ? 'bg-primary-50 text-primary-600'
+                              : 'text-gray-900'
+                          }`}
+                        >
+                          <Building2 className="w-4 h-4" />
+                          <span className="flex-1">{business.observatory_name}</span>
+                          {business.observatory_id === observatoryData?.observatory_id && (
+                            <CheckCircle className="w-4 h-4" />
+                          )}
+                        </button>
+                      ))}
+                      <div className="border-t border-gray-200 mt-2 pt-2">
+                        <button
+                          onClick={() => navigate('/businesses/new')}
+                          className="w-full text-left px-4 py-2 text-primary-600 hover:bg-primary-50 transition flex items-center space-x-2"
+                        >
+                          <Plus className="w-4 h-4" />
+                          <span>Add New Business</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500">{observatoryData?.observatory_name || 'Your Observatory'}</p>
+              )}
             </div>
           </div>
           <div className="flex items-center space-x-4">
@@ -351,7 +456,7 @@ export default function DashboardPage({ user }: { user: User }) {
         {hasNoIntegrations && (
           <div className="mt-8 bg-white rounded-xl border border-gray-200 p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Available Integrations</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <AvailableIntegration
                 icon={<Twitter className="w-6 h-6" />}
                 name="Twitter / X"
@@ -360,37 +465,53 @@ export default function DashboardPage({ user }: { user: User }) {
                 onClick={() => navigate('/connect')}
               />
               <AvailableIntegration
+                icon={<Mail className="w-6 h-6" />}
+                name="Gmail"
+                description="Send and manage emails"
+                available
+                onClick={() => navigate('/connect')}
+              />
+              <AvailableIntegration
+                icon={<Calendar className="w-6 h-6" />}
+                name="Google Calendar"
+                description="Manage events and meetings"
+                available
+                onClick={() => navigate('/connect')}
+              />
+              <AvailableIntegration
+                icon={<Building2 className="w-6 h-6" />}
+                name="Salesforce"
+                description="CRM and sales management"
+                available
+                onClick={() => navigate('/connect')}
+              />
+              <AvailableIntegration
+                icon={<Users className="w-6 h-6" />}
+                name="HubSpot"
+                description="Marketing and CRM platform"
+                available
+                onClick={() => navigate('/connect')}
+              />
+              <AvailableIntegration
                 icon={<MessageSquare className="w-6 h-6" />}
                 name="iMessage"
-                description="Auto-respond to messages intelligently"
+                description="Auto-respond to messages"
                 available
                 onClick={() => navigate('/connect')}
               />
               <AvailableIntegration
                 icon={<FileText className="w-6 h-6" />}
                 name="Notes"
-                description="Create notes from emails & reminders"
+                description="Create notes from emails"
                 available
                 onClick={() => navigate('/connect')}
               />
               <AvailableIntegration
                 icon={<Mic className="w-6 h-6" />}
                 name="Voice Memos"
-                description="Transcribe & organize voice memos"
+                description="Transcribe voice memos"
                 available
                 onClick={() => navigate('/connect')}
-              />
-              <AvailableIntegration
-                icon={<Mail className="w-6 h-6" />}
-                name="Gmail"
-                description="Send and manage emails"
-                available={false}
-              />
-              <AvailableIntegration
-                icon={<Calendar className="w-6 h-6" />}
-                name="Calendar"
-                description="Manage events and meetings"
-                available={false}
               />
             </div>
           </div>
@@ -440,6 +561,10 @@ function AccountCard({ integration }: { integration: Integration }) {
         return <Mail className="w-5 h-5" />;
       case 'calendar':
         return <Calendar className="w-5 h-5" />;
+      case 'salesforce':
+        return <Building2 className="w-5 h-5" />;
+      case 'hubspot':
+        return <Users className="w-5 h-5" />;
       case 'imessage':
         return <MessageSquare className="w-5 h-5" />;
       case 'notes':
