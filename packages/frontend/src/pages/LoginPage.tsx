@@ -23,13 +23,8 @@ export default function LoginPage() {
 
       if (error) throw error;
 
-      // Check if user is superadmin (kennonjarvis@gmail.com) and redirect to Observatory
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user?.email === 'kennonjarvis@gmail.com') {
-        window.location.href = 'https://dawg-ai.com/'; // Observatory (production)
-      } else {
-        navigate('/dashboard');
-      }
+      // Redirect to dashboard after successful login
+      navigate('/dashboard');
     } catch (error: any) {
       setError(error.message || 'Failed to login');
     } finally {
