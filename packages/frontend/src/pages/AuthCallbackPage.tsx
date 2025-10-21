@@ -18,12 +18,18 @@ export default function AuthCallbackPage() {
         if (data.session) {
           const user = data.session.user;
 
-          // Check if user is superadmin (kennonjarvis@gmail.com)
-          if (user.email === 'kennonjarvis@gmail.com') {
-            // Redirect superadmin to Observatory (production URL)
-            window.location.href = 'https://dawg-ai.com/';
+          // Check if this is a new user (account created within last 2 minutes)
+          const createdAt = new Date(user.created_at);
+          const now = new Date();
+          const timeDiff = (now.getTime() - createdAt.getTime()) / 1000; // seconds
+
+          const isNewUser = timeDiff < 120; // Less than 2 minutes old = new user
+
+          if (isNewUser) {
+            // New user - redirect to onboarding/signup flow
+            navigate('/signup');
           } else {
-            // Regular user goes to dashboard
+            // Existing user - go to their dashboard
             navigate('/dashboard');
           }
         } else {
