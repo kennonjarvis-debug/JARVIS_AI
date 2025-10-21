@@ -37,6 +37,7 @@ const PRICE_IDS = {
   starter: process.env.STRIPE_STARTER_PRICE_ID || '',
   pro: process.env.STRIPE_PRO_PRICE_ID || '',
   enterprise: process.env.STRIPE_ENTERPRISE_PRICE_ID || '',
+  additionalBusiness: process.env.STRIPE_ADDITIONAL_BUSINESS_PRICE_ID || '',
 };
 
 /**
@@ -280,6 +281,93 @@ router.post('/portal', requireAuth, async (req: Request, res: Response) => {
 });
 
 /**
+ * POST /api/stripe/create-additional-business-checkout
+ * Create checkout session for additional business subscription
+ */
+router.post('/create-additional-business-checkout', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { user_id, success_url, cancel_url } = req.body;
+
+    if (!user_id) {
+      return res.status(400).json({
+        error: 'Missing user_id parameter',
+      });
+    }
+
+    if (!PRICE_IDS.additionalBusiness) {
+      return res.status(500).json({
+        error: 'Additional business price not configured',
+      });
+    }
+
+    // Get or create Stripe customer
+    const { data: userData, error: userError } = await getSupabaseClient()
+      .from('users')
+      .select('email, stripe_customer_id')
+      .eq('id', user_id)
+      .single();
+
+    if (userError || !userData) {
+      throw new Error('User not found');
+    }
+
+    let customerId = userData.stripe_customer_id;
+
+    // Create customer if doesn't exist
+    if (!customerId) {
+      const customer = await getStripe().customers.create({
+        email: userData.email,
+        metadata: {
+          user_id,
+        },
+      });
+
+      customerId = customer.id;
+
+      // Save customer ID to database
+      await getSupabaseClient()
+        .from('users')
+        .update({ stripe_customer_id: customerId })
+        .eq('id', user_id);
+
+      logger.info('Created Stripe customer', { user_id, customer_id: customerId });
+    }
+
+    // Create checkout session for additional business
+    const session = await getStripe().checkout.sessions.create({
+      customer: customerId,
+      mode: 'subscription',
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price: PRICE_IDS.additionalBusiness,
+          quantity: 1,
+        },
+      ],
+      success_url: success_url || `${process.env.FRONTEND_URL || 'http://localhost:5173'}/dashboard?additional_business=success`,
+      cancel_url: cancel_url || `${process.env.FRONTEND_URL || 'http://localhost:5173'}/dashboard?additional_business=cancelled`,
+      metadata: {
+        user_id,
+        type: 'additional_business',
+      },
+    });
+
+    logger.info('Created additional business checkout session', { user_id, session_id: session.id });
+
+    res.json({
+      sessionId: session.id,
+      sessionUrl: session.url,
+    });
+  } catch (error) {
+    logger.error('Failed to create additional business checkout', error);
+    res.status(500).json({
+      error: 'Failed to create checkout session',
+      message: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
+});
+
+/**
  * POST /api/stripe/cancel
  * Cancel user's subscription
  */
@@ -371,9 +459,10 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
 
   const userId = userData.id;
 
-  // Determine plan from price ID
+  // Determine plan/type from price ID
   const priceId = subscription.items.data[0]?.price.id;
   let plan = 'free';
+  let type = 'premium'; // Default type for main subscriptions
 
   if (priceId === PRICE_IDS.starter) {
     plan = 'starter';
@@ -381,6 +470,9 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
     plan = 'pro';
   } else if (priceId === PRICE_IDS.enterprise) {
     plan = 'enterprise';
+  } else if (priceId === PRICE_IDS.additionalBusiness) {
+    plan = 'additional_business';
+    type = 'additional_business';
   }
 
   // Upsert subscription in database
@@ -390,8 +482,9 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
       user_id: userId,
       stripe_subscription_id: subscription.id,
       stripe_customer_id: customerId,
+      stripe_price_id: priceId,
+      type,
       status: subscription.status,
-      plan,
       current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
       current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
       cancel_at_period_end: subscription.cancel_at_period_end,

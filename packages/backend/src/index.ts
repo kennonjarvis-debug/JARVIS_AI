@@ -17,6 +17,8 @@ import { Logger } from '@jarvis/shared';
 import integrationRoutes from './routes/integrations.js';
 import authRoutes from './routes/auth.js';
 import stripeRoutes from './routes/stripe.js';
+import onboardingRoutes from './routes/onboarding.js';
+import businessesRoutes from './routes/businesses.js';
 import { integrationManager } from './services/IntegrationManager.js';
 import { TwitterIntegration } from './integrations/twitter/index.js';
 import { IMessageIntegration } from './integrations/imessage/index.js';
@@ -121,6 +123,12 @@ app.use('/api/integrations', integrationRoutes);
 
 // Stripe subscription routes
 app.use('/api/stripe', stripeRoutes);
+
+// Onboarding routes
+app.use('/api/onboarding', onboardingRoutes);
+
+// Business management routes
+app.use('/api/businesses', businessesRoutes);
 
 // 404 handler
 app.use((_req: Request, res: Response) => {
