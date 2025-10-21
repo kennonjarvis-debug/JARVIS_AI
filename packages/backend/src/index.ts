@@ -19,17 +19,26 @@ import authRoutes from './routes/auth.js';
 import stripeRoutes from './routes/stripe.js';
 import onboardingRoutes from './routes/onboarding.js';
 import businessesRoutes from './routes/businesses.js';
+import socialListeningRoutes from './routes/social-listening.js';
 import { integrationManager } from './services/IntegrationManager.js';
 import { TwitterIntegration } from './integrations/twitter/index.js';
 import { IMessageIntegration } from './integrations/imessage/index.js';
 import { NotesIntegration } from './integrations/notes/index.js';
 import { VoiceMemosIntegration } from './integrations/voice-memos/index.js';
+import { GmailIntegration } from './integrations/gmail/index.js';
+import { CalendarIntegration } from './integrations/calendar/index.js';
+import { SalesforceIntegration } from './integrations/salesforce/index.js';
+import { HubSpotIntegration } from './integrations/hubspot/index.js';
 
 // Register integrations after dotenv is loaded
 integrationManager.registerIntegration('twitter', TwitterIntegration);
 integrationManager.registerIntegration('imessage', IMessageIntegration);
 integrationManager.registerIntegration('notes', NotesIntegration);
 integrationManager.registerIntegration('voice-memos', VoiceMemosIntegration);
+integrationManager.registerIntegration('gmail', GmailIntegration);
+integrationManager.registerIntegration('calendar', CalendarIntegration);
+integrationManager.registerIntegration('salesforce', SalesforceIntegration);
+integrationManager.registerIntegration('hubspot', HubSpotIntegration);
 
 const app = express();
 const logger = new Logger('JARVIS-API');
@@ -129,6 +138,9 @@ app.use('/api/onboarding', onboardingRoutes);
 
 // Business management routes
 app.use('/api/businesses', businessesRoutes);
+
+// Social listening routes
+app.use('/api/social-listening', socialListeningRoutes);
 
 // 404 handler
 app.use((_req: Request, res: Response) => {
