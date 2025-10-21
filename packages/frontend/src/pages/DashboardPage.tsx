@@ -23,6 +23,9 @@ import {
   Users,
   ChevronDown,
   Briefcase,
+  AlertTriangle,
+  Info,
+  DollarSign,
 } from 'lucide-react';
 import TwitterWidget from '../components/TwitterWidget';
 
@@ -410,11 +413,31 @@ export default function DashboardPage({ user }: { user: User }) {
             </div>
 
             {integrations.length > 0 ? (
-              <div className="space-y-3">
-                {integrations.map((integration) => (
-                  <AccountCard key={integration.platform} integration={integration} />
-                ))}
-              </div>
+              <>
+                <div className="space-y-3">
+                  {integrations.map((integration) => (
+                    <AccountCard key={integration.platform} integration={integration} />
+                  ))}
+                </div>
+
+                {/* API Quota Warnings */}
+                <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex items-start space-x-3">
+                    <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <h4 className="text-sm font-semibold text-blue-900 mb-2">API Quota Information</h4>
+                      <p className="text-sm text-blue-800 mb-3">
+                        Social Listening and automation features use your connected account's API quota. Review limits below:
+                      </p>
+                      <div className="space-y-2">
+                        {integrations.map((integration) => (
+                          <QuotaWarning key={integration.platform} platform={integration.platform} />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </>
             ) : (
               <div className="text-center py-12">
                 <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
@@ -679,6 +702,84 @@ function AvailableIntegration({
       </div>
       <p className="text-sm text-gray-600">{description}</p>
     </button>
+  );
+}
+
+function QuotaWarning({ platform }: { platform: string }) {
+  const quotaInfo: Record<string, { free: string; paid?: string; upgrade?: string }> = {
+    twitter: {
+      free: '25 keyword rules, 50 tweets/sec for Social Listening',
+      paid: 'Pro ($100/mo): 1,000 rules, unlimited keywords',
+      upgrade: 'https://developer.twitter.com/en/portal/products/pro',
+    },
+    gmail: {
+      free: '1 billion quota units/day (approx 100,000 API calls)',
+      paid: 'Standard: Same limits with SLA',
+      upgrade: 'https://console.cloud.google.com/apis/api/gmail.googleapis.com',
+    },
+    calendar: {
+      free: '1 million queries/day, 10,000/min',
+      paid: 'Same limits for all tiers',
+      upgrade: 'https://console.cloud.google.com/apis/api/calendar-json.googleapis.com',
+    },
+    salesforce: {
+      free: 'N/A - Requires paid Salesforce account',
+      paid: 'API calls vary by license (Essentials: 1,000/day, Professional: 1,000/day, Enterprise: 100,000/day)',
+      upgrade: 'https://help.salesforce.com/s/articleView?id=sf.integrate_api_rate_limiting.htm',
+    },
+    hubspot: {
+      free: '100 calls/10 seconds (Starter)',
+      paid: 'Professional: 150/10s, Enterprise: 200/10s',
+      upgrade: 'https://developers.hubspot.com/docs/api/usage-details',
+    },
+    imessage: {
+      free: 'Local access only - No API limits',
+      paid: 'N/A',
+    },
+    notes: {
+      free: 'Local access only - No API limits',
+      paid: 'N/A',
+    },
+    'voice-memos': {
+      free: 'Local access only - No API limits',
+      paid: 'N/A',
+    },
+  };
+
+  const info = quotaInfo[platform.toLowerCase()];
+
+  if (!info) return null;
+
+  return (
+    <div className="text-xs bg-white rounded p-2 border border-blue-200">
+      <div className="flex items-start space-x-2">
+        <AlertTriangle className="w-4 h-4 text-orange-500 flex-shrink-0 mt-0.5" />
+        <div className="flex-1">
+          <p className="font-medium text-gray-900 mb-1">
+            {platform.charAt(0).toUpperCase() + platform.slice(1)}
+          </p>
+          <p className="text-gray-600 mb-1">
+            <span className="font-semibold">Free Tier:</span> {info.free}
+          </p>
+          {info.paid && (
+            <p className="text-gray-600 mb-1">
+              <span className="font-semibold">Paid Tier:</span> {info.paid}
+            </p>
+          )}
+          {info.upgrade && (
+            <a
+              href={info.upgrade}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center space-x-1 text-primary-600 hover:text-primary-700 font-medium"
+            >
+              <DollarSign className="w-3 h-3" />
+              <span>Upgrade your API access</span>
+            </a>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
 
