@@ -1,0 +1,1 @@
+web: node scripts/clone-repos.js && node dist/index.js

@@ -8,3 +8,4 @@ packages:
   - 'frontend'
   - 'observatory'
   - 'agents'
+  - 'packages/*'

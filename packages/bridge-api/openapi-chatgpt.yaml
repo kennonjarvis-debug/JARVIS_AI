@@ -1,0 +1,177 @@
+openapi: 3.0.0
+info:
+  title: JARVIS Bridge API
+  version: 1.0.0
+  description: Secure local system bridge for JARVIS AI agents
+servers:
+  - url: https://kaycee-nonextrinsical-yosef.ngrok-free.dev
+    description: JARVIS Bridge via ngrok
+paths:
+  /health:
+    get:
+      operationId: health
+      summary: Check bridge health
+      description: Returns health status, uptime, and version information
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [ok, error]
+                  timestamp:
+                    type: string
+                    format: date-time
+                  uptime:
+                    type: number
+                  version:
+                    type: string
+  /run:
+    post:
+      operationId: run
+      summary: Execute a whitelisted local command
+      description: Executes a command from the whitelist with safety checks
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - cmd
+              properties:
+                cmd:
+                  type: string
+                  description: The command to run
+                  example: "git status"
+      responses:
+        '200':
+          description: Command output
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  stdout:
+                    type: string
+                    description: Standard output from the command
+                  stderr:
+                    type: string
+                    description: Standard error from the command
+                  code:
+                    type: integer
+                    description: Exit code (0 = success)
+                    example: 0
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Command not whitelisted
+        '500':
+          description: Command execution failed
+  /read:
+    post:
+      operationId: read
+      summary: Read a local text file
+      description: Reads a text file from an allowed path with size limits
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - path
+              properties:
+                path:
+                  type: string
+                  description: Path of the file to read
+                  example: "/Users/benkennon/JARVIS_AI/README.md"
+      responses:
+        '200':
+          description: File content
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: string
+                    description: The file content
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Path not allowed
+        '404':
+          description: File not found
+        '500':
+          description: File read failed
+  /write:
+    post:
+      operationId: write
+      summary: Write content to a local text file
+      description: Creates or overwrites a text file in an allowed path with size limits
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - path
+                - content
+              properties:
+                path:
+                  type: string
+                  description: Path of the file to write
+                  example: "/tmp/notes.txt"
+                content:
+                  type: string
+                  description: Content to write to the file
+                  example: "Notes from ChatGPT session"
+      responses:
+        '200':
+          description: File written successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    description: Write operation success status
+                  path:
+                    type: string
+                    description: The absolute path where file was written
+                  size:
+                    type: integer
+                    description: Size of written content in bytes
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Path not allowed
+        '500':
+          description: File write failed
+        '507':
+          description: Insufficient storage
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: Use the bearer token from BRIDGE_BEARER_TOKEN environment variable
