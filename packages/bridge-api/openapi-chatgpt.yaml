@@ -12,6 +12,7 @@ paths:
       operationId: health
       summary: Check bridge health
       description: Returns health status, uptime, and version information
+      security: []  # No authentication required for health check
       responses:
         '200':
           description: OK
