@@ -1,0 +1,167 @@
+{
+  "name": "Analytics Aggregation",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "cronExpression", "expression": "0 0 * * *" }]
+        }
+      },
+      "id": "daily-trigger",
+      "name": "Daily Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://api.bufferapp.com/1/profiles/:profileId/analytics.json",
+        "authentication": "oAuth2",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "start_date", "value": "={{$now.minus(1, 'day').toFormat('yyyy-MM-dd')}}" },
+            { "name": "end_date", "value": "={{$now.toFormat('yyyy-MM-dd')}}" }
+          ]
+        }
+      },
+      "id": "fetch-buffer-metrics",
+      "name": "Fetch Buffer Metrics",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [450, 200]
+    },
+    {
+      "parameters": {
+        "url": "https://api.sendgrid.com/v3/stats",
+        "authentication": "headerAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "start_date", "value": "={{$now.minus(1, 'day').toFormat('yyyy-MM-dd')}}" },
+            { "name": "end_date", "value": "={{$now.toFormat('yyyy-MM-dd')}}" }
+          ]
+        }
+      },
+      "id": "fetch-email-metrics",
+      "name": "Fetch Email Metrics",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "resource": "deal",
+        "operation": "getAll",
+        "filters": {
+          "modifiedSince": "={{$now.minus(1, 'day').toISO()}}"
+        }
+      },
+      "id": "fetch-crm-metrics",
+      "name": "Fetch CRM Metrics",
+      "type": "n8n-nodes-base.hubspot",
+      "typeVersion": 2,
+      "position": [450, 400]
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "table": "tasks",
+        "filterType": "manual",
+        "conditions": {
+          "conditions": [
+            { "column": "created_at", "operator": "greaterThan", "value": "={{$now.minus(1, 'day').toISO()}}" }
+          ]
+        }
+      },
+      "id": "fetch-agent-metrics",
+      "name": "Fetch Agent Metrics",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [450, 500]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Aggregate all metrics\nconst buffer = $input.item.json[0] || {};\nconst email = $input.item.json[1] || {};\nconst crm = $input.item.json[2] || [];\nconst agent = $input.item.json[3] || [];\n\nconst aggregated = {\n  date: $now.toFormat('yyyy-MM-dd'),\n  social: {\n    posts: buffer.updates || 0,\n    engagement: buffer.engagement || 0,\n    reach: buffer.reach || 0\n  },\n  email: {\n    sent: email.delivered || 0,\n    opened: email.opens || 0,\n    clicked: email.clicks || 0,\n    openRate: email.opens / email.delivered || 0\n  },\n  sales: {\n    deals: crm.length,\n    value: crm.reduce((sum, d) => sum + (d.amount || 0), 0)\n  },\n  agents: {\n    tasksCompleted: agent.filter(t => t.status === 'completed').length,\n    tasksFailed: agent.filter(t => t.status === 'failed').length\n  }\n};\n\nreturn { json: aggregated };"
+      },
+      "id": "aggregate-metrics",
+      "name": "Aggregate Metrics",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [650, 350]
+    },
+    {
+      "parameters": {
+        "operation": "message",
+        "resource": "chat",
+        "model": "claude-3-5-sonnet-20241022",
+        "prompt": "Analyze these metrics and provide insights:\n\n{{JSON.stringify($json, null, 2)}}\n\nProvide:\n1. Key trends\n2. Areas of concern\n3. Recommendations\n\nBe concise."
+      },
+      "id": "generate-insights",
+      "name": "Generate Insights",
+      "type": "n8n-nodes-base.anthropic",
+      "typeVersion": 1,
+      "position": [850, 350]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "table": "analytics_daily"
+      },
+      "id": "store-metrics",
+      "name": "Store Metrics",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1050, 350]
+    },
+    {
+      "parameters": {
+        "authentication": "sendGrid",
+        "sendTo": "admin@dawgai.com",
+        "subject": "Daily Analytics Report - {{$now.toFormat('yyyy-MM-dd')}}",
+        "message": "={{$json.insights}}"
+      },
+      "id": "send-report",
+      "name": "Send Report",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [1250, 350]
+    }
+  ],
+  "connections": {
+    "Daily Trigger": {
+      "main": [
+        [
+          { "node": "Fetch Buffer Metrics", "type": "main", "index": 0 },
+          { "node": "Fetch Email Metrics", "type": "main", "index": 0 },
+          { "node": "Fetch CRM Metrics", "type": "main", "index": 0 },
+          { "node": "Fetch Agent Metrics", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Fetch Buffer Metrics": {
+      "main": [[{ "node": "Aggregate Metrics", "type": "main", "index": 0 }]]
+    },
+    "Fetch Email Metrics": {
+      "main": [[{ "node": "Aggregate Metrics", "type": "main", "index": 0 }]]
+    },
+    "Fetch CRM Metrics": {
+      "main": [[{ "node": "Aggregate Metrics", "type": "main", "index": 0 }]]
+    },
+    "Fetch Agent Metrics": {
+      "main": [[{ "node": "Aggregate Metrics", "type": "main", "index": 0 }]]
+    },
+    "Aggregate Metrics": {
+      "main": [[{ "node": "Generate Insights", "type": "main", "index": 0 }]]
+    },
+    "Generate Insights": {
+      "main": [[{ "node": "Store Metrics", "type": "main", "index": 0 }]]
+    },
+    "Store Metrics": {
+      "main": [[{ "node": "Send Report", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": true,
+  "settings": {},
+  "tags": ["jarvis", "analytics", "operations"]
+}

@@ -1,0 +1,58 @@
+# Node modules
+node_modules
+npm-debug.log
+
+# TypeScript
+*.ts
+!*.d.ts
+# tsconfig.json - needed for Docker build
+
+# Tests
+tests
+coverage
+*.test.ts
+*.test.js
+
+# Development
+.env
+.env.local
+.env.development
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# CI/CD
+.github
+.gitlab-ci.yml
+.travis.yml
+
+# Documentation (keep OpenAPI spec)
+*.md
+!README.md
+docs/*
+!docs/api/openapi.yaml
+
+# Logs
+logs
+*.log
+
+# Build artifacts
+dist
+build
+
+# Observatory (separate container)
+observatory
+
+# Temporary files
+tmp
+temp
+*.tmp

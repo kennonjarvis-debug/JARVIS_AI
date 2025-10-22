@@ -1,0 +1,88 @@
+{
+  "name": "Email Campaign Sender",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "email-campaign",
+        "responseMode": "onReceived"
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "table": "contacts",
+        "filterType": "manual",
+        "matchAny": false,
+        "conditions": {
+          "conditions": [
+            { "column": "segment", "operator": "equals", "value": "={{$json.segment}}" }
+          ]
+        }
+      },
+      "id": "get-recipients",
+      "name": "Get Recipients",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Load template and personalize\nconst template = $json.template || 'default';\nconst recipient = $json;\n\nreturn {\n  json: {\n    to: recipient.email,\n    subject: `Hi ${recipient.firstName}`,\n    html: `<h1>Hello ${recipient.firstName}!</h1><p>Campaign content here</p>`,\n    from: 'noreply@dawgai.com'\n  }\n};"
+      },
+      "id": "personalize",
+      "name": "Personalize",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "authentication": "sendGrid",
+        "sendTo": "={{$json.to}}",
+        "subject": "={{$json.subject}}",
+        "fromEmail": "={{$json.from}}",
+        "message": "={{$json.html}}",
+        "options": {}
+      },
+      "id": "send-email",
+      "name": "Send Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "table": "email_logs"
+      },
+      "id": "log-results",
+      "name": "Log Results",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1050, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "Get Recipients", "type": "main", "index": 0 }]]
+    },
+    "Get Recipients": {
+      "main": [[{ "node": "Personalize", "type": "main", "index": 0 }]]
+    },
+    "Personalize": {
+      "main": [[{ "node": "Send Email", "type": "main", "index": 0 }]]
+    },
+    "Send Email": {
+      "main": [[{ "node": "Log Results", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": true,
+  "settings": {},
+  "tags": ["jarvis", "marketing", "email"]
+}

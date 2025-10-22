@@ -1,0 +1,60 @@
+{
+  "rules": [
+    {
+      "id": "email-bulk-brevo-limit",
+      "name": "Auto-reject email campaigns >300 recipients (Brevo free tier)",
+      "condition": "task.type === 'marketing.email.campaign' && task.data.recipientCount > 300",
+      "action": "require_approval",
+      "priority": 100,
+      "enabled": true
+    },
+    {
+      "id": "social-post-auto-approve",
+      "name": "Auto-approve social posts under 280 chars",
+      "condition": "task.type === 'marketing.social.post' && task.data.text.length <= 280",
+      "action": "allow",
+      "priority": 90,
+      "enabled": true
+    },
+    {
+      "id": "financial-critical",
+      "name": "Require approval for financial impact >$100",
+      "condition": "(task.data.estimatedCost || task.data.amount || 0) > 100",
+      "action": "require_approval",
+      "priority": 95,
+      "enabled": true
+    },
+    {
+      "id": "financial-high",
+      "name": "Require approval for financial impact >$50",
+      "condition": "(task.data.estimatedCost || task.data.amount || 0) > 50",
+      "action": "require_approval",
+      "priority": 90,
+      "enabled": true
+    },
+    {
+      "id": "support-refund-approval",
+      "name": "Require approval for refunds >$50",
+      "condition": "task.type === 'support.issue.refund' && task.data.amount > 50",
+      "action": "require_approval",
+      "priority": 90,
+      "enabled": true
+    },
+    {
+      "id": "sales-deal-creation",
+      "name": "Auto-approve deal creation for qualified leads",
+      "condition": "task.type === 'sales.deal.create' && task.data.leadScore > 70",
+      "action": "allow",
+      "priority": 80,
+      "enabled": true
+    },
+    {
+      "id": "email-small-batch",
+      "name": "Auto-approve email campaigns <50 recipients",
+      "condition": "task.type === 'marketing.email.campaign' && task.data.recipientCount < 50",
+      "action": "allow",
+      "priority": 85,
+      "enabled": true
+    }
+  ]
+}

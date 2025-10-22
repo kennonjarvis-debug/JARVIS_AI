@@ -1,0 +1,133 @@
+{
+  "name": "Support Ticket Routing",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "support-ticket",
+        "responseMode": "onReceived"
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "operation": "message",
+        "resource": "chat",
+        "model": "claude-3-5-sonnet-20241022",
+        "prompt": "Analyze this support ticket and categorize it.\n\nSubject: {{$json.subject}}\nMessage: {{$json.message}}\n\nProvide:\n1. Category (bug/billing/feature/question)\n2. Priority (1-4, 1=highest)\n3. Suggested response if simple\n\nRespond in JSON format."
+      },
+      "id": "analyze-with-claude",
+      "name": "Analyze with Claude",
+      "type": "n8n-nodes-base.anthropic",
+      "typeVersion": 1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "table": "customers",
+        "filterType": "manual",
+        "conditions": {
+          "conditions": [
+            { "column": "id", "operator": "equals", "value": "={{$json.customerId}}" }
+          ]
+        }
+      },
+      "id": "check-customer-tier",
+      "name": "Check Customer Tier",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Determine routing\nconst analysis = $input.item.json[0];\nconst customer = $input.item.json[1];\n\nlet assignTo = 'general';\nlet priority = analysis.priority;\n\n// Adjust priority based on customer tier\nif (customer.tier === 'enterprise' && priority > 2) {\n  priority = 2;\n}\n\n// Route based on category\nif (analysis.category === 'bug') assignTo = 'engineering';\nif (analysis.category === 'billing') assignTo = 'billing';\nif (customer.tier === 'enterprise') assignTo = 'premium-support';\n\nreturn {\n  json: {\n    ticketId: $('Webhook').item.json.ticketId,\n    category: analysis.category,\n    priority,\n    assignTo,\n    autoResponse: priority >= 3 ? analysis.suggestedResponse : null\n  }\n};"
+      },
+      "id": "route-ticket",
+      "name": "Route Ticket",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            { "value1": "={{$json.autoResponse}}", "operation": "isNotEmpty" }
+          ]
+        }
+      },
+      "id": "check-auto-response",
+      "name": "Check Auto Response",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [1050, 300]
+    },
+    {
+      "parameters": {
+        "authentication": "sendGrid",
+        "sendTo": "={{$('Webhook').item.json.email}}",
+        "subject": "Re: {{$('Webhook').item.json.subject}}",
+        "message": "={{$json.autoResponse}}"
+      },
+      "id": "send-auto-response",
+      "name": "Send Auto Response",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [1250, 200]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "table": "tickets",
+        "filterType": "manual",
+        "conditions": {
+          "conditions": [
+            { "column": "id", "operator": "equals", "value": "={{$json.ticketId}}" }
+          ]
+        },
+        "updateFields": {
+          "properties": [
+            { "column": "assigned_to", "value": "={{$json.assignTo}}" },
+            { "column": "priority", "value": "={{$json.priority}}" }
+          ]
+        }
+      },
+      "id": "update-ticket",
+      "name": "Update Ticket",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1250, 400]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "Analyze with Claude", "type": "main", "index": 0 }]]
+    },
+    "Analyze with Claude": {
+      "main": [[{ "node": "Check Customer Tier", "type": "main", "index": 0 }]]
+    },
+    "Check Customer Tier": {
+      "main": [[{ "node": "Route Ticket", "type": "main", "index": 0 }]]
+    },
+    "Route Ticket": {
+      "main": [[{ "node": "Check Auto Response", "type": "main", "index": 0 }]]
+    },
+    "Check Auto Response": {
+      "main": [
+        [{ "node": "Send Auto Response", "type": "main", "index": 0 }],
+        [{ "node": "Update Ticket", "type": "main", "index": 0 }]
+      ]
+    },
+    "Send Auto Response": {
+      "main": [[{ "node": "Update Ticket", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": true,
+  "settings": {},
+  "tags": ["jarvis", "support", "routing"]
+}

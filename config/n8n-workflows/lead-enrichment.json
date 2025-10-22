@@ -1,0 +1,102 @@
+{
+  "name": "Lead Enrichment",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "enrich-lead",
+        "responseMode": "lastNode"
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://company.clearbit.com/v2/companies/find",
+        "authentication": "headerAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "domain", "value": "={{$json.email.split('@')[1]}}" }
+          ]
+        }
+      },
+      "id": "lookup-company",
+      "name": "Lookup Company",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://api.hunter.io/v2/email-verifier",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "email", "value": "={{$json.email}}" }
+          ]
+        }
+      },
+      "id": "verify-email",
+      "name": "Verify Email",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [450, 450]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Calculate lead score\nconst company = $input.item.json[0];\nconst email = $input.item.json[1];\n\nlet score = 0;\n\nif (company.employees > 100) score += 25;\nif (company.employees > 500) score += 25;\nif (company.tech && company.tech.includes('react')) score += 15;\nif (email.status === 'valid') score += 20;\nif (company.funding) score += 15;\n\nreturn {\n  json: {\n    leadId: $('Webhook').item.json.leadId,\n    score,\n    company: company.name,\n    employees: company.employees,\n    emailValid: email.status === 'valid',\n    recommendation: score > 60 ? 'high-priority' : 'standard'\n  }\n};"
+      },
+      "id": "calculate-score",
+      "name": "Calculate Score",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [650, 375]
+    },
+    {
+      "parameters": {
+        "resource": "contact",
+        "operation": "update",
+        "contactId": "={{$json.leadId}}",
+        "updateFields": {
+          "customProperties": {
+            "properties": [
+              { "name": "lead_score", "value": "={{$json.score}}" },
+              { "name": "company_size", "value": "={{$json.employees}}" }
+            ]
+          }
+        }
+      },
+      "id": "update-hubspot",
+      "name": "Update HubSpot",
+      "type": "n8n-nodes-base.hubspot",
+      "typeVersion": 2,
+      "position": [850, 375]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          { "node": "Lookup Company", "type": "main", "index": 0 },
+          { "node": "Verify Email", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Lookup Company": {
+      "main": [[{ "node": "Calculate Score", "type": "main", "index": 0 }]]
+    },
+    "Verify Email": {
+      "main": [[{ "node": "Calculate Score", "type": "main", "index": 0 }]]
+    },
+    "Calculate Score": {
+      "main": [[{ "node": "Update HubSpot", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": true,
+  "settings": {},
+  "tags": ["jarvis", "sales", "enrichment"]
+}

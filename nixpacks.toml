@@ -1,0 +1,11 @@
+[phases.setup]
+nixPkgs = ["nodejs_24"]
+
+[phases.install]
+cmds = ["cd observatory && npm install"]
+
+[phases.build]
+cmds = ["cd observatory && npm run build"]
+
+[start]
+cmd = "cd observatory && node build/index.js"

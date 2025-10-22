@@ -1,0 +1,91 @@
+{
+  "name": "Social Media Posting",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "social-post",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "social-post"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Format content for each platform\nconst content = $json.content;\nconst platforms = $json.platforms || ['twitter'];\nconst media = $json.media || [];\n\nconst formatted = platforms.map(platform => ({\n  platform,\n  text: platform === 'twitter' ? content.substring(0, 280) : content,\n  media,\n  scheduledAt: $json.scheduleTime || new Date().toISOString()\n}));\n\nreturn formatted.map(item => ({ json: item }));"
+      },
+      "id": "format-content",
+      "name": "Format Content",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.BUFFER_API_URL}}/updates/create.json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "oAuth2Api",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "text", "value": "={{$json.text}}" },
+            { "name": "profile_ids[]", "value": "={{$json.platform}}" },
+            { "name": "scheduled_at", "value": "={{$json.scheduledAt}}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "post-to-buffer",
+      "name": "Post to Buffer",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "table": "tasks",
+        "columns": "type,status,data,created_at",
+        "additionalFields": {}
+      },
+      "id": "log-to-supabase",
+      "name": "Log to Supabase",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { status: 'success', posts: $json } }}"
+      },
+      "id": "respond",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1050, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "Format Content", "type": "main", "index": 0 }]]
+    },
+    "Format Content": {
+      "main": [[{ "node": "Post to Buffer", "type": "main", "index": 0 }]]
+    },
+    "Post to Buffer": {
+      "main": [[{ "node": "Log to Supabase", "type": "main", "index": 0 }]]
+    },
+    "Log to Supabase": {
+      "main": [[{ "node": "Respond", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": true,
+  "settings": {},
+  "tags": ["jarvis", "marketing", "social"]
+}

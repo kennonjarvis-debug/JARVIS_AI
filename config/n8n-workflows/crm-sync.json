@@ -1,0 +1,107 @@
+{
+  "name": "CRM Sync",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "cronExpression", "expression": "*/15 * * * *" }]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "resource": "contact",
+        "operation": "getAll",
+        "filters": {
+          "updatedSince": "={{$now.minus(15, 'minutes').toISO()}}"
+        },
+        "additionalFields": {}
+      },
+      "id": "get-hubspot-contacts",
+      "name": "Get HubSpot Contacts",
+      "type": "n8n-nodes-base.hubspot",
+      "typeVersion": 2,
+      "position": [450, 250]
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "table": "contacts",
+        "filterType": "manual",
+        "conditions": {
+          "conditions": [
+            { "column": "updated_at", "operator": "greaterThan", "value": "={{$now.minus(15, 'minutes').toISO()}}" }
+          ]
+        }
+      },
+      "id": "get-supabase-contacts",
+      "name": "Get Supabase Contacts",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [450, 400]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Merge and detect conflicts\nconst hubspotData = $input.item.json[0] || [];\nconst supabaseData = $input.item.json[1] || [];\n\nconst merged = [];\nconst conflicts = [];\n\nfor (const hs of hubspotData) {\n  const sb = supabaseData.find(s => s.email === hs.email);\n  if (sb && hs.updated_at !== sb.updated_at) {\n    // Conflict - use most recent\n    conflicts.push({ email: hs.email, source: 'both' });\n    merged.push(new Date(hs.updated_at) > new Date(sb.updated_at) ? hs : sb);\n  } else {\n    merged.push(hs);\n  }\n}\n\nreturn merged.map(item => ({ json: item }));"
+      },
+      "id": "merge-data",
+      "name": "Merge Data",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [650, 325]
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "table": "contacts"
+      },
+      "id": "sync-to-supabase",
+      "name": "Sync to Supabase",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [850, 325]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "table": "sync_logs",
+        "columns": "type,records_synced,conflicts,created_at"
+      },
+      "id": "log-sync",
+      "name": "Log Sync",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1050, 325]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          { "node": "Get HubSpot Contacts", "type": "main", "index": 0 },
+          { "node": "Get Supabase Contacts", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Get HubSpot Contacts": {
+      "main": [[{ "node": "Merge Data", "type": "main", "index": 0 }]]
+    },
+    "Get Supabase Contacts": {
+      "main": [[{ "node": "Merge Data", "type": "main", "index": 0 }]]
+    },
+    "Merge Data": {
+      "main": [[{ "node": "Sync to Supabase", "type": "main", "index": 0 }]]
+    },
+    "Sync to Supabase": {
+      "main": [[{ "node": "Log Sync", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": true,
+  "settings": {},
+  "tags": ["jarvis", "operations", "sync"]
+}

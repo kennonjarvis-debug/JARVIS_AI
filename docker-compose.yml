@@ -1,0 +1,117 @@
+version: '3.8'
+
+services:
+  # JARVIS API Server
+  jarvis-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: jarvis-api
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - API_PORT=3000
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - TZ=America/Phoenix
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - jarvis-network
+    labels:
+      - "com.jarvis.service=api"
+      - "com.jarvis.description=JARVIS REST API Server"
+
+  # JARVIS Orchestrator (runs agents autonomously)
+  jarvis-orchestrator:
+    build:
+      context: .
+      dockerfile: Dockerfile.orchestrator
+    container_name: jarvis-orchestrator
+    restart: unless-stopped
+    depends_on:
+      - jarvis-api
+    environment:
+      - NODE_ENV=production
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - ANTHROPIC_MODEL=${ANTHROPIC_MODEL:-claude-sonnet-4-5-20250929}
+      - TZ=America/Phoenix
+      - CRON_TIMEZONE=America/Phoenix
+    env_file:
+      - .env
+    networks:
+      - jarvis-network
+    labels:
+      - "com.jarvis.service=orchestrator"
+      - "com.jarvis.description=JARVIS Agent Orchestrator"
+
+  # Observatory Dashboard (Svelte frontend)
+  # NOTE: Observatory runs separately in dev mode: npm run dev (from observatory directory)
+  # Uncomment and create observatory/Dockerfile when ready for production deployment
+  # observatory:
+  #   build:
+  #     context: ./observatory
+  #     dockerfile: Dockerfile
+  #   container_name: jarvis-observatory
+  #   restart: unless-stopped
+  #   ports:
+  #     - "5174:5174"
+  #   environment:
+  #     - NODE_ENV=production
+  #     - VITE_API_BASE_URL=http://localhost:3000
+  #   depends_on:
+  #     - jarvis-api
+  #   networks:
+  #     - jarvis-network
+  #   labels:
+  #     - "com.jarvis.service=dashboard"
+  #     - "com.jarvis.description=Observatory Dashboard"
+
+  # DAWG AI Backend (Python/FastAPI)
+  # NOTE: DAWG AI runs separately: cd ~/Development/DAWG_AI && python main.py
+  # Uncomment and create DAWG_AI/Dockerfile when ready for production deployment
+  # dawg-ai-backend:
+  #   build:
+  #     context: ${DAWG_AI_PATH:-../Development/DAWG_AI}
+  #     dockerfile: Dockerfile
+  #   container_name: dawg-ai-backend
+  #   restart: unless-stopped
+  #   ports:
+  #     - "9000:9000"
+  #   environment:
+  #     - PYTHON_ENV=production
+  #     - PORT=9000
+  #     - OPENAI_API_KEY=${OPENAI_API_KEY}
+  #   env_file:
+  #     - ${DAWG_AI_PATH:-../Development/DAWG_AI}/.env
+  #   networks:
+  #     - jarvis-network
+  #     - dawg-network
+  #   labels:
+  #     - "com.dawg.service=backend"
+  #     - "com.dawg.description=DAWG AI Generation Backend"
+
+networks:
+  jarvis-network:
+    driver: bridge
+    name: jarvis-network
+  dawg-network:
+    driver: bridge
+    name: dawg-network
+
+volumes:
+  jarvis-logs:
+    name: jarvis-logs
+  dawg-data:
+    name: dawg-data

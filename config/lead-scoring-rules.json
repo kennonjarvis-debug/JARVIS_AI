@@ -1,0 +1,138 @@
+{
+  "version": "1.0",
+  "description": "Lead scoring configuration for SalesAgent",
+  "scoringRules": {
+    "companySize": {
+      "weight": 0.2,
+      "description": "Score based on company employee count",
+      "ranges": [
+        {
+          "min": 1000,
+          "max": null,
+          "score": 20,
+          "label": "Enterprise"
+        },
+        {
+          "min": 100,
+          "max": 999,
+          "score": 15,
+          "label": "Mid-Market"
+        },
+        {
+          "min": 10,
+          "max": 99,
+          "score": 10,
+          "label": "SMB"
+        },
+        {
+          "min": 1,
+          "max": 9,
+          "score": 5,
+          "label": "Micro"
+        }
+      ]
+    },
+    "jobTitle": {
+      "weight": 0.25,
+      "description": "Score based on decision-making authority",
+      "scores": {
+        "executive": {
+          "score": 25,
+          "keywords": ["ceo", "cto", "cfo", "coo", "founder", "co-founder", "president", "owner"]
+        },
+        "director": {
+          "score": 20,
+          "keywords": ["director", "vp", "vice president", "head of", "chief"]
+        },
+        "manager": {
+          "score": 15,
+          "keywords": ["manager", "lead", "supervisor", "coordinator"]
+        },
+        "individual_contributor": {
+          "score": 5,
+          "keywords": ["engineer", "developer", "designer", "analyst", "specialist"]
+        }
+      }
+    },
+    "engagement": {
+      "weight": 0.3,
+      "description": "Score based on user engagement signals",
+      "maxScore": 30,
+      "metrics": {
+        "emailOpens": {
+          "threshold": 3,
+          "score": 10,
+          "description": "Opened 3+ emails"
+        },
+        "emailClicks": {
+          "threshold": 1,
+          "score": 10,
+          "description": "Clicked 1+ email links"
+        },
+        "websiteVisits": {
+          "threshold": 2,
+          "score": 10,
+          "description": "Visited website 2+ times"
+        }
+      }
+    },
+    "intent": {
+      "weight": 0.25,
+      "description": "Score based on purchase intent signals",
+      "maxScore": 25,
+      "pointsPerSignal": 8,
+      "highIntentKeywords": [
+        "pricing",
+        "demo",
+        "trial",
+        "contact",
+        "buy",
+        "purchase",
+        "quote",
+        "upgrade",
+        "enterprise",
+        "contract"
+      ]
+    }
+  },
+  "qualificationThresholds": {
+    "hot": {
+      "minScore": 75,
+      "maxScore": 100,
+      "action": "immediate_outreach",
+      "description": "High-value lead, ready to engage"
+    },
+    "warm": {
+      "minScore": 50,
+      "maxScore": 74,
+      "action": "nurture",
+      "description": "Promising lead, needs nurturing"
+    },
+    "cold": {
+      "minScore": 0,
+      "maxScore": 49,
+      "action": "low_priority",
+      "description": "Low-priority lead"
+    }
+  },
+  "outreachRules": {
+    "hot": {
+      "delayHours": 0,
+      "channel": "email",
+      "followUpSequence": [3, 7, 14],
+      "description": "Immediate outreach, follow up at 3, 7, 14 days"
+    },
+    "warm": {
+      "delayHours": 24,
+      "channel": "email",
+      "followUpSequence": [7, 14, 30],
+      "description": "Outreach within 24h, follow up at 7, 14, 30 days"
+    },
+    "cold": {
+      "delayHours": 168,
+      "channel": "email",
+      "followUpSequence": [30],
+      "description": "Outreach within 1 week, single follow up at 30 days"
+    }
+  }
+}

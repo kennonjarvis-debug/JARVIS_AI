@@ -1,0 +1,177 @@
+{
+  "name": "Backup Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "cronExpression", "expression": "0 2 * * *" }]
+        }
+      },
+      "id": "daily-trigger",
+      "name": "Daily Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "table": "*",
+        "returnAll": true
+      },
+      "id": "export-supabase",
+      "name": "Export Supabase",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [450, 250]
+    },
+    {
+      "parameters": {
+        "resource": "contact",
+        "operation": "getAll",
+        "returnAll": true
+      },
+      "id": "export-hubspot",
+      "name": "Export HubSpot",
+      "type": "n8n-nodes-base.hubspot",
+      "typeVersion": 2,
+      "position": [450, 350]
+    },
+    {
+      "parameters": {
+        "operation": "getAll"
+      },
+      "id": "export-workflows",
+      "name": "Export Workflows",
+      "type": "n8n-nodes-base.n8n",
+      "typeVersion": 1,
+      "position": [450, 450]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Compress and prepare backup\nconst supabaseData = $input.item.json[0];\nconst hubspotData = $input.item.json[1];\nconst workflows = $input.item.json[2];\n\nconst backup = {\n  timestamp: $now.toISO(),\n  version: '1.0',\n  data: {\n    supabase: supabaseData,\n    hubspot: hubspotData,\n    workflows: workflows\n  }\n};\n\nconst compressed = JSON.stringify(backup);\n\nreturn {\n  json: {\n    backupId: `backup_${$now.toFormat('yyyyMMdd_HHmmss')}`,\n    size: compressed.length,\n    data: compressed\n  }\n};"
+      },
+      "id": "compress-data",
+      "name": "Compress Data",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [650, 350]
+    },
+    {
+      "parameters": {
+        "operation": "upload",
+        "bucket": "jarvis-backups",
+        "fileName": "={{$json.backupId}}.json",
+        "binaryData": false,
+        "fileContent": "={{$json.data}}",
+        "additionalFields": {
+          "acl": "private"
+        }
+      },
+      "id": "upload-to-s3",
+      "name": "Upload to S3",
+      "type": "n8n-nodes-base.aws.s3",
+      "typeVersion": 1,
+      "position": [850, 350]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Verify backup\nconst uploaded = $json;\n\nif (!uploaded.key || !uploaded.size) {\n  throw new Error('Backup verification failed');\n}\n\nreturn {\n  json: {\n    backupId: $('Compress Data').item.json.backupId,\n    size: uploaded.size,\n    location: uploaded.location,\n    verified: true,\n    timestamp: $now.toISO()\n  }\n};"
+      },
+      "id": "verify-backup",
+      "name": "Verify Backup",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [1050, 350]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "table": "backup_logs",
+        "columns": "backup_id,size,location,verified,created_at"
+      },
+      "id": "log-backup",
+      "name": "Log Backup",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1250, 350]
+    },
+    {
+      "parameters": {
+        "operation": "list",
+        "bucket": "jarvis-backups",
+        "returnAll": true
+      },
+      "id": "list-old-backups",
+      "name": "List Old Backups",
+      "type": "n8n-nodes-base.aws.s3",
+      "typeVersion": 1,
+      "position": [1250, 500]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Filter backups older than 30 days\nconst backups = $json;\nconst thirtyDaysAgo = $now.minus(30, 'days');\n\nconst oldBackups = backups.filter(b => {\n  const backupDate = new Date(b.LastModified);\n  return backupDate < thirtyDaysAgo;\n});\n\nreturn oldBackups.map(b => ({ json: { key: b.Key } }));"
+      },
+      "id": "filter-old",
+      "name": "Filter Old",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [1450, 500]
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "bucket": "jarvis-backups",
+        "fileName": "={{$json.key}}"
+      },
+      "id": "delete-old-backups",
+      "name": "Delete Old Backups",
+      "type": "n8n-nodes-base.aws.s3",
+      "typeVersion": 1,
+      "position": [1650, 500]
+    }
+  ],
+  "connections": {
+    "Daily Trigger": {
+      "main": [
+        [
+          { "node": "Export Supabase", "type": "main", "index": 0 },
+          { "node": "Export HubSpot", "type": "main", "index": 0 },
+          { "node": "Export Workflows", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Export Supabase": {
+      "main": [[{ "node": "Compress Data", "type": "main", "index": 0 }]]
+    },
+    "Export HubSpot": {
+      "main": [[{ "node": "Compress Data", "type": "main", "index": 0 }]]
+    },
+    "Export Workflows": {
+      "main": [[{ "node": "Compress Data", "type": "main", "index": 0 }]]
+    },
+    "Compress Data": {
+      "main": [[{ "node": "Upload to S3", "type": "main", "index": 0 }]]
+    },
+    "Upload to S3": {
+      "main": [[{ "node": "Verify Backup", "type": "main", "index": 0 }]]
+    },
+    "Verify Backup": {
+      "main": [
+        [
+          { "node": "Log Backup", "type": "main", "index": 0 },
+          { "node": "List Old Backups", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "List Old Backups": {
+      "main": [[{ "node": "Filter Old", "type": "main", "index": 0 }]]
+    },
+    "Filter Old": {
+      "main": [[{ "node": "Delete Old Backups", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": true,
+  "settings": {},
+  "tags": ["jarvis", "operations", "backup"]
+}

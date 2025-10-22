@@ -1,0 +1,469 @@
+openapi: 3.0.3
+info:
+  title: JARVIS Autonomous Agent API
+  description: |
+    REST API for JARVIS autonomous agent system. Provides endpoints for monitoring
+    agent activities, managing approvals, and retrieving performance metrics.
+
+    ## Features
+    - Real-time agent activity monitoring
+    - THREE-tier risk assessment (LOW/MEDIUM/HIGH)
+    - Approval queue management
+    - Performance metrics and analytics
+
+    ## Authentication
+    Currently no authentication required (local development only).
+    Production deployment will require API key authentication.
+
+  version: 0.1.0
+  contact:
+    name: DAWG AI
+    url: https://dawgai.example.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+  - url: http://localhost:3000/api
+    description: API endpoints with /api prefix
+
+tags:
+  - name: Health
+    description: Service health and status endpoints
+  - name: Activities
+    description: Agent activity monitoring and logging
+  - name: Metrics
+    description: Performance metrics and analytics
+  - name: Approvals
+    description: Approval queue management
+
+paths:
+  /api/health:
+    get:
+      summary: Health check
+      description: Check if the API server is running and healthy
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  status:
+                    type: string
+                    example: healthy
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: '2025-10-15T12:00:00Z'
+        '503':
+          description: Service unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/agents/activities:
+    get:
+      summary: Get recent agent activities
+      description: Retrieve a list of recent agent activities with optional pagination
+      tags:
+        - Activities
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of activities to return
+          required: false
+          schema:
+            type: integer
+            default: 50
+            minimum: 1
+            maximum: 500
+        - name: agent_type
+          in: query
+          description: Filter by specific agent type
+          required: false
+          schema:
+            type: string
+            enum: [marketing, sales, operations, support, imessage, dawg-monitor]
+        - name: risk_level
+          in: query
+          description: Filter by risk level
+          required: false
+          schema:
+            type: string
+            enum: [LOW, MEDIUM, HIGH]
+        - name: status
+          in: query
+          description: Filter by activity status
+          required: false
+          schema:
+            type: string
+            enum: [pending, pending_approval, awaiting_approval, approved, rejected, completed, failed]
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  activities:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AgentActivity'
+                  count:
+                    type: integer
+                    example: 50
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/agents/metrics:
+    get:
+      summary: Get agent performance metrics
+      description: Retrieve aggregated metrics across all agents
+      tags:
+        - Metrics
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentMetrics'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/agents/approval-queue:
+    get:
+      summary: Get approval queue
+      description: Retrieve all activities pending approval (MEDIUM and HIGH risk)
+      tags:
+        - Approvals
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  queue:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AgentActivity'
+                  count:
+                    type: integer
+                    example: 5
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/agents/approve/{activityId}:
+    post:
+      summary: Approve an activity
+      description: Approve a pending activity and allow it to execute
+      tags:
+        - Approvals
+      parameters:
+        - name: activityId
+          in: path
+          description: UUID of the activity to approve
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                approvedBy:
+                  type: string
+                  description: Username or ID of approver
+                  example: user@example.com
+              required:
+                - approvedBy
+      responses:
+        '200':
+          description: Activity approved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Activity approved successfully
+                  activityId:
+                    type: string
+                    format: uuid
+        '404':
+          description: Activity not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/agents/reject/{activityId}:
+    post:
+      summary: Reject an activity
+      description: Reject a pending activity and prevent execution
+      tags:
+        - Approvals
+      parameters:
+        - name: activityId
+          in: path
+          description: UUID of the activity to reject
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+                  description: Reason for rejection
+                  example: Budget constraints
+                rejectedBy:
+                  type: string
+                  description: Username or ID of rejector
+                  example: user@example.com
+              required:
+                - reason
+                - rejectedBy
+      responses:
+        '200':
+          description: Activity rejected successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Activity rejected
+                  activityId:
+                    type: string
+                    format: uuid
+        '404':
+          description: Activity not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    AgentActivity:
+      type: object
+      required:
+        - id
+        - agent_type
+        - action
+        - risk_level
+        - status
+        - timestamp
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique activity identifier
+          example: '550e8400-e29b-41d4-a716-446655440000'
+        agent_type:
+          type: string
+          enum: [marketing, sales, operations, support, imessage, dawg-monitor]
+          description: Type of agent that performed the activity
+          example: marketing
+        action:
+          type: string
+          description: Action performed by the agent
+          example: social_post_created
+        description:
+          type: string
+          description: Human-readable description of the activity
+          example: Created and scheduled a Twitter post about new feature
+        risk_level:
+          type: string
+          enum: [LOW, MEDIUM, HIGH]
+          description: Risk assessment level
+          example: LOW
+        status:
+          type: string
+          enum: [pending, pending_approval, awaiting_approval, approved, rejected, completed, failed]
+          description: Current status of the activity
+          example: completed
+        metadata:
+          type: object
+          description: Additional context and data
+          additionalProperties: true
+          example:
+            platform: twitter
+            post_id: '123456789'
+            scheduled_time: '2025-10-15T14:00:00Z'
+        timestamp:
+          type: string
+          format: date-time
+          description: When the activity was created
+          example: '2025-10-15T12:00:00Z'
+        approved_by:
+          type: string
+          nullable: true
+          description: Who approved the activity (if applicable)
+          example: admin@example.com
+        approved_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the activity was approved
+          example: '2025-10-15T12:05:00Z'
+        completed_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the activity completed
+          example: '2025-10-15T12:10:00Z'
+        duration_ms:
+          type: integer
+          nullable: true
+          description: Execution duration in milliseconds
+          example: 2500
+
+    AgentMetrics:
+      type: object
+      required:
+        - success
+        - total_activities
+        - agents
+        - risk_breakdown
+      properties:
+        success:
+          type: boolean
+          example: true
+        total_activities:
+          type: integer
+          description: Total number of activities across all agents
+          example: 1250
+        agents:
+          type: array
+          description: Per-agent statistics
+          items:
+            type: object
+            properties:
+              agent_type:
+                type: string
+                example: marketing
+              total:
+                type: integer
+                example: 450
+              completed:
+                type: integer
+                example: 420
+              failed:
+                type: integer
+                example: 10
+              pending:
+                type: integer
+                example: 20
+              avg_duration_ms:
+                type: number
+                format: float
+                example: 2345.67
+        risk_breakdown:
+          type: object
+          description: Activity count by risk level
+          properties:
+            LOW:
+              type: integer
+              example: 1000
+            MEDIUM:
+              type: integer
+              example: 200
+            HIGH:
+              type: integer
+              example: 50
+        recent_activity:
+          type: object
+          description: Activity counts in recent time windows
+          properties:
+            last_hour:
+              type: integer
+              example: 45
+            last_24_hours:
+              type: integer
+              example: 780
+            last_7_days:
+              type: integer
+              example: 1250
+
+    Error:
+      type: object
+      required:
+        - success
+        - error
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+          description: Error message
+          example: Invalid activity ID
+        code:
+          type: string
+          description: Error code
+          example: INVALID_ID
+        details:
+          type: object
+          description: Additional error details
+          additionalProperties: true
