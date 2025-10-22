@@ -4,8 +4,8 @@ info:
   version: 1.0.0
   description: Secure local system bridge for JARVIS AI agents
 servers:
-  - url: https://kaycee-nonextrinsical-yosef.ngrok-free.dev
-    description: JARVIS Bridge via ngrok
+  - url: https://jarvis-bridge-api-production.up.railway.app
+    description: JARVIS Bridge on Railway (24/7 cloud deployment)
 paths:
   /health:
     get:
