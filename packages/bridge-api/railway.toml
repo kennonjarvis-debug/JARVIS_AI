@@ -1,6 +1,5 @@
 [build]
 builder = "NIXPACKS"
-buildCommand = "npm install -g pnpm && pnpm install && pnpm build"
 
 [deploy]
 startCommand = "node scripts/clone-repos.js && node dist/index.js"
