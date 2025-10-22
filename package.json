@@ -1,0 +1,26 @@
+{
+  "name": "jarvis-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=@jarvis/backend & npm run dev --workspace=@jarvis/frontend",
+    "dev:backend": "npm run dev --workspace=@jarvis/backend",
+    "dev:frontend": "npm run dev --workspace=@jarvis/frontend",
+    "build": "npm run build --workspaces",
+    "build:shared": "npm run build --workspace=@jarvis/shared",
+    "build:backend": "npm run build --workspace=@jarvis/backend",
+    "build:frontend": "npm run build --workspace=@jarvis/frontend",
+    "start:backend": "npm run start --workspace=@jarvis/backend",
+    "preview:frontend": "npm run preview --workspace=@jarvis/frontend"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "dependencies": {
+    "esbuild": "^0.25.11"
+  }
+}

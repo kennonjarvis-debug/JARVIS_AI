@@ -1,0 +1,8 @@
+{
+  "name": "netlify-functions",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "@jarvis/shared": "file:../../packages/shared"
+  }
+}
