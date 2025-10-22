@@ -61,9 +61,16 @@ async function main() {
     }
 
     // Start Autonomous Orchestrator (if enabled)
-    const { AutonomousOrchestrator } = await import('./autonomous/orchestrator.js');
-    const orchestrator = AutonomousOrchestrator.getInstance();
-    await orchestrator.start();
+    try {
+      const { AutonomousOrchestrator } = await import('./autonomous/orchestrator.js');
+      const orchestrator = AutonomousOrchestrator.getInstance();
+      await orchestrator.start();
+      logger.info('✅ Autonomous Orchestrator started successfully');
+    } catch (error: any) {
+      logger.error(`❌ Failed to start Autonomous Orchestrator: ${error.message}`);
+      logger.error(error.stack);
+      logger.warn('⚠️  Continuing without autonomous mode');
+    }
 
     if (process.env.AUTONOMOUS_ENABLED === 'true') {
       logger.info('');

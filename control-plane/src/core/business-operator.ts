@@ -246,6 +246,18 @@ export class BusinessOperator extends EventEmitter {
   }
 
   /**
+   * Check if a Docker container exists
+   */
+  private async containerExists(containerName: string): Promise<boolean> {
+    try {
+      await execAsync(`docker inspect ${containerName}`);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
    * Restart a service using Docker
    */
   private async restartService(serviceName: string): Promise<void> {
@@ -257,6 +269,21 @@ export class BusinessOperator extends EventEmitter {
     }
 
     try {
+      // Check if container exists before attempting restart
+      const exists = await this.containerExists(containerName);
+
+      if (!exists) {
+        console.warn(`[BusinessOperator] Container ${containerName} doesn't exist, skipping restart`);
+
+        this.createAlert(
+          serviceName,
+          'warning',
+          `Container ${containerName} not found`,
+          'Service may need to be deployed or container name may be incorrect'
+        );
+        return;
+      }
+
       console.log(`[BusinessOperator] Restarting Docker container: ${containerName}`);
       await execAsync(`docker restart ${containerName}`);
       console.log(`[BusinessOperator] Successfully restarted ${containerName}`);
