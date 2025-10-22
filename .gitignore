@@ -1,38 +1,14 @@
-# Dependencies
 node_modules/
 .pnpm-store/
-
-# Build outputs
 dist/
 build/
-.next/
-.svelte-kit/
-out/
-
-# Environment
-.env
-.env.local
-.env.*.local
-
-# Logs
-*.log
-npm-debug.log*
-pnpm-debug.log*
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Editors
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# Testing
 coverage/
-.nyc_output/
-
-# Misc
-.cache/
-*.tsbuildinfo
+.DS_Store
+.env
+.env*.local
+*.pem
+*.key
+*.crt
+*.log
+deploy/**/secrets*/
+deploy/**/.env*

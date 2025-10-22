@@ -20,31 +20,35 @@
   node_bundler = "esbuild"
   included_files = ["packages/shared/dist/**"]
 
+# NOTE: Set these environment variables in Netlify Dashboard
+# Dashboard -> Site Settings -> Environment Variables
+# DO NOT commit real API keys to version control!
+
 [context.production.environment]
   # Frontend
-  VITE_SUPABASE_URL = "https://nzmzmsmxbiptilzgdmgt.supabase.co"
-  VITE_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56bXptc214YmlwdGlsemdkbWd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA3MTczODYsImV4cCI6MjA3NjI5MzM4Nn0.kfbv7RDBHRmxjpJZqbvPnFqUDRHwLy9kuGgaSUVW0Oo"
-  VITE_BACKEND_URL = "https://jarvis-ai.co"
+  VITE_SUPABASE_URL = "your-supabase-url"
+  VITE_SUPABASE_ANON_KEY = "your-supabase-anon-key"
+  VITE_BACKEND_URL = "your-backend-url"
 
   # Backend (Netlify Functions)
-  FRONTEND_URL = "https://jarvis-ai.co"
-  SUPABASE_URL = "https://nzmzmsmxbiptilzgdmgt.supabase.co"
-  SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56bXptc214YmlwdGlsemdkbWd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA3MTczODYsImV4cCI6MjA3NjI5MzM4Nn0.kfbv7RDBHRmxjpJZqbvPnFqUDRHwLy9kuGgaSUVW0Oo"
+  FRONTEND_URL = "your-frontend-url"
+  SUPABASE_URL = "your-supabase-url"
+  SUPABASE_ANON_KEY = "your-supabase-anon-key"
   SUPABASE_SERVICE_KEY = "your-supabase-service-key"
 
   # Twitter OAuth
-  TWITTER_OAUTH_CLIENT_ID = "QkUtRkh6akFOeGdjdzJME9FeGQ6MTpjaQ"
+  TWITTER_OAUTH_CLIENT_ID = "your-twitter-oauth-client-id"
   TWITTER_OAUTH_CLIENT_SECRET = "your-twitter-oauth-client-secret"
 
   # Twitter Legacy API
-  TWITTER_API_KEY = "i1edmBlxyYs0idXUSs7xUnjtM"
+  TWITTER_API_KEY = "your-twitter-api-key"
   TWITTER_API_SECRET = "your-twitter-api-secret"
-  TWITTER_ACCESS_TOKEN = "1978598113255591936-p6y9F1uLQoQM8gE7ru8sDbNEkt6K03"
+  TWITTER_ACCESS_TOKEN = "your-twitter-access-token"
   TWITTER_ACCESS_TOKEN_SECRET = "your-twitter-access-token-secret"
 
   # Stripe
   STRIPE_SECRET_KEY = "your-stripe-secret-key"
   STRIPE_WEBHOOK_SECRET = "your-stripe-webhook-secret"
-  STRIPE_STARTER_PRICE_ID = "price_1SJyd0EKVYJUPWdjNM1XJwta"
-  STRIPE_PRO_PRICE_ID = "price_1SJyd1EKVYJUPWdjaer6d3yd"
-  STRIPE_ENTERPRISE_PRICE_ID = "price_1SJyd3EKVYJUPWdj0GRgf3VZ"
+  STRIPE_STARTER_PRICE_ID = "your-stripe-starter-price-id"
+  STRIPE_PRO_PRICE_ID = "your-stripe-pro-price-id"
+  STRIPE_ENTERPRISE_PRICE_ID = "your-stripe-enterprise-price-id"
