@@ -36,7 +36,7 @@ const DEFAULT_ALLOWED_PATHS = [
 ];
 
 export const config: BridgeConfig = {
-  port: parseInt(process.env.BRIDGE_PORT || '5555', 10),
+  port: parseInt(process.env.PORT || process.env.BRIDGE_PORT || '5555', 10),
   bearerToken: process.env.BRIDGE_BEARER_TOKEN || '',
   allowedCommands: process.env.ALLOWED_COMMANDS
     ? process.env.ALLOWED_COMMANDS.split(',')
