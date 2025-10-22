@@ -1,0 +1,30 @@
+{
+  "id": "web-1759969578632-mzc2xn",
+  "messages": [
+    {
+      "id": "b0b23d1e-81d0-4ef2-a3f8-66b66f6fb075",
+      "conversationId": "web-1759969578632-mzc2xn",
+      "source": "web",
+      "role": "user",
+      "content": "are you live>",
+      "timestamp": "2025-10-09T00:26:22.284Z"
+    },
+    {
+      "id": "14faf3f3-85fd-4685-bf24-67ad6b28e79d",
+      "conversationId": "web-1759969578632-mzc2xn",
+      "source": "web",
+      "role": "assistant",
+      "content": "Yes, I'm here and ready to help you with your music production needs. What would you like to work on today?",
+      "timestamp": "2025-10-09T00:26:23.822Z"
+    }
+  ],
+  "participants": {
+    "web": {
+      "connected": true,
+      "lastSeen": "2025-10-09T00:26:23.822Z"
+    }
+  },
+  "metadata": {},
+  "created": "2025-10-09T00:26:22.284Z",
+  "updated": "2025-10-09T00:26:23.822Z"
+}

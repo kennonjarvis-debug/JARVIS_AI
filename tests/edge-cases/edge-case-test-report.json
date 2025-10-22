@@ -1,0 +1,1278 @@
+{
+  "timestamp": "2025-10-09T15:57:13.489Z",
+  "totalSuites": 5,
+  "totalTests": 95,
+  "totalPassed": 13,
+  "totalFailed": 82,
+  "totalBugs": 82,
+  "totalDuration": 13283,
+  "suites": [
+    {
+      "name": "Project Creation",
+      "results": [
+        {
+          "scenario": "Emoji in project name",
+          "category": "project-creation",
+          "passed": false,
+          "error": "Got status 401, expected sanitize",
+          "severity": "medium"
+        },
+        {
+          "scenario": "Unicode characters (Chinese)",
+          "category": "project-creation",
+          "passed": false,
+          "error": "Got status 401, expected accept",
+          "severity": "low"
+        },
+        {
+          "scenario": "Unicode characters (Arabic)",
+          "category": "project-creation",
+          "passed": false,
+          "error": "Got status 401, expected accept",
+          "severity": "low"
+        },
+        {
+          "scenario": "SQL injection attempt in name",
+          "category": "project-creation",
+          "passed": false,
+          "error": "Got status 401, expected sanitize",
+          "severity": "critical"
+        },
+        {
+          "scenario": "XSS attempt in name",
+          "category": "project-creation",
+          "passed": false,
+          "error": "Got status 401, expected sanitize",
+          "severity": "critical"
+        },
+        {
+          "scenario": "Path traversal in name",
+          "category": "project-creation",
+          "passed": false,
+          "error": "Got status 401, expected sanitize",
+          "severity": "high"
+        },
+        {
+          "scenario": "Null bytes in name",
+          "category": "project-creation",
+          "passed": false,
+          "error": "Got status 401, expected sanitize",
+          "severity": "high"
+        },
+        {
+          "scenario": "Control characters",
+          "category": "project-creation",
+          "passed": false,
+          "error": "Got status 401, expected sanitize",
+          "severity": "medium"
+        },
+        {
+          "scenario": "Empty string name",
+          "category": "project-creation",
+          "passed": false,
+          "error": "Got status 401, expected reject",
+          "severity": "high"
+        },
+        {
+          "scenario": "Only whitespace",
+          "category": "project-creation",
+          "passed": false,
+          "error": "Got status 401, expected reject",
+          "severity": "high"
+        },
+        {
+          "scenario": "Very long name (10000 chars)",
+          "category": "project-creation",
+          "passed": false,
+          "error": "Got status 401, expected reject",
+          "severity": "medium"
+        },
+        {
+          "scenario": "Exactly 255 chars",
+          "category": "project-creation",
+          "passed": false,
+          "error": "Got status 401, expected accept",
+          "severity": "low"
+        },
+        {
+          "scenario": "Exactly 256 chars",
+          "category": "project-creation",
+          "passed": false,
+          "error": "Got status 401, expected reject",
+          "severity": "medium"
+        },
+        {
+          "scenario": "Duplicate project name",
+          "category": "project-creation",
+          "passed": false,
+          "error": "Request failed with status code 401",
+          "severity": "medium"
+        },
+        {
+          "scenario": "Forward slash in name",
+          "category": "project-creation",
+          "passed": false,
+          "error": "Got status 401, expected sanitize",
+          "severity": "medium"
+        },
+        {
+          "scenario": "Backslash in name",
+          "category": "project-creation",
+          "passed": false,
+          "error": "Got status 401, expected sanitize",
+          "severity": "medium"
+        },
+        {
+          "scenario": "Colon in name",
+          "category": "project-creation",
+          "passed": false,
+          "error": "Got status 401, expected sanitize",
+          "severity": "medium"
+        },
+        {
+          "scenario": "Asterisk in name",
+          "category": "project-creation",
+          "passed": false,
+          "error": "Got status 401, expected sanitize",
+          "severity": "low"
+        },
+        {
+          "scenario": "Pipe in name",
+          "category": "project-creation",
+          "passed": false,
+          "error": "Got status 401, expected sanitize",
+          "severity": "low"
+        },
+        {
+          "scenario": "Question mark in name",
+          "category": "project-creation",
+          "passed": false,
+          "error": "Got status 401, expected sanitize",
+          "severity": "low"
+        },
+        {
+          "scenario": "Single character name",
+          "category": "project-creation",
+          "passed": false,
+          "error": "Got status 401, expected accept",
+          "severity": "low"
+        },
+        {
+          "scenario": "Numbers only",
+          "category": "project-creation",
+          "passed": false,
+          "error": "Got status 401, expected accept",
+          "severity": "low"
+        },
+        {
+          "scenario": "Special chars only",
+          "category": "project-creation",
+          "passed": false,
+          "error": "Got status 401, expected sanitize",
+          "severity": "medium"
+        },
+        {
+          "scenario": "Case sensitivity check",
+          "category": "project-creation",
+          "passed": false,
+          "error": "Request failed with status code 401",
+          "severity": "low"
+        },
+        {
+          "scenario": "Race condition (10 concurrent creates)",
+          "category": "project-creation",
+          "passed": true
+        }
+      ],
+      "passed": 1,
+      "failed": 24,
+      "bugs": 24,
+      "duration": 91
+    },
+    {
+      "name": "Beat Generation",
+      "results": [
+        {
+          "scenario": "BPM = 0 (zero)",
+          "category": "beat-generation",
+          "passed": false,
+          "error": "Got status 404, expected reject",
+          "severity": "high"
+        },
+        {
+          "scenario": "BPM = -1 (negative)",
+          "category": "beat-generation",
+          "passed": false,
+          "error": "Got status 404, expected reject",
+          "severity": "high"
+        },
+        {
+          "scenario": "BPM = 99999 (extreme high)",
+          "category": "beat-generation",
+          "passed": false,
+          "error": "Got status 404, expected reject",
+          "severity": "medium"
+        },
+        {
+          "scenario": "BPM = NaN",
+          "category": "beat-generation",
+          "passed": false,
+          "error": "Got status 404, expected reject",
+          "severity": "critical"
+        },
+        {
+          "scenario": "BPM = null",
+          "category": "beat-generation",
+          "passed": false,
+          "error": "Got status 404, expected fallback",
+          "severity": "medium"
+        },
+        {
+          "scenario": "BPM = undefined",
+          "category": "beat-generation",
+          "passed": false,
+          "error": "Got status 404, expected fallback",
+          "severity": "medium"
+        },
+        {
+          "scenario": "BPM = Infinity",
+          "category": "beat-generation",
+          "passed": false,
+          "error": "Got status 404, expected reject",
+          "severity": "critical"
+        },
+        {
+          "scenario": "BPM = -Infinity",
+          "category": "beat-generation",
+          "passed": false,
+          "error": "Got status 404, expected reject",
+          "severity": "critical"
+        },
+        {
+          "scenario": "BPM = string \"120\"",
+          "category": "beat-generation",
+          "passed": false,
+          "error": "Got status 404, expected accept",
+          "severity": "low"
+        },
+        {
+          "scenario": "BPM = float 120.5",
+          "category": "beat-generation",
+          "passed": false,
+          "error": "Got status 404, expected accept",
+          "severity": "low"
+        },
+        {
+          "scenario": "BPM = 1 (extreme low)",
+          "category": "beat-generation",
+          "passed": false,
+          "error": "Got status 404, expected reject",
+          "severity": "medium"
+        },
+        {
+          "scenario": "BPM = 300 (very high but valid)",
+          "category": "beat-generation",
+          "passed": false,
+          "error": "Got status 404, expected accept",
+          "severity": "low"
+        },
+        {
+          "scenario": "Generation timeout (if backend hangs)",
+          "category": "beat-generation",
+          "passed": false,
+          "error": "Got status 404, expected reject",
+          "severity": "high"
+        },
+        {
+          "scenario": "Invalid genre",
+          "category": "beat-generation",
+          "passed": false,
+          "error": "Got status 404, expected fallback",
+          "severity": "medium"
+        },
+        {
+          "scenario": "Genre with SQL injection",
+          "category": "beat-generation",
+          "passed": false,
+          "error": "Got status 404, expected reject",
+          "severity": "critical"
+        },
+        {
+          "scenario": "Genre with XSS",
+          "category": "beat-generation",
+          "passed": false,
+          "error": "Got status 404, expected reject",
+          "severity": "critical"
+        },
+        {
+          "scenario": "Empty genre",
+          "category": "beat-generation",
+          "passed": false,
+          "error": "Got status 404, expected fallback",
+          "severity": "medium"
+        },
+        {
+          "scenario": "Null genre",
+          "category": "beat-generation",
+          "passed": false,
+          "error": "Got status 404, expected fallback",
+          "severity": "medium"
+        },
+        {
+          "scenario": "No parameters at all",
+          "category": "beat-generation",
+          "passed": false,
+          "error": "Got status 404, expected fallback",
+          "severity": "medium"
+        },
+        {
+          "scenario": "Only BPM, no genre",
+          "category": "beat-generation",
+          "passed": false,
+          "error": "Got status 404, expected fallback",
+          "severity": "low"
+        },
+        {
+          "scenario": "Huge prompt (10000 chars)",
+          "category": "beat-generation",
+          "passed": false,
+          "error": "Got status 404, expected reject",
+          "severity": "medium"
+        },
+        {
+          "scenario": "Concurrent beat generation (5 requests)",
+          "category": "beat-generation",
+          "passed": false,
+          "error": "Only 0/5 succeeded",
+          "severity": "high"
+        },
+        {
+          "scenario": "Rate limiting (20 rapid requests)",
+          "category": "beat-generation",
+          "passed": false,
+          "error": "No rate limiting detected!",
+          "severity": "high"
+        },
+        {
+          "scenario": "Malformed JSON body",
+          "category": "beat-generation",
+          "passed": false,
+          "error": "Got status 500",
+          "severity": "medium"
+        },
+        {
+          "scenario": "All parameters as arrays",
+          "category": "beat-generation",
+          "passed": false,
+          "error": "Got status 404, expected reject",
+          "severity": "medium"
+        },
+        {
+          "scenario": "Nested objects as parameters",
+          "category": "beat-generation",
+          "passed": false,
+          "error": "Got status 404, expected reject",
+          "severity": "medium"
+        },
+        {
+          "scenario": "Interrupted generation (manual test required)",
+          "category": "beat-generation",
+          "passed": true,
+          "error": "This requires manual testing with network interruption"
+        }
+      ],
+      "passed": 1,
+      "failed": 26,
+      "bugs": 26,
+      "duration": 91
+    },
+    {
+      "name": "Vocal Recording",
+      "results": [
+        {
+          "scenario": "No microphone permission (client-side error)",
+          "category": "vocal-recording",
+          "passed": true
+        },
+        {
+          "scenario": "WebSocket connection interrupted mid-recording",
+          "category": "vocal-recording",
+          "passed": true
+        },
+        {
+          "scenario": "Extremely long recording (buffer overflow test)",
+          "category": "vocal-recording",
+          "passed": true
+        },
+        {
+          "scenario": "Zero-length recording (no audio data)",
+          "category": "vocal-recording",
+          "passed": true
+        },
+        {
+          "scenario": "Corrupt audio data (invalid base64)",
+          "category": "vocal-recording",
+          "passed": true
+        },
+        {
+          "scenario": "Malformed WebSocket message (not JSON)",
+          "category": "vocal-recording",
+          "passed": true
+        },
+        {
+          "scenario": "Missing session ID in recording request",
+          "category": "vocal-recording",
+          "passed": true
+        },
+        {
+          "scenario": "Duplicate session IDs (concurrent recordings)",
+          "category": "vocal-recording",
+          "passed": true
+        },
+        {
+          "scenario": "Rapid WebSocket reconnection (10 times)",
+          "category": "vocal-recording",
+          "passed": true
+        },
+        {
+          "scenario": "Extremely large single WebSocket message (10MB)",
+          "category": "vocal-recording",
+          "passed": true
+        },
+        {
+          "scenario": "Invalid audio format/encoding",
+          "category": "vocal-recording",
+          "passed": true
+        }
+      ],
+      "passed": 11,
+      "failed": 0,
+      "bugs": 0,
+      "duration": 11932
+    },
+    {
+      "name": "Service Health",
+      "results": [
+        {
+          "scenario": "All services reporting as down (simulated)",
+          "category": "health-monitoring",
+          "passed": false,
+          "error": "Exception: Error",
+          "severity": "critical"
+        },
+        {
+          "scenario": "Partial service failures (mixed health states)",
+          "category": "health-monitoring",
+          "passed": false,
+          "error": "Exception: Error",
+          "severity": "high"
+        },
+        {
+          "scenario": "Cascade failure detection (one failure triggers others)",
+          "category": "health-monitoring",
+          "passed": false,
+          "error": "Exception: Error",
+          "severity": "high"
+        },
+        {
+          "scenario": "Health check timeout (slow response)",
+          "category": "health-monitoring",
+          "passed": false,
+          "error": "Exception: Error",
+          "severity": "medium"
+        },
+        {
+          "scenario": "Stale health data detection",
+          "category": "health-monitoring",
+          "passed": false,
+          "error": "Exception: Error",
+          "severity": "medium"
+        },
+        {
+          "scenario": "Concurrent health checks (10 simultaneous)",
+          "category": "health-monitoring",
+          "passed": false,
+          "error": "Exception: Error",
+          "severity": "medium"
+        },
+        {
+          "scenario": "Health endpoint returns malformed data",
+          "category": "health-monitoring",
+          "passed": false,
+          "error": "Exception: Error",
+          "severity": "high"
+        },
+        {
+          "scenario": "Health check with invalid/missing auth",
+          "category": "health-monitoring",
+          "passed": false,
+          "error": "Exception: Error",
+          "severity": "low"
+        },
+        {
+          "scenario": "Rapid health checks (100 requests in 1 second)",
+          "category": "health-monitoring",
+          "passed": false,
+          "error": "System should handle rapid health checks without crashing",
+          "severity": "high"
+        },
+        {
+          "scenario": "Health check during simulated high load",
+          "category": "health-monitoring",
+          "passed": false,
+          "error": "Exception: Error",
+          "severity": "high"
+        },
+        {
+          "scenario": "Health check when dependencies are missing",
+          "category": "health-monitoring",
+          "passed": false,
+          "error": "Exception: Error",
+          "severity": "medium"
+        },
+        {
+          "scenario": "Circular dependency in health checks",
+          "category": "health-monitoring",
+          "passed": false,
+          "error": "Exception: Error",
+          "severity": "high"
+        },
+        {
+          "scenario": "Health check cache invalidation",
+          "category": "health-monitoring",
+          "passed": false,
+          "error": "Exception: Error",
+          "severity": "low"
+        },
+        {
+          "scenario": "Health check with network errors (DNS failure simulation)",
+          "category": "health-monitoring",
+          "passed": false,
+          "error": "Exception: Error",
+          "severity": "medium"
+        },
+        {
+          "scenario": "Health data accuracy (cross-check multiple endpoints)",
+          "category": "health-monitoring",
+          "passed": false,
+          "error": "Exception: Error",
+          "severity": "medium"
+        }
+      ],
+      "passed": 0,
+      "failed": 15,
+      "bugs": 15,
+      "duration": 1118
+    },
+    {
+      "name": "Cost Tracking",
+      "results": [
+        {
+          "scenario": "Negative cost values",
+          "category": "cost-tracking",
+          "passed": false,
+          "error": "Exception: Error",
+          "severity": "high"
+        },
+        {
+          "scenario": "Extreme cost values (billions)",
+          "category": "cost-tracking",
+          "passed": false,
+          "error": "Exception: Error",
+          "severity": "medium"
+        },
+        {
+          "scenario": "Extreme decimal precision (10+ places)",
+          "category": "cost-tracking",
+          "passed": false,
+          "error": "Exception: Error",
+          "severity": "low"
+        },
+        {
+          "scenario": "Division by zero in cost averages",
+          "category": "cost-tracking",
+          "passed": false,
+          "error": "Exception: Error",
+          "severity": "critical"
+        },
+        {
+          "scenario": "Null or undefined cost entries",
+          "category": "cost-tracking",
+          "passed": false,
+          "error": "Exception: Error",
+          "severity": "high"
+        },
+        {
+          "scenario": "Cost overflow (exceeds MAX_SAFE_INTEGER)",
+          "category": "cost-tracking",
+          "passed": false,
+          "error": "Exception: Error",
+          "severity": "medium"
+        },
+        {
+          "scenario": "Cost calculation consistency (ARR = MRR * 12)",
+          "category": "cost-tracking",
+          "passed": false,
+          "error": "Exception: Error",
+          "severity": "medium"
+        },
+        {
+          "scenario": "Runway calculation with zero burn rate",
+          "category": "cost-tracking",
+          "passed": false,
+          "error": "Exception: Error",
+          "severity": "high"
+        },
+        {
+          "scenario": "Concurrent cost metric requests (10 simultaneous)",
+          "category": "cost-tracking",
+          "passed": false,
+          "error": "Exception: Error",
+          "severity": "medium"
+        },
+        {
+          "scenario": "Cost data caching (stale data detection)",
+          "category": "cost-tracking",
+          "passed": false,
+          "error": "Exception: Error",
+          "severity": "low"
+        },
+        {
+          "scenario": "Percentage calculations (0-100 range)",
+          "category": "cost-tracking",
+          "passed": false,
+          "error": "Exception: Error",
+          "severity": "medium"
+        },
+        {
+          "scenario": "Cost aggregation accuracy",
+          "category": "cost-tracking",
+          "passed": false,
+          "error": "Exception: Error",
+          "severity": "low"
+        },
+        {
+          "scenario": "Currency values are valid numbers",
+          "category": "cost-tracking",
+          "passed": false,
+          "error": "Exception: Error",
+          "severity": "medium"
+        },
+        {
+          "scenario": "LTV/CAC ratio sanity check",
+          "category": "cost-tracking",
+          "passed": false,
+          "error": "Exception: Error",
+          "severity": "medium"
+        },
+        {
+          "scenario": "Cost calculations with zero customers",
+          "category": "cost-tracking",
+          "passed": false,
+          "error": "Exception: Error",
+          "severity": "high"
+        },
+        {
+          "scenario": "Financial metrics consistency (multiple requests)",
+          "category": "cost-tracking",
+          "passed": false,
+          "error": "Exception: Error",
+          "severity": "low"
+        },
+        {
+          "scenario": "Financial data includes calculation source",
+          "category": "cost-tracking",
+          "passed": false,
+          "error": "Exception: Error",
+          "severity": "low"
+        }
+      ],
+      "passed": 0,
+      "failed": 17,
+      "bugs": 17,
+      "duration": 50
+    }
+  ],
+  "criticalBugs": [
+    {
+      "scenario": "SQL injection attempt in name",
+      "category": "project-creation",
+      "passed": false,
+      "error": "Got status 401, expected sanitize",
+      "severity": "critical"
+    },
+    {
+      "scenario": "XSS attempt in name",
+      "category": "project-creation",
+      "passed": false,
+      "error": "Got status 401, expected sanitize",
+      "severity": "critical"
+    },
+    {
+      "scenario": "BPM = NaN",
+      "category": "beat-generation",
+      "passed": false,
+      "error": "Got status 404, expected reject",
+      "severity": "critical"
+    },
+    {
+      "scenario": "BPM = Infinity",
+      "category": "beat-generation",
+      "passed": false,
+      "error": "Got status 404, expected reject",
+      "severity": "critical"
+    },
+    {
+      "scenario": "BPM = -Infinity",
+      "category": "beat-generation",
+      "passed": false,
+      "error": "Got status 404, expected reject",
+      "severity": "critical"
+    },
+    {
+      "scenario": "Genre with SQL injection",
+      "category": "beat-generation",
+      "passed": false,
+      "error": "Got status 404, expected reject",
+      "severity": "critical"
+    },
+    {
+      "scenario": "Genre with XSS",
+      "category": "beat-generation",
+      "passed": false,
+      "error": "Got status 404, expected reject",
+      "severity": "critical"
+    },
+    {
+      "scenario": "All services reporting as down (simulated)",
+      "category": "health-monitoring",
+      "passed": false,
+      "error": "Exception: Error",
+      "severity": "critical"
+    },
+    {
+      "scenario": "Division by zero in cost averages",
+      "category": "cost-tracking",
+      "passed": false,
+      "error": "Exception: Error",
+      "severity": "critical"
+    }
+  ],
+  "highBugs": [
+    {
+      "scenario": "Path traversal in name",
+      "category": "project-creation",
+      "passed": false,
+      "error": "Got status 401, expected sanitize",
+      "severity": "high"
+    },
+    {
+      "scenario": "Null bytes in name",
+      "category": "project-creation",
+      "passed": false,
+      "error": "Got status 401, expected sanitize",
+      "severity": "high"
+    },
+    {
+      "scenario": "Empty string name",
+      "category": "project-creation",
+      "passed": false,
+      "error": "Got status 401, expected reject",
+      "severity": "high"
+    },
+    {
+      "scenario": "Only whitespace",
+      "category": "project-creation",
+      "passed": false,
+      "error": "Got status 401, expected reject",
+      "severity": "high"
+    },
+    {
+      "scenario": "BPM = 0 (zero)",
+      "category": "beat-generation",
+      "passed": false,
+      "error": "Got status 404, expected reject",
+      "severity": "high"
+    },
+    {
+      "scenario": "BPM = -1 (negative)",
+      "category": "beat-generation",
+      "passed": false,
+      "error": "Got status 404, expected reject",
+      "severity": "high"
+    },
+    {
+      "scenario": "Generation timeout (if backend hangs)",
+      "category": "beat-generation",
+      "passed": false,
+      "error": "Got status 404, expected reject",
+      "severity": "high"
+    },
+    {
+      "scenario": "Concurrent beat generation (5 requests)",
+      "category": "beat-generation",
+      "passed": false,
+      "error": "Only 0/5 succeeded",
+      "severity": "high"
+    },
+    {
+      "scenario": "Rate limiting (20 rapid requests)",
+      "category": "beat-generation",
+      "passed": false,
+      "error": "No rate limiting detected!",
+      "severity": "high"
+    },
+    {
+      "scenario": "Partial service failures (mixed health states)",
+      "category": "health-monitoring",
+      "passed": false,
+      "error": "Exception: Error",
+      "severity": "high"
+    },
+    {
+      "scenario": "Cascade failure detection (one failure triggers others)",
+      "category": "health-monitoring",
+      "passed": false,
+      "error": "Exception: Error",
+      "severity": "high"
+    },
+    {
+      "scenario": "Health endpoint returns malformed data",
+      "category": "health-monitoring",
+      "passed": false,
+      "error": "Exception: Error",
+      "severity": "high"
+    },
+    {
+      "scenario": "Rapid health checks (100 requests in 1 second)",
+      "category": "health-monitoring",
+      "passed": false,
+      "error": "System should handle rapid health checks without crashing",
+      "severity": "high"
+    },
+    {
+      "scenario": "Health check during simulated high load",
+      "category": "health-monitoring",
+      "passed": false,
+      "error": "Exception: Error",
+      "severity": "high"
+    },
+    {
+      "scenario": "Circular dependency in health checks",
+      "category": "health-monitoring",
+      "passed": false,
+      "error": "Exception: Error",
+      "severity": "high"
+    },
+    {
+      "scenario": "Negative cost values",
+      "category": "cost-tracking",
+      "passed": false,
+      "error": "Exception: Error",
+      "severity": "high"
+    },
+    {
+      "scenario": "Null or undefined cost entries",
+      "category": "cost-tracking",
+      "passed": false,
+      "error": "Exception: Error",
+      "severity": "high"
+    },
+    {
+      "scenario": "Runway calculation with zero burn rate",
+      "category": "cost-tracking",
+      "passed": false,
+      "error": "Exception: Error",
+      "severity": "high"
+    },
+    {
+      "scenario": "Cost calculations with zero customers",
+      "category": "cost-tracking",
+      "passed": false,
+      "error": "Exception: Error",
+      "severity": "high"
+    }
+  ],
+  "mediumBugs": [
+    {
+      "scenario": "Emoji in project name",
+      "category": "project-creation",
+      "passed": false,
+      "error": "Got status 401, expected sanitize",
+      "severity": "medium"
+    },
+    {
+      "scenario": "Control characters",
+      "category": "project-creation",
+      "passed": false,
+      "error": "Got status 401, expected sanitize",
+      "severity": "medium"
+    },
+    {
+      "scenario": "Very long name (10000 chars)",
+      "category": "project-creation",
+      "passed": false,
+      "error": "Got status 401, expected reject",
+      "severity": "medium"
+    },
+    {
+      "scenario": "Exactly 256 chars",
+      "category": "project-creation",
+      "passed": false,
+      "error": "Got status 401, expected reject",
+      "severity": "medium"
+    },
+    {
+      "scenario": "Duplicate project name",
+      "category": "project-creation",
+      "passed": false,
+      "error": "Request failed with status code 401",
+      "severity": "medium"
+    },
+    {
+      "scenario": "Forward slash in name",
+      "category": "project-creation",
+      "passed": false,
+      "error": "Got status 401, expected sanitize",
+      "severity": "medium"
+    },
+    {
+      "scenario": "Backslash in name",
+      "category": "project-creation",
+      "passed": false,
+      "error": "Got status 401, expected sanitize",
+      "severity": "medium"
+    },
+    {
+      "scenario": "Colon in name",
+      "category": "project-creation",
+      "passed": false,
+      "error": "Got status 401, expected sanitize",
+      "severity": "medium"
+    },
+    {
+      "scenario": "Special chars only",
+      "category": "project-creation",
+      "passed": false,
+      "error": "Got status 401, expected sanitize",
+      "severity": "medium"
+    },
+    {
+      "scenario": "BPM = 99999 (extreme high)",
+      "category": "beat-generation",
+      "passed": false,
+      "error": "Got status 404, expected reject",
+      "severity": "medium"
+    },
+    {
+      "scenario": "BPM = null",
+      "category": "beat-generation",
+      "passed": false,
+      "error": "Got status 404, expected fallback",
+      "severity": "medium"
+    },
+    {
+      "scenario": "BPM = undefined",
+      "category": "beat-generation",
+      "passed": false,
+      "error": "Got status 404, expected fallback",
+      "severity": "medium"
+    },
+    {
+      "scenario": "BPM = 1 (extreme low)",
+      "category": "beat-generation",
+      "passed": false,
+      "error": "Got status 404, expected reject",
+      "severity": "medium"
+    },
+    {
+      "scenario": "Invalid genre",
+      "category": "beat-generation",
+      "passed": false,
+      "error": "Got status 404, expected fallback",
+      "severity": "medium"
+    },
+    {
+      "scenario": "Empty genre",
+      "category": "beat-generation",
+      "passed": false,
+      "error": "Got status 404, expected fallback",
+      "severity": "medium"
+    },
+    {
+      "scenario": "Null genre",
+      "category": "beat-generation",
+      "passed": false,
+      "error": "Got status 404, expected fallback",
+      "severity": "medium"
+    },
+    {
+      "scenario": "No parameters at all",
+      "category": "beat-generation",
+      "passed": false,
+      "error": "Got status 404, expected fallback",
+      "severity": "medium"
+    },
+    {
+      "scenario": "Huge prompt (10000 chars)",
+      "category": "beat-generation",
+      "passed": false,
+      "error": "Got status 404, expected reject",
+      "severity": "medium"
+    },
+    {
+      "scenario": "Malformed JSON body",
+      "category": "beat-generation",
+      "passed": false,
+      "error": "Got status 500",
+      "severity": "medium"
+    },
+    {
+      "scenario": "All parameters as arrays",
+      "category": "beat-generation",
+      "passed": false,
+      "error": "Got status 404, expected reject",
+      "severity": "medium"
+    },
+    {
+      "scenario": "Nested objects as parameters",
+      "category": "beat-generation",
+      "passed": false,
+      "error": "Got status 404, expected reject",
+      "severity": "medium"
+    },
+    {
+      "scenario": "Health check timeout (slow response)",
+      "category": "health-monitoring",
+      "passed": false,
+      "error": "Exception: Error",
+      "severity": "medium"
+    },
+    {
+      "scenario": "Stale health data detection",
+      "category": "health-monitoring",
+      "passed": false,
+      "error": "Exception: Error",
+      "severity": "medium"
+    },
+    {
+      "scenario": "Concurrent health checks (10 simultaneous)",
+      "category": "health-monitoring",
+      "passed": false,
+      "error": "Exception: Error",
+      "severity": "medium"
+    },
+    {
+      "scenario": "Health check when dependencies are missing",
+      "category": "health-monitoring",
+      "passed": false,
+      "error": "Exception: Error",
+      "severity": "medium"
+    },
+    {
+      "scenario": "Health check with network errors (DNS failure simulation)",
+      "category": "health-monitoring",
+      "passed": false,
+      "error": "Exception: Error",
+      "severity": "medium"
+    },
+    {
+      "scenario": "Health data accuracy (cross-check multiple endpoints)",
+      "category": "health-monitoring",
+      "passed": false,
+      "error": "Exception: Error",
+      "severity": "medium"
+    },
+    {
+      "scenario": "Extreme cost values (billions)",
+      "category": "cost-tracking",
+      "passed": false,
+      "error": "Exception: Error",
+      "severity": "medium"
+    },
+    {
+      "scenario": "Cost overflow (exceeds MAX_SAFE_INTEGER)",
+      "category": "cost-tracking",
+      "passed": false,
+      "error": "Exception: Error",
+      "severity": "medium"
+    },
+    {
+      "scenario": "Cost calculation consistency (ARR = MRR * 12)",
+      "category": "cost-tracking",
+      "passed": false,
+      "error": "Exception: Error",
+      "severity": "medium"
+    },
+    {
+      "scenario": "Concurrent cost metric requests (10 simultaneous)",
+      "category": "cost-tracking",
+      "passed": false,
+      "error": "Exception: Error",
+      "severity": "medium"
+    },
+    {
+      "scenario": "Percentage calculations (0-100 range)",
+      "category": "cost-tracking",
+      "passed": false,
+      "error": "Exception: Error",
+      "severity": "medium"
+    },
+    {
+      "scenario": "Currency values are valid numbers",
+      "category": "cost-tracking",
+      "passed": false,
+      "error": "Exception: Error",
+      "severity": "medium"
+    },
+    {
+      "scenario": "LTV/CAC ratio sanity check",
+      "category": "cost-tracking",
+      "passed": false,
+      "error": "Exception: Error",
+      "severity": "medium"
+    }
+  ],
+  "lowBugs": [
+    {
+      "scenario": "Unicode characters (Chinese)",
+      "category": "project-creation",
+      "passed": false,
+      "error": "Got status 401, expected accept",
+      "severity": "low"
+    },
+    {
+      "scenario": "Unicode characters (Arabic)",
+      "category": "project-creation",
+      "passed": false,
+      "error": "Got status 401, expected accept",
+      "severity": "low"
+    },
+    {
+      "scenario": "Exactly 255 chars",
+      "category": "project-creation",
+      "passed": false,
+      "error": "Got status 401, expected accept",
+      "severity": "low"
+    },
+    {
+      "scenario": "Asterisk in name",
+      "category": "project-creation",
+      "passed": false,
+      "error": "Got status 401, expected sanitize",
+      "severity": "low"
+    },
+    {
+      "scenario": "Pipe in name",
+      "category": "project-creation",
+      "passed": false,
+      "error": "Got status 401, expected sanitize",
+      "severity": "low"
+    },
+    {
+      "scenario": "Question mark in name",
+      "category": "project-creation",
+      "passed": false,
+      "error": "Got status 401, expected sanitize",
+      "severity": "low"
+    },
+    {
+      "scenario": "Single character name",
+      "category": "project-creation",
+      "passed": false,
+      "error": "Got status 401, expected accept",
+      "severity": "low"
+    },
+    {
+      "scenario": "Numbers only",
+      "category": "project-creation",
+      "passed": false,
+      "error": "Got status 401, expected accept",
+      "severity": "low"
+    },
+    {
+      "scenario": "Case sensitivity check",
+      "category": "project-creation",
+      "passed": false,
+      "error": "Request failed with status code 401",
+      "severity": "low"
+    },
+    {
+      "scenario": "BPM = string \"120\"",
+      "category": "beat-generation",
+      "passed": false,
+      "error": "Got status 404, expected accept",
+      "severity": "low"
+    },
+    {
+      "scenario": "BPM = float 120.5",
+      "category": "beat-generation",
+      "passed": false,
+      "error": "Got status 404, expected accept",
+      "severity": "low"
+    },
+    {
+      "scenario": "BPM = 300 (very high but valid)",
+      "category": "beat-generation",
+      "passed": false,
+      "error": "Got status 404, expected accept",
+      "severity": "low"
+    },
+    {
+      "scenario": "Only BPM, no genre",
+      "category": "beat-generation",
+      "passed": false,
+      "error": "Got status 404, expected fallback",
+      "severity": "low"
+    },
+    {
+      "scenario": "Health check with invalid/missing auth",
+      "category": "health-monitoring",
+      "passed": false,
+      "error": "Exception: Error",
+      "severity": "low"
+    },
+    {
+      "scenario": "Health check cache invalidation",
+      "category": "health-monitoring",
+      "passed": false,
+      "error": "Exception: Error",
+      "severity": "low"
+    },
+    {
+      "scenario": "Extreme decimal precision (10+ places)",
+      "category": "cost-tracking",
+      "passed": false,
+      "error": "Exception: Error",
+      "severity": "low"
+    },
+    {
+      "scenario": "Cost data caching (stale data detection)",
+      "category": "cost-tracking",
+      "passed": false,
+      "error": "Exception: Error",
+      "severity": "low"
+    },
+    {
+      "scenario": "Cost aggregation accuracy",
+      "category": "cost-tracking",
+      "passed": false,
+      "error": "Exception: Error",
+      "severity": "low"
+    },
+    {
+      "scenario": "Financial metrics consistency (multiple requests)",
+      "category": "cost-tracking",
+      "passed": false,
+      "error": "Exception: Error",
+      "severity": "low"
+    },
+    {
+      "scenario": "Financial data includes calculation source",
+      "category": "cost-tracking",
+      "passed": false,
+      "error": "Exception: Error",
+      "severity": "low"
+    }
+  ]
+}

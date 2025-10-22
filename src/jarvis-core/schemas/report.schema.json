@@ -1,0 +1,246 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://jarvis.ai/schemas/report.v1.json",
+  "title": "Jarvis V2 Report Schema",
+  "description": "Schema for Jarvis V2 operational health reports",
+  "type": "object",
+  "required": [
+    "reportType",
+    "generatedAt",
+    "period",
+    "summary",
+    "testing",
+    "cloudSync",
+    "analytics",
+    "metadata"
+  ],
+  "properties": {
+    "reportType": {
+      "type": "string",
+      "enum": [
+        "daily_health",
+        "weekly_digest",
+        "monthly_performance",
+        "quarterly_review",
+        "annual_summary"
+      ],
+      "description": "Type of report generated"
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when report was generated"
+    },
+    "period": {
+      "type": "object",
+      "required": ["start", "end"],
+      "properties": {
+        "start": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Start of reporting period"
+        },
+        "end": {
+          "type": "string",
+          "format": "date-time",
+          "description": "End of reporting period"
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "required": ["vitalityScore", "status", "mood"],
+      "properties": {
+        "vitalityScore": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Overall system vitality score (0-100)"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["excellent", "good", "fair", "poor"],
+          "description": "System health status"
+        },
+        "mood": {
+          "type": "string",
+          "description": "System mood indicator"
+        }
+      }
+    },
+    "testing": {
+      "type": "object",
+      "required": [
+        "totalTests",
+        "passingTests",
+        "failingTests",
+        "coverage",
+        "successRate"
+      ],
+      "properties": {
+        "totalTests": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total number of tests"
+        },
+        "passingTests": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of passing tests"
+        },
+        "failingTests": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of failing tests"
+        },
+        "coverage": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Code coverage percentage"
+        },
+        "successRate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Test success rate percentage"
+        }
+      }
+    },
+    "cloudSync": {
+      "type": "object",
+      "required": ["lastSync", "successful", "filesUploaded", "totalBytes"],
+      "properties": {
+        "lastSync": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp of last sync attempt"
+        },
+        "successful": {
+          "type": "boolean",
+          "description": "Whether last sync was successful"
+        },
+        "filesUploaded": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of files uploaded in last sync"
+        },
+        "totalBytes": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total bytes uploaded in last sync"
+        }
+      }
+    },
+    "analytics": {
+      "type": "object",
+      "required": ["users", "engagement", "performance"],
+      "properties": {
+        "users": {
+          "type": "object",
+          "required": ["total", "active", "new", "churn"],
+          "properties": {
+            "total": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Total registered users"
+            },
+            "active": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Active users in period"
+            },
+            "new": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "New users in period"
+            },
+            "churn": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Churned users in period"
+            }
+          }
+        },
+        "engagement": {
+          "type": "object",
+          "required": [
+            "avgSessionDuration",
+            "avgDailyUsers",
+            "retentionRate"
+          ],
+          "properties": {
+            "avgSessionDuration": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Average session duration in minutes"
+            },
+            "avgDailyUsers": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Average daily active users"
+            },
+            "retentionRate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "User retention rate percentage"
+            }
+          }
+        },
+        "performance": {
+          "type": "object",
+          "required": ["avgResponseTime", "errorRate", "uptime"],
+          "properties": {
+            "avgResponseTime": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Average API response time in milliseconds"
+            },
+            "errorRate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "Error rate percentage"
+            },
+            "uptime": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "System uptime percentage"
+            }
+          }
+        }
+      }
+    },
+    "concerns": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of system concerns or issues"
+    },
+    "strengths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of system strengths or achievements"
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["version", "schema"],
+      "properties": {
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "description": "Jarvis version (semver)"
+        },
+        "schema": {
+          "type": "string",
+          "description": "Report schema version"
+        }
+      }
+    }
+  }
+}

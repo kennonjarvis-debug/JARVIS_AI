@@ -1,0 +1,30 @@
+{
+  "id": "web-1759971141965-2rz3hi",
+  "messages": [
+    {
+      "id": "7620f69d-1bf6-4af6-8e01-b0fa143d41d5",
+      "conversationId": "web-1759971141965-2rz3hi",
+      "source": "web",
+      "role": "user",
+      "content": "hello",
+      "timestamp": "2025-10-09T00:52:24.190Z"
+    },
+    {
+      "id": "fa7e1488-3c02-4d6e-b4d3-1d24e7cd4524",
+      "conversationId": "web-1759971141965-2rz3hi",
+      "source": "web",
+      "role": "assistant",
+      "content": "I'm Jarvis, your AI assistant. I received your message: \"hello\"\n\nCurrently, I'm running in demo mode as the AI DAWG backend connection is being established. Once connected, I'll be able to:\n\n- Generate music tracks\n- Analyze business metrics\n- Control system workflows\n- Provide intelligent insights\n\nHow can I assist you today?",
+      "timestamp": "2025-10-09T00:52:26.594Z"
+    }
+  ],
+  "participants": {
+    "web": {
+      "connected": true,
+      "lastSeen": "2025-10-09T00:52:26.594Z"
+    }
+  },
+  "metadata": {},
+  "created": "2025-10-09T00:52:24.190Z",
+  "updated": "2025-10-09T00:52:26.594Z"
+}

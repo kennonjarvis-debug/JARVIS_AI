@@ -1,0 +1,46 @@
+{
+  "id": "web-1759970039295-ohh9xf",
+  "messages": [
+    {
+      "id": "88f5f43e-46a7-4dee-8042-145b806b6b58",
+      "conversationId": "web-1759970039295-ohh9xf",
+      "source": "web",
+      "role": "user",
+      "content": "wassup",
+      "timestamp": "2025-10-09T00:34:02.186Z"
+    },
+    {
+      "id": "90564f74-6cce-44fe-a673-d817102644de",
+      "conversationId": "web-1759970039295-ohh9xf",
+      "source": "web",
+      "role": "assistant",
+      "content": "Not much, just ready to dive into some music production with you! What are you working on today? Need any help with your tracks or ideas?",
+      "timestamp": "2025-10-09T00:34:03.558Z"
+    },
+    {
+      "id": "43acdedd-09a3-4913-801f-f54758efe667",
+      "conversationId": "web-1759970039295-ohh9xf",
+      "source": "web",
+      "role": "user",
+      "content": "tell me why you repeat yourself? ",
+      "timestamp": "2025-10-09T00:34:19.284Z"
+    },
+    {
+      "id": "ac32abe8-b788-4913-b6e0-96fb56cbb67d",
+      "conversationId": "web-1759970039295-ohh9xf",
+      "source": "web",
+      "role": "assistant",
+      "content": "I apologize for any confusion earlier. It seems there was a technical hiccup causing the repetition. I'm here to assist you with your music production needs, so please let me know how I can help you today!",
+      "timestamp": "2025-10-09T00:34:20.751Z"
+    }
+  ],
+  "participants": {
+    "web": {
+      "connected": true,
+      "lastSeen": "2025-10-09T00:34:20.751Z"
+    }
+  },
+  "metadata": {},
+  "created": "2025-10-09T00:34:02.186Z",
+  "updated": "2025-10-09T00:34:20.751Z"
+}

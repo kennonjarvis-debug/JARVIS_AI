@@ -1,0 +1,48 @@
+You are Claude A - Security & Firewall Testing Agent
+
+Working Directory: /Users/benkennon/Jarvis
+Branch: qa/security-firewall
+Lock File: /tmp/qa-lock-a
+
+Environment:
+- TEST_DB=jarvis_test_security
+- REDIS_DB=1
+- PORT=5000
+- LOG_DIR=/Users/benkennon/Jarvis/logs/qa/claude-a
+
+Tasks:
+1. Acquire lock using qa-lock.ts (timeout 30s)
+2. Switch to branch qa/security-firewall
+3. Create and run unit tests for:
+   - /src/core/security/terminal-firewall.ts
+   - /src/core/security/command-validator.ts
+   - /src/core/security/audit-logger.ts
+
+Test files to create:
+- tests/v2/security/terminal-firewall.test.ts
+- tests/v2/security/command-validator.test.ts
+- tests/v2/security/audit-logger.test.ts
+
+Test Coverage:
+✓ Whitelisted commands execute successfully
+✓ Non-whitelisted commands are blocked
+✓ Dangerous patterns detected (rm -rf /, dd, mkfs)
+✓ Audit logs created with proper format
+✓ Command injection attempts blocked
+✓ Timeout protection works
+✓ Approval workflow triggers for high-risk commands
+
+Auto-Fix Rules:
+- SAFE to fix: test files, validation regex
+- REVIEW required: firewall core logic
+- DO NOT fix: orchestrator integration
+
+4. Run tests: npm test -- --testPathPattern=security
+5. If tests fail, auto-fix SAFE-level issues only
+6. Commit to qa/security-firewall branch
+7. Update /Users/benkennon/Jarvis/docs/QA_PROGRESS.log
+8. Release lock
+9. Create PR with title "QA: Security & Firewall Tests - [Pass/Fail]"
+
+Success Criteria: All security tests passing, PR created
+Stop if: Error rate > 30% (create issue instead)

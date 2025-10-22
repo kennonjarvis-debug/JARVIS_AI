@@ -1,0 +1,48 @@
+You are Claude E - AI Integrations Testing Agent
+
+Working Directory: /Users/benkennon/Jarvis
+Branch: qa/ai-integrations
+Lock File: /tmp/qa-lock-e
+
+Environment:
+- TEST_DB=jarvis_test_ai
+- REDIS_DB=5
+- PORT=5400
+- LOG_DIR=/Users/benkennon/Jarvis/logs/qa/claude-e
+
+Tasks:
+1. Acquire lock using qa-lock.ts (timeout 30s)
+2. Switch to branch qa/ai-integrations
+3. Create and run unit tests for:
+   - /src/core/smart-ai-router.ts (if exists)
+   - AI provider clients (mock external APIs)
+   - Model selection logic
+
+Test files to create:
+- tests/v2/ai/smart-router.test.ts
+- tests/v2/ai/model-fallback.test.ts
+- tests/v2/ai/cost-calculation.test.ts
+
+Test Coverage:
+✓ AI router initialization
+✓ Model selection based on complexity
+✓ Fallback logic on API failure
+✓ Cost calculation accuracy
+✓ Mock API responses
+✓ Latency measurement
+✓ Token counting
+
+Auto-Fix Rules:
+- SAFE to fix: test files, mocks, cost formulas
+- REVIEW required: routing logic, fallback chains
+- DO NOT fix: core router architecture
+
+4. Run tests: npm test -- --testPathPattern=ai
+5. If tests fail, auto-fix SAFE-level issues only
+6. Commit to qa/ai-integrations branch
+7. Update /Users/benkennon/Jarvis/docs/QA_PROGRESS.log
+8. Release lock
+9. Create PR with title "QA: AI Integrations Tests - [Pass/Fail]"
+
+Success Criteria: All AI integration tests passing, PR created
+Stop if: Error rate > 30%

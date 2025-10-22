@@ -1,0 +1,180 @@
+# Jarvis v2 QA Testing Infrastructure - Isolated Resources
+# Prevents conflicts when multiple Claude instances run tests in parallel
+
+version: "2.0"
+environment: "qa"
+
+# Claude Instance Resource Allocation
+instances:
+  claude_a:
+    id: "A"
+    focus: "Security & Firewall"
+    database:
+      name: "jarvis_test_security"
+      port: 5432
+      schema: "security_qa"
+    redis:
+      db: 1
+      port: 6379
+    ports:
+      api: 5000
+      websocket: 6000
+      dashboard: 7000
+      metrics: 8000
+    logs:
+      directory: "/Users/benkennon/Jarvis/.qa-logs/claude-a"
+      file: "security-qa.log"
+    branch: "qa/security-firewall"
+
+  claude_b:
+    id: "B"
+    focus: "Domain Agents"
+    database:
+      name: "jarvis_test_agents"
+      port: 5432
+      schema: "agents_qa"
+    redis:
+      db: 2
+      port: 6379
+    ports:
+      api: 5100
+      websocket: 6100
+      dashboard: 7100
+      metrics: 8100
+    logs:
+      directory: "/Users/benkennon/Jarvis/.qa-logs/claude-b"
+      file: "agents-qa.log"
+    branch: "qa/domain-agents"
+
+  claude_c:
+    id: "C"
+    focus: "Memory Layer"
+    database:
+      name: "jarvis_test_memory"
+      port: 5432
+      schema: "memory_qa"
+    redis:
+      db: 3
+      port: 6379
+    ports:
+      api: 5200
+      websocket: 6200
+      dashboard: 7200
+      metrics: 8200
+    logs:
+      directory: "/Users/benkennon/Jarvis/.qa-logs/claude-c"
+      file: "memory-qa.log"
+    branch: "qa/memory-layer"
+
+  claude_d:
+    id: "D"
+    focus: "Analytics & Business Intelligence"
+    database:
+      name: "jarvis_test_analytics"
+      port: 5432
+      schema: "analytics_qa"
+    redis:
+      db: 4
+      port: 6379
+    ports:
+      api: 5300
+      websocket: 6300
+      dashboard: 7300
+      metrics: 8300
+    logs:
+      directory: "/Users/benkennon/Jarvis/.qa-logs/claude-d"
+      file: "analytics-qa.log"
+    branch: "qa/analytics"
+
+  claude_e:
+    id: "E"
+    focus: "AI Integrations (ChatGPT, Claude MCP)"
+    database:
+      name: "jarvis_test_ai"
+      port: 5432
+      schema: "ai_qa"
+    redis:
+      db: 5
+      port: 6379
+    ports:
+      api: 5400
+      websocket: 6400
+      dashboard: 7400
+      metrics: 8400
+    logs:
+      directory: "/Users/benkennon/Jarvis/.qa-logs/claude-e"
+      file: "ai-integrations-qa.log"
+    branch: "qa/ai-integrations"
+
+  claude_f:
+    id: "F"
+    focus: "Live Coaching AI & Audio Integration"
+    database:
+      name: "jarvis_test_audio"
+      port: 5432
+      schema: "audio_qa"
+    redis:
+      db: 6
+      port: 6379
+    ports:
+      api: 5500
+      websocket: 6500
+      dashboard: 7500
+      metrics: 8500
+      vocal_coach: 8600
+      producer_ai: 8601
+    logs:
+      directory: "/Users/benkennon/Jarvis/.qa-logs/claude-f"
+      file: "audio-integration-qa.log"
+    branch: "qa/audio-integration"
+
+# Shared Resources (Read-Only)
+shared:
+  production_data_snapshot: "/Users/benkennon/Jarvis/.qa-data/prod-snapshot.sql"
+  test_fixtures: "/Users/benkennon/Jarvis/tests/fixtures"
+  mock_data: "/Users/benkennon/Jarvis/tests/mock-data"
+
+# Lock Configuration
+locking:
+  lock_directory: "/Users/benkennon/Jarvis/.qa-locks"
+  lock_timeout_ms: 30000
+  retry_interval_ms: 1000
+  max_retries: 30
+
+# Progress Tracking
+progress:
+  log_file: "/Users/benkennon/Jarvis/docs/QA_PROGRESS.log"
+  checkpoint_interval_ms: 5000
+  enable_real_time_updates: true
+
+# Test Configuration
+testing:
+  parallel_execution: true
+  max_parallel_instances: 6
+  test_timeout_ms: 300000  # 5 minutes per test suite
+  retry_failed_tests: true
+  max_test_retries: 2
+
+# Cleanup Policy
+cleanup:
+  auto_cleanup_on_success: true
+  preserve_logs_on_failure: true
+  cleanup_databases_after_ms: 3600000  # 1 hour
+  cleanup_redis_after_ms: 1800000      # 30 minutes
+
+# Monitoring
+monitoring:
+  enable_metrics: true
+  metrics_interval_ms: 10000
+  alert_on_conflicts: true
+  alert_on_port_conflicts: true
+  alert_on_database_conflicts: true
+
+# Environment Variables Template
+env_template:
+  NODE_ENV: "test"
+  DATABASE_URL: "postgresql://benkennon@localhost:5432/{database_name}?schema={schema}"
+  REDIS_URL: "redis://localhost:6379/{db}"
+  LOG_LEVEL: "debug"
+  ENABLE_METRICS: "true"
+  QA_INSTANCE_ID: "{instance_id}"

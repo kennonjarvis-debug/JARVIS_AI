@@ -1,0 +1,283 @@
+name: Deploy to Production
+
+# Trigger deployment on:
+# 1. Push to main branch
+# 2. Manual workflow dispatch
+# 3. Release tags (v*)
+on:
+  push:
+    branches: [main]
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+
+# Ensure only one deployment runs at a time
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  DOCKER_REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/jarvis-control-plane
+
+jobs:
+  # ==================== BUILD & PUSH DOCKER IMAGE ====================
+  build-and-push:
+    name: Build & Push Docker Image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
+      image-digest: ${{ steps.build.outputs.digest }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.DOCKER_REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
+
+      - name: Generate SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          image: ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}
+          format: cyclonedx-json
+          output-file: sbom.json
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: sbom.json
+
+  # ==================== DEPLOY TO PRODUCTION ====================
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    environment:
+      name: production
+      url: https://jarvis.your-domain.com
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (if using AWS)
+        uses: aws-actions/configure-aws-credentials@v4
+        if: vars.DEPLOYMENT_PLATFORM == 'aws-ecs'
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
+
+      # ===== Option 1: Deploy to Railway =====
+      - name: Deploy to Railway
+        if: vars.DEPLOYMENT_PLATFORM == 'railway'
+        uses: bervProject/railway-deploy@main
+        with:
+          railway_token: ${{ secrets.RAILWAY_TOKEN }}
+          service: jarvis-control-plane
+
+      # ===== Option 2: Deploy to Render =====
+      - name: Deploy to Render
+        if: vars.DEPLOYMENT_PLATFORM == 'render'
+        run: |
+          curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
+
+      # ===== Option 3: Deploy to AWS ECS =====
+      - name: Deploy to AWS ECS
+        if: vars.DEPLOYMENT_PLATFORM == 'aws-ecs'
+        run: |
+          # Update ECS service with new task definition
+          aws ecs update-service \
+            --cluster jarvis-cluster \
+            --service jarvis-control-plane \
+            --force-new-deployment
+
+      # ===== Option 4: Deploy via Docker Compose (VPS/EC2) =====
+      - name: Deploy via SSH
+        if: vars.DEPLOYMENT_PLATFORM == 'docker'
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            cd /opt/jarvis
+            git pull origin main
+            docker-compose -f docker-compose.prod.yml pull
+            docker-compose -f docker-compose.prod.yml up -d --remove-orphans
+            docker-compose -f docker-compose.prod.yml ps
+
+      - name: Wait for deployment health check
+        run: |
+          echo "Waiting for deployment to be healthy..."
+          sleep 30
+
+          # Health check with retry
+          for i in {1..10}; do
+            if curl -f -s https://jarvis.your-domain.com/health; then
+              echo "✅ Deployment healthy!"
+              exit 0
+            fi
+            echo "Waiting for health check... ($i/10)"
+            sleep 10
+          done
+
+          echo "❌ Deployment health check failed"
+          exit 1
+
+      - name: Run smoke tests
+        run: |
+          # Test critical endpoints
+          curl -f https://jarvis.your-domain.com/health
+          curl -f https://jarvis.your-domain.com/health/detailed
+          echo "✅ Smoke tests passed"
+
+  # ==================== POST-DEPLOYMENT ====================
+  post-deploy:
+    name: Post-Deployment Tasks
+    runs-on: ubuntu-latest
+    needs: deploy-production
+    if: success()
+
+    steps:
+      - name: Notify Slack
+        if: vars.SLACK_WEBHOOK_URL
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          payload: |
+            {
+              "text": "✅ Jarvis Control Plane deployed to production",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Jarvis Control Plane* deployed to production\n\n*Commit:* ${{ github.sha }}\n*Author:* ${{ github.actor }}\n*Image:* ${{ needs.build-and-push.outputs.image-tag }}"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+
+      - name: Create GitHub Release (if tag)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v1
+        with:
+          generate_release_notes: true
+          files: |
+            docs/DEPLOYMENT.md
+            docs/CHANGELOG.md
+
+      - name: Tag Docker image as stable
+        run: |
+          echo "Tagged ${{ needs.build-and-push.outputs.image-tag }} as stable"
+
+  # ==================== ROLLBACK ON FAILURE ====================
+  rollback:
+    name: Rollback Deployment
+    runs-on: ubuntu-latest
+    needs: deploy-production
+    if: failure()
+
+    steps:
+      - name: Notify about failure
+        uses: slackapi/slack-github-action@v1.25.0
+        if: vars.SLACK_WEBHOOK_URL
+        with:
+          payload: |
+            {
+              "text": "❌ Jarvis deployment FAILED - Rolling back",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*ALERT:* Jarvis deployment failed\n\n*Commit:* ${{ github.sha }}\n*Author:* ${{ github.actor }}\n\nRollback initiated..."
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+
+      - name: Rollback deployment
+        uses: appleboy/ssh-action@v1.0.0
+        if: vars.DEPLOYMENT_PLATFORM == 'docker'
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            cd /opt/jarvis
+            git reset --hard HEAD~1
+            docker-compose -f docker-compose.prod.yml up -d --remove-orphans
+            docker-compose -f docker-compose.prod.yml ps
+
+# ==================== DEPLOYMENT MATRIX (Future) ====================
+# Uncomment to enable multi-environment deployments
+
+# deploy-matrix:
+#   name: Deploy to ${{ matrix.environment }}
+#   runs-on: ubuntu-latest
+#   needs: build-and-push
+#   strategy:
+#     matrix:
+#       environment: [staging, production]
+#   environment:
+#     name: ${{ matrix.environment }}
+#   steps:
+#     - name: Deploy
+#       run: echo "Deploying to ${{ matrix.environment }}"

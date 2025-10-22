@@ -1,0 +1,30 @@
+{
+  "id": "web-1760199132271-wyn5bq",
+  "messages": [
+    {
+      "id": "e4a48395-d563-4ea9-a11a-36102eaa5d57",
+      "conversationId": "web-1760199132271-wyn5bq",
+      "source": "web",
+      "role": "user",
+      "content": "are you live?",
+      "timestamp": "2025-10-11T16:12:18.495Z"
+    },
+    {
+      "id": "e3f7dcfd-1cdb-48d9-b727-de21cc333c5c",
+      "conversationId": "web-1760199132271-wyn5bq",
+      "source": "web",
+      "role": "user",
+      "content": "whats our plan?",
+      "timestamp": "2025-10-11T16:12:24.103Z"
+    }
+  ],
+  "participants": {
+    "web": {
+      "connected": true,
+      "lastSeen": "2025-10-11T16:12:24.103Z"
+    }
+  },
+  "metadata": {},
+  "created": "2025-10-11T16:12:18.495Z",
+  "updated": "2025-10-11T16:12:24.103Z"
+}

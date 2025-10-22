@@ -1,0 +1,19 @@
+{
+  "schema_version": "v1",
+  "name_for_human": "Jarvis AI DAWG Controller",
+  "name_for_model": "jarvis_ai_dawg",
+  "description_for_human": "AI-powered Digital Audio Workstation controller with terminal access, test execution, and Jarvis AI operator capabilities.",
+  "description_for_model": "Plugin for controlling the AI DAWG system. Capabilities include: (1) Execute terminal commands with security validation, (2) Run test suites, (3) Monitor system health and logs, (4) Control Jarvis AI modules (music, marketing, engagement, automation), (5) Access AI services (Vocal Coach, Producer). All commands are validated through a security firewall. Terminal execution is limited to safe operations.",
+  "auth": {
+    "type": "user_http",
+    "authorization_type": "bearer"
+  },
+  "api": {
+    "type": "openapi",
+    "url": "https://kaycee-nonextrinsical-yosef.ngrok-free.dev/openapi.chatgpt.yaml",
+    "is_user_authenticated": false
+  },
+  "logo_url": "https://kaycee-nonextrinsical-yosef.ngrok-free.dev/logo.png",
+  "contact_email": "support@aidawg.dev",
+  "legal_info_url": "https://kaycee-nonextrinsical-yosef.ngrok-free.dev/legal"
+}

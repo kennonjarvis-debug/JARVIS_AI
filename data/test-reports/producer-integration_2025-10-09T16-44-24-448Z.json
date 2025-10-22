@@ -1,0 +1,21 @@
+{
+  "suite": "producer-integration",
+  "timestamp": "2025-10-09T16:44:24.448Z",
+  "total_tests": 1,
+  "passed": 0,
+  "failed": 1,
+  "avg_response_time": 3,
+  "results": [
+    {
+      "endpoint": "Generate Beat",
+      "timestamp": "2025-10-09T16:44:24.448Z",
+      "success": false,
+      "status_code": 404,
+      "response_time_ms": 3,
+      "validation_errors": [
+        "Missing required field: audio_url",
+        "Missing required field: metadata"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+bases:
+  - ../../base
+
+namePrefix: dev-
+
+commonLabels:
+  environment: development
+
+replicas:
+  - name: jarvis
+    count: 1
+  - name: backend
+    count: 1
+  - name: vocal-coach
+    count: 1
+  - name: producer
+    count: 1
+  - name: ai-brain
+    count: 1
+
+patches:
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: jarvis
+      spec:
+        template:
+          spec:
+            containers:
+            - name: jarvis
+              resources:
+                requests:
+                  memory: "256Mi"
+                  cpu: "100m"
+                limits:
+                  memory: "512Mi"
+                  cpu: "250m"

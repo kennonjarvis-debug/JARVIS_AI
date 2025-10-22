@@ -1,0 +1,30 @@
+{
+  "id": "web-1759969135113-7k6q6e",
+  "messages": [
+    {
+      "id": "ff4457bb-710d-4430-926d-5602d2e282ee",
+      "conversationId": "web-1759969135113-7k6q6e",
+      "source": "web",
+      "role": "user",
+      "content": "are you connected?",
+      "timestamp": "2025-10-09T00:18:59.379Z"
+    },
+    {
+      "id": "06a14f4f-b1a5-4e1f-a8bf-cf0c5db1cc5d",
+      "conversationId": "web-1759969135113-7k6q6e",
+      "source": "web",
+      "role": "assistant",
+      "content": "{\"success\":true,\"data\":{\"response\":\"Yes, I'm fully connected and ready to help with your music project. Let me know what you need assistance with!\",\"function_call\":null,\"timestamp\":\"2025-10-09T00:19:01.134397\"},\"timestamp\":\"2025-10-09T00:19:01.141Z\"}",
+      "timestamp": "2025-10-09T00:19:01.148Z"
+    }
+  ],
+  "participants": {
+    "web": {
+      "connected": true,
+      "lastSeen": "2025-10-09T00:19:01.149Z"
+    }
+  },
+  "metadata": {},
+  "created": "2025-10-09T00:18:59.379Z",
+  "updated": "2025-10-09T00:19:01.149Z"
+}

@@ -1,0 +1,30 @@
+{
+  "id": "web-1759970187246-mf9vqc",
+  "messages": [
+    {
+      "id": "1dec3808-e0e3-4040-827a-7316769d04af",
+      "conversationId": "web-1759970187246-mf9vqc",
+      "source": "web",
+      "role": "user",
+      "content": "wassup",
+      "timestamp": "2025-10-09T00:36:29.046Z"
+    },
+    {
+      "id": "3a604295-a3aa-4c38-9662-800815300d92",
+      "conversationId": "web-1759970187246-mf9vqc",
+      "source": "web",
+      "role": "assistant",
+      "content": "All set and ready to help you create some awesome music! What's on your mind today? Need assistance with any part of your project?",
+      "timestamp": "2025-10-09T00:36:30.677Z"
+    }
+  ],
+  "participants": {
+    "web": {
+      "connected": true,
+      "lastSeen": "2025-10-09T00:36:30.677Z"
+    }
+  },
+  "metadata": {},
+  "created": "2025-10-09T00:36:29.046Z",
+  "updated": "2025-10-09T00:36:30.677Z"
+}

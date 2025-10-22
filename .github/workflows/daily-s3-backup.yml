@@ -1,0 +1,326 @@
+name: Daily S3 Backup
+
+on:
+  schedule:
+    # Run daily at 6:00 AM UTC
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    inputs:
+      force_backup:
+        description: 'Force immediate backup'
+        required: false
+        type: boolean
+        default: true
+
+env:
+  AWS_REGION: us-east-1
+  BACKUP_RETENTION_DAYS: 30
+
+jobs:
+  backup-to-s3:
+    name: Backup Jarvis Data to S3
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Verify S3 bucket exists and is encrypted
+        id: verify-bucket
+        run: |
+          BUCKET="${{ secrets.S3_BACKUP_BUCKET }}"
+
+          # Check if bucket exists
+          if aws s3 ls "s3://${BUCKET}" 2>&1 | grep -q 'NoSuchBucket'; then
+            echo "❌ Error: S3 bucket ${BUCKET} does not exist"
+            exit 1
+          fi
+
+          # Check encryption
+          ENCRYPTION=$(aws s3api get-bucket-encryption --bucket ${BUCKET} 2>&1)
+
+          if echo "$ENCRYPTION" | grep -q "AES256\|aws:kms"; then
+            echo "✅ Bucket encryption verified"
+            echo "encrypted=true" >> $GITHUB_OUTPUT
+          else
+            echo "⚠️ WARNING: Bucket is not encrypted!"
+            echo "encrypted=false" >> $GITHUB_OUTPUT
+          fi
+
+          # Check versioning
+          VERSIONING=$(aws s3api get-bucket-versioning --bucket ${BUCKET} | jq -r '.Status // "Disabled"')
+          echo "versioning_status=$VERSIONING" >> $GITHUB_OUTPUT
+
+          if [ "$VERSIONING" = "Enabled" ]; then
+            echo "✅ Versioning enabled"
+          else
+            echo "⚠️ Versioning is disabled"
+          fi
+
+      - name: Connect to EC2 and create backup archive
+        run: |
+          echo "${{ secrets.EC2_SSH_KEY }}" > ec2_key.pem
+          chmod 600 ec2_key.pem
+
+          TIMESTAMP=$(date +%Y-%m-%d-%H-%M-%S)
+
+          ssh -i ec2_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
+            set -e
+
+            echo "📦 Creating backup archive..."
+
+            # Create backup directory
+            mkdir -p /tmp/jarvis-backup-${TIMESTAMP}
+
+            # Backup memory folder
+            if [ -d /opt/jarvis/memory ]; then
+              echo "💾 Backing up /memory..."
+              tar -czf /tmp/jarvis-backup-${TIMESTAMP}/memory.tar.gz \
+                -C /opt/jarvis memory/ \
+                --exclude='*.tmp' \
+                --exclude='.DS_Store' \
+                --exclude='node_modules'
+            fi
+
+            # Backup adaptive folder
+            if [ -d /opt/jarvis/adaptive ]; then
+              echo "🧠 Backing up /adaptive..."
+              tar -czf /tmp/jarvis-backup-${TIMESTAMP}/adaptive.tar.gz \
+                -C /opt/jarvis adaptive/ \
+                --exclude='*.tmp'
+            fi
+
+            # Backup logs (last 7 days)
+            if [ -d /opt/jarvis/logs ]; then
+              echo "📋 Backing up /logs (last 7 days)..."
+              find /opt/jarvis/logs -type f -mtime -7 -print0 | \
+                tar -czf /tmp/jarvis-backup-${TIMESTAMP}/logs.tar.gz \
+                  --null -T - \
+                  --ignore-failed-read || true
+            fi
+
+            # Backup config files
+            if [ -d /opt/jarvis/config ]; then
+              echo "⚙️  Backing up /config..."
+              tar -czf /tmp/jarvis-backup-${TIMESTAMP}/config.tar.gz \
+                -C /opt/jarvis config/
+            fi
+
+            # Create manifest
+            cat > /tmp/jarvis-backup-${TIMESTAMP}/manifest.json << MANIFEST
+          {
+            "timestamp": "${TIMESTAMP}",
+            "backup_type": "daily",
+            "source": "${{ secrets.EC2_HOST }}",
+            "files": [
+              "memory.tar.gz",
+              "adaptive.tar.gz",
+              "logs.tar.gz",
+              "config.tar.gz"
+            ],
+            "retention_days": ${{ env.BACKUP_RETENTION_DAYS }}
+          }
+          MANIFEST
+
+            # Calculate checksums
+            cd /tmp/jarvis-backup-${TIMESTAMP}
+            sha256sum *.tar.gz > checksums.sha256
+
+            echo "✅ Backup archive created at /tmp/jarvis-backup-${TIMESTAMP}"
+          EOF
+
+      - name: Sync backup to S3
+        run: |
+          TIMESTAMP=$(date +%Y-%m-%d-%H-%M-%S)
+          BUCKET="${{ secrets.S3_BACKUP_BUCKET }}"
+
+          echo "☁️  Syncing backup to S3..."
+
+          ssh -i ec2_key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
+            aws s3 sync /tmp/jarvis-backup-${TIMESTAMP}/ \
+              s3://${BUCKET}/backups/${TIMESTAMP}/ \
+              --storage-class STANDARD_IA \
+              --metadata "backup-date=${TIMESTAMP},retention-days=${{ env.BACKUP_RETENTION_DAYS }}"
+
+            echo "✅ Backup synced to s3://${BUCKET}/backups/${TIMESTAMP}/"
+
+            # Cleanup local backup
+            rm -rf /tmp/jarvis-backup-${TIMESTAMP}
+            echo "🧹 Local backup cleaned up"
+          EOF
+
+          rm -f ec2_key.pem
+
+      - name: Verify backup integrity
+        run: |
+          TIMESTAMP=$(date +%Y-%m-%d-%H-%M-%S)
+          BUCKET="${{ secrets.S3_BACKUP_BUCKET }}"
+
+          echo "🔍 Verifying backup integrity..."
+
+          # Download checksums
+          aws s3 cp s3://${BUCKET}/backups/${TIMESTAMP}/checksums.sha256 /tmp/checksums.sha256
+
+          # Verify each file
+          FILES=("memory.tar.gz" "adaptive.tar.gz" "logs.tar.gz" "config.tar.gz")
+
+          for file in "${FILES[@]}"; do
+            # Get expected checksum
+            EXPECTED=$(grep "$file" /tmp/checksums.sha256 | awk '{print $1}')
+
+            # Download and calculate actual checksum
+            aws s3 cp s3://${BUCKET}/backups/${TIMESTAMP}/$file /tmp/$file
+            ACTUAL=$(sha256sum /tmp/$file | awk '{print $1}')
+
+            if [ "$EXPECTED" = "$ACTUAL" ]; then
+              echo "✅ $file checksum verified"
+            else
+              echo "❌ $file checksum mismatch!"
+              exit 1
+            fi
+
+            rm -f /tmp/$file
+          done
+
+          echo "✅ All backups verified successfully"
+
+      - name: Cleanup old backups
+        run: |
+          BUCKET="${{ secrets.S3_BACKUP_BUCKET }}"
+          RETENTION_DAYS=${{ env.BACKUP_RETENTION_DAYS }}
+
+          echo "🧹 Cleaning up backups older than ${RETENTION_DAYS} days..."
+
+          # List all backups
+          CUTOFF_DATE=$(date -u -d "${RETENTION_DAYS} days ago" +%Y-%m-%d)
+
+          aws s3 ls s3://${BUCKET}/backups/ | while read -r line; do
+            BACKUP_DATE=$(echo $line | awk '{print $2}' | cut -d'/' -f1 | cut -d'-' -f1-3)
+
+            if [ "$BACKUP_DATE" \< "$CUTOFF_DATE" ]; then
+              BACKUP_PATH=$(echo $line | awk '{print $2}')
+              echo "🗑️  Deleting old backup: $BACKUP_PATH"
+              aws s3 rm s3://${BUCKET}/backups/${BACKUP_PATH} --recursive
+            fi
+          done
+
+          echo "✅ Old backups cleaned up"
+
+      - name: Generate backup report
+        id: report
+        run: |
+          TIMESTAMP=$(date +%Y-%m-%d-%H-%M-%S)
+          BUCKET="${{ secrets.S3_BACKUP_BUCKET }}"
+
+          # Get backup size
+          BACKUP_SIZE=$(aws s3 ls s3://${BUCKET}/backups/${TIMESTAMP}/ --recursive --summarize | grep "Total Size" | awk '{print $3}')
+          BACKUP_SIZE_MB=$((BACKUP_SIZE / 1024 / 1024))
+
+          # Count files
+          FILE_COUNT=$(aws s3 ls s3://${BUCKET}/backups/${TIMESTAMP}/ --recursive | wc -l)
+
+          echo "backup_size_mb=$BACKUP_SIZE_MB" >> $GITHUB_OUTPUT
+          echo "file_count=$FILE_COUNT" >> $GITHUB_OUTPUT
+          echo "timestamp=$TIMESTAMP" >> $GITHUB_OUTPUT
+
+      - name: Send backup notification to Slack
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          payload: |
+            {
+              "text": "✅ Jarvis Daily S3 Backup Completed",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "☁️  Jarvis S3 Backup Report"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Status:*\nSuccess ✅"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Timestamp:*\n${{ steps.report.outputs.timestamp }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Backup Size:*\n${{ steps.report.outputs.backup_size_mb }} MB"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Files Backed Up:*\n${{ steps.report.outputs.file_count }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Encryption:*\n${{ steps.verify-bucket.outputs.encrypted == 'true' && 'Enabled ✅' || 'Disabled ⚠️' }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Versioning:*\n${{ steps.verify-bucket.outputs.versioning_status }}"
+                    }
+                  ]
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Backed Up:*\n• Memory folder 💾\n• Adaptive data 🧠\n• Logs (7 days) 📋\n• Config files ⚙️"
+                  }
+                },
+                {
+                  "type": "context",
+                  "elements": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "Retention: ${{ env.BACKUP_RETENTION_DAYS }} days | Bucket: ${{ secrets.S3_BACKUP_BUCKET }}"
+                    }
+                  ]
+                }
+              ]
+            }
+
+  # Health check for backup job
+  backup-health-check:
+    name: Verify Backup Health
+    runs-on: ubuntu-latest
+    needs: backup-to-s3
+    if: always()
+    steps:
+      - name: Check backup job status
+        run: |
+          if [ "${{ needs.backup-to-s3.result }}" != "success" ]; then
+            echo "❌ Backup job failed!"
+
+            # Send alert to Slack
+            curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "text": "🚨 ALERT: Jarvis S3 Backup Failed",
+                "blocks": [
+                  {
+                    "type": "section",
+                    "text": {
+                      "type": "mrkdwn",
+                      "text": "*⚠️ Backup Failure Alert*\n\nThe daily S3 backup job has failed. Please investigate immediately.\n\nWorkflow: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run>"
+                    }
+                  }
+                ]
+              }'
+
+            exit 1
+          else
+            echo "✅ Backup job completed successfully"
+          fi

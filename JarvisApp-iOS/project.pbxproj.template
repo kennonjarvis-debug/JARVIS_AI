@@ -1,0 +1,58 @@
+// Xcode Project Template
+// To create actual Xcode project, use:
+// 1. Open Xcode
+// 2. File > New > Project
+// 3. iOS > App
+// 4. Product Name: JarvisApp
+// 5. Interface: SwiftUI
+// 6. Language: Swift
+// 7. Bundle Identifier: com.yourcompany.jarvis
+
+// Required Configurations:
+// 1. Enable Background Modes:
+//    - Target > Signing & Capabilities > + Capability > Background Modes
+//    - Check: Audio, airplay, and Picture in Picture
+//    - Check: Background fetch
+//    - Check: Background processing
+
+// 2. Enable CloudKit:
+//    - Target > Signing & Capabilities > + Capability > iCloud
+//    - Check: CloudKit
+//    - Container: iCloud.com.yourcompany.jarvis
+
+// 3. Add Privacy Permissions:
+//    - Already configured in Info.plist
+//    - NSMicrophoneUsageDescription
+//    - NSSpeechRecognitionUsageDescription
+
+// 4. Required Frameworks:
+//    - AVFoundation
+//    - CloudKit
+//    - Combine
+//    - NaturalLanguage
+//    - SwiftUI
+
+// 5. Build Settings:
+//    - Minimum Deployment: iOS 17.0
+//    - Swift Language Version: Swift 5.9
+
+// 6. File Structure:
+//    JarvisApp/
+//    ├── JarvisApp.swift
+//    ├── AppDelegate.swift
+//    ├── ContentView.swift
+//    ├── Models.swift
+//    ├── WebSocketService.swift
+//    ├── AudioService.swift
+//    ├── WakeWordService.swift
+//    ├── TranscriptionService.swift
+//    ├── CloudSyncService.swift
+//    ├── Info.plist
+//    └── Assets.xcassets/
+
+// To build and run:
+// 1. Open project in Xcode
+// 2. Select target device or simulator
+// 3. Update backend URL in Models.swift (AppConfig.backendURL)
+// 4. Add OpenAI API key to environment or app settings
+// 5. Press ⌘R to build and run

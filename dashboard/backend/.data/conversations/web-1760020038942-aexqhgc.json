@@ -1,0 +1,22 @@
+{
+  "id": "web-1760020038942-aexqhgc",
+  "messages": [
+    {
+      "id": "97873b40-38b5-49c2-9cfc-4d843321be7c",
+      "conversationId": "web-1760020038942-aexqhgc",
+      "source": "web",
+      "role": "user",
+      "content": "are you live",
+      "timestamp": "2025-10-09T14:27:22.423Z"
+    }
+  ],
+  "participants": {
+    "web": {
+      "connected": true,
+      "lastSeen": "2025-10-09T14:27:22.424Z"
+    }
+  },
+  "metadata": {},
+  "created": "2025-10-09T14:27:22.424Z",
+  "updated": "2025-10-09T14:27:22.424Z"
+}

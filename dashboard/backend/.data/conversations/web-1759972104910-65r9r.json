@@ -1,0 +1,30 @@
+{
+  "id": "web-1759972104910-65r9r",
+  "messages": [
+    {
+      "id": "45497b4e-59a9-44f0-abb9-72e3ea2b3dd9",
+      "conversationId": "web-1759972104910-65r9r",
+      "source": "web",
+      "role": "user",
+      "content": "wassup",
+      "timestamp": "2025-10-09T01:08:27.176Z"
+    },
+    {
+      "id": "a301c50d-f53c-4b78-a031-81b231507a00",
+      "conversationId": "web-1759972104910-65r9r",
+      "source": "web",
+      "role": "user",
+      "content": "what are you capable of",
+      "timestamp": "2025-10-09T01:08:35.666Z"
+    }
+  ],
+  "participants": {
+    "web": {
+      "connected": true,
+      "lastSeen": "2025-10-09T01:08:35.666Z"
+    }
+  },
+  "metadata": {},
+  "created": "2025-10-09T01:08:27.176Z",
+  "updated": "2025-10-09T01:08:35.666Z"
+}

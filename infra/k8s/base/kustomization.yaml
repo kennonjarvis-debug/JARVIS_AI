@@ -1,0 +1,37 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  # Deployments
+  - jarvis-deployment.yaml
+  - backend-deployment.yaml
+  - vocal-coach-deployment.yaml
+  - producer-deployment.yaml
+  - ai-brain-deployment.yaml
+  - postgres-deployment.yaml
+  - redis-deployment.yaml
+
+  # Services
+  - jarvis-service.yaml
+  - backend-service.yaml
+  - vocal-coach-service.yaml
+  - producer-service.yaml
+  - ai-brain-service.yaml
+  - postgres-service.yaml
+  - redis-service.yaml
+
+  # Storage
+  - postgres-pvc.yaml
+  - redis-pvc.yaml
+
+  # Autoscaling
+  - jarvis-hpa.yaml
+  - ai-dawg-hpa.yaml
+
+  # Configuration
+  - configmap.yaml
+  - secrets.yaml
+
+commonLabels:
+  project: jarvis
+  managed-by: kustomize

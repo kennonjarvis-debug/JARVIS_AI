@@ -1,0 +1,319 @@
+# Load Testing Scenarios for Jarvis Platform
+# Defines various load patterns and test scenarios
+
+config:
+  target: "http://localhost:3000"
+  phases:
+    - name: "warmup"
+      duration: 60
+      arrivalRate: 10
+    - name: "ramp"
+      duration: 300
+      arrivalRate: 10
+      rampTo: 50
+    - name: "sustained"
+      duration: 600
+      arrivalRate: 50
+
+# Test Scenarios
+
+scenarios:
+  # Scenario 1: Normal Usage Pattern
+  normal_usage:
+    name: "Normal Daily Usage"
+    description: "Simulates typical user behavior during normal business hours"
+    weight: 60
+    flow:
+      - get:
+          url: "/dashboard"
+          capture:
+            - json: "$.userId"
+              as: "userId"
+      - think: 3
+      - get:
+          url: "/api/observatories"
+      - think: 2
+      - get:
+          url: "/api/metrics?timeRange=1h"
+      - think: 5
+      - post:
+          url: "/api/ai/chat"
+          json:
+            message: "What are my top metrics?"
+      - think: 8
+
+  # Scenario 2: Power User Pattern
+  power_user:
+    name: "Power User Behavior"
+    description: "Heavy users who frequently check dashboards and create automations"
+    weight: 20
+    flow:
+      - loop:
+          count: 5
+          flow:
+            - get:
+                url: "/api/observatories/{{ observatoryId }}"
+            - think: 1
+            - get:
+                url: "/api/metrics?observatoryId={{ observatoryId }}"
+            - think: 2
+            - get:
+                url: "/api/insights?observatoryId={{ observatoryId }}"
+            - think: 3
+      - post:
+          url: "/api/automation/workflow"
+          json:
+            name: "Auto Alert"
+            trigger: "metric_threshold"
+      - think: 5
+
+  # Scenario 3: Dashboard Viewer
+  dashboard_viewer:
+    name: "Dashboard Viewer"
+    description: "Users who primarily view dashboards and metrics"
+    weight: 40
+    flow:
+      - get:
+          url: "/dashboard"
+      - think: 10
+      - get:
+          url: "/api/metrics?timeRange=24h"
+      - think: 15
+      - get:
+          url: "/api/charts/cpu_usage"
+      - think: 10
+      - get:
+          url: "/api/charts/memory_usage"
+      - think: 20
+
+  # Scenario 4: API Integration
+  api_integration:
+    name: "External API Integration"
+    description: "Third-party services polling via API"
+    weight: 15
+    flow:
+      - loop:
+          count: 10
+          flow:
+            - post:
+                url: "/api/metrics"
+                json:
+                  observatoryId: "{{ observatoryId }}"
+                  metric: "api_metric"
+                  value: "{{ $randomNumber(0, 100) }}"
+                headers:
+                  Authorization: "Bearer {{ apiToken }}"
+            - think: 0.5
+
+  # Scenario 5: Alert Investigation
+  alert_investigation:
+    name: "Alert Investigation"
+    description: "User responding to alerts and investigating issues"
+    weight: 10
+    flow:
+      - get:
+          url: "/api/alerts/active"
+      - think: 2
+      - get:
+          url: "/api/alerts/{{ alertId }}/details"
+      - think: 5
+      - get:
+          url: "/api/metrics?timeRange=1h&metric={{ alertMetric }}"
+      - think: 10
+      - post:
+          url: "/api/alerts/{{ alertId }}/acknowledge"
+      - think: 3
+      - post:
+          url: "/api/ai/chat"
+          json:
+            message: "Why did {{ alertMetric }} spike?"
+      - think: 15
+
+  # Scenario 6: Configuration Changes
+  configuration:
+    name: "Configuration Updates"
+    description: "Users updating settings and configurations"
+    weight: 5
+    flow:
+      - get:
+          url: "/settings/integrations"
+      - think: 5
+      - patch:
+          url: "/api/integrations/{{ integrationId }}"
+          json:
+            enabled: true
+            settings: {}
+      - think: 3
+      - get:
+          url: "/settings/billing"
+      - think: 8
+      - get:
+          url: "/api/billing/usage"
+      - think: 5
+
+  # Scenario 7: Mobile Usage
+  mobile_usage:
+    name: "Mobile App Usage"
+    description: "Users accessing via mobile devices"
+    weight: 25
+    headers:
+      User-Agent: "Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X)"
+    flow:
+      - get:
+          url: "/api/observatories?limit=5"
+      - think: 3
+      - get:
+          url: "/api/metrics?limit=10"
+      - think: 5
+      - get:
+          url: "/api/notifications"
+      - think: 4
+
+  # Scenario 8: Report Generation
+  report_generation:
+    name: "Report Generation"
+    description: "Users generating and downloading reports"
+    weight: 5
+    flow:
+      - get:
+          url: "/observatory/{{ observatoryId }}/reports"
+      - think: 3
+      - post:
+          url: "/api/reports/generate"
+          json:
+            observatoryId: "{{ observatoryId }}"
+            type: "weekly"
+            format: "pdf"
+      - think: 20  # Report generation takes time
+      - get:
+          url: "/api/reports/{{ reportId }}/download"
+
+# Spike Test Scenarios
+spike_tests:
+  sudden_traffic:
+    name: "Sudden Traffic Spike"
+    description: "Simulates sudden influx of users (e.g., after email campaign)"
+    phases:
+      - duration: 60
+        arrivalRate: 5
+      - duration: 30
+        arrivalRate: 100  # Sudden spike
+      - duration: 300
+        arrivalRate: 100  # Sustained spike
+      - duration: 120
+        arrivalRate: 5   # Return to normal
+
+  breaking_point:
+    name: "Breaking Point Test"
+    description: "Gradually increase load until system breaks"
+    phases:
+      - duration: 300
+        arrivalRate: 10
+        rampTo: 100
+      - duration: 300
+        arrivalRate: 100
+        rampTo: 500
+      - duration: 300
+        arrivalRate: 500
+        rampTo: 1000
+      - duration: 300
+        arrivalRate: 1000
+        rampTo: 2000
+
+# Endurance Test Scenarios
+endurance_tests:
+  24_hour_soak:
+    name: "24-Hour Soak Test"
+    description: "Sustained load over 24 hours to detect memory leaks"
+    duration: 86400  # 24 hours
+    arrivalRate: 50
+    scenarios:
+      - normal_usage: 70%
+      - dashboard_viewer: 30%
+
+  weekend_load:
+    name: "Weekend Load Pattern"
+    description: "Reduced load typical of weekends"
+    phases:
+      - duration: 14400  # 4 hours
+        arrivalRate: 10
+      - duration: 28800  # 8 hours
+        arrivalRate: 5
+      - duration: 14400  # 4 hours
+        arrivalRate: 10
+
+# Stress Test Scenarios
+stress_tests:
+  database_stress:
+    name: "Database Write Stress"
+    description: "Heavy write operations to test database performance"
+    duration: 600
+    arrivalRate: 100
+    flow:
+      - loop:
+          count: 20
+          flow:
+            - post:
+                url: "/api/metrics"
+                json:
+                  observatoryId: "stress-test"
+                  metric: "stress_metric_{{ $randomNumber(1, 100) }}"
+                  value: "{{ $randomNumber(0, 1000) }}"
+
+  ai_stress:
+    name: "AI Service Stress"
+    description: "Heavy AI chat and insight requests"
+    duration: 600
+    arrivalRate: 50
+    flow:
+      - loop:
+          count: 10
+          flow:
+            - post:
+                url: "/api/ai/chat"
+                json:
+                  message: "{{ $randomString(50) }}"
+            - think: 2
+
+# Performance Benchmarks
+benchmarks:
+  api_response_time:
+    target: "p95 < 200ms"
+    critical: "p99 < 500ms"
+
+  websocket_latency:
+    target: "p95 < 50ms"
+    critical: "p99 < 100ms"
+
+  database_queries:
+    target: "p95 < 30ms"
+    critical: "p99 < 100ms"
+
+  error_rate:
+    target: "< 0.1%"
+    critical: "< 1%"
+
+  throughput:
+    target: "> 10000 req/s"
+    critical: "> 5000 req/s"
+
+# Test Data
+test_data:
+  users:
+    - email: "loadtest1@example.com"
+      password: "LoadTest123!"
+    - email: "loadtest2@example.com"
+      password: "LoadTest123!"
+
+  observatories:
+    - id: "obs-test-1"
+      name: "Test Observatory 1"
+    - id: "obs-test-2"
+      name: "Test Observatory 2"
+
+  metrics:
+    - cpu_usage
+    - memory_usage
+    - disk_io
+    - network_throughput
+    - response_time

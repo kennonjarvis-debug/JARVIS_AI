@@ -1,0 +1,30 @@
+{
+  "id": "fix-test",
+  "messages": [
+    {
+      "id": "8608c8b0-9917-4489-9135-483d49b31679",
+      "conversationId": "fix-test",
+      "source": "web",
+      "role": "user",
+      "content": "Say hello exactly once",
+      "timestamp": "2025-10-09T00:43:56.780Z"
+    },
+    {
+      "id": "42008502-3c00-401f-86cb-a281e6c5c3b6",
+      "conversationId": "fix-test",
+      "source": "web",
+      "role": "assistant",
+      "content": "Hello! How can I assist you with your music production today?",
+      "timestamp": "2025-10-09T00:43:58.460Z"
+    }
+  ],
+  "participants": {
+    "web": {
+      "connected": true,
+      "lastSeen": "2025-10-09T00:43:58.460Z"
+    }
+  },
+  "metadata": {},
+  "created": "2025-10-09T00:43:56.780Z",
+  "updated": "2025-10-09T00:43:58.460Z"
+}

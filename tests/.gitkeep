@@ -1,0 +1,5 @@
+# Test directories
+
+This directory contains the complete testing infrastructure for Jarvis V2.
+
+See tests/README.md for documentation.

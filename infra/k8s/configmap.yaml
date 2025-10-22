@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jarvis-config
+  namespace: jarvis
+  labels:
+    app: jarvis-control-plane
+data:
+  # Application Configuration
+  NODE_ENV: "production"
+  PORT: "4000"
+  LOG_LEVEL: "info"
+  
+  # AI DAWG Service URLs
+  AI_DAWG_BACKEND_URL: "http://ai-dawg-backend.ai-dawg:3000"
+  VOCAL_COACH_URL: "http://vocal-coach.ai-dawg:8000"
+  PRODUCER_URL: "http://producer.ai-dawg:8001"
+  AI_BRAIN_URL: "http://ai-brain.ai-dawg:8002"
+  
+  # Database Configuration
+  DATABASE_URL: "postgresql://jarvis_user:jarvis_pass@postgres.jarvis:5432/jarvis_db"
+  REDIS_URL: "redis://:jarvis_redis_pass@redis.jarvis:6379"
+  
+  # Autonomous Management
+  AUTONOMOUS_ENABLED: "true"
+  ENABLE_MCP: "false"
+  
+  # Health Check Configuration
+  HEALTH_CHECK_INTERVAL: "30"
+  MAX_RESTART_ATTEMPTS: "3"
+  RESTART_COOLDOWN: "60"
+  
+  # Feature Flags
+  ENABLE_MARKETING_MODULE: "true"
+  ENABLE_ENGAGEMENT_MODULE: "true"
+  ENABLE_AUTOMATION_MODULE: "true"
+  ENABLE_TESTING_MODULE: "true"
+  ENABLE_MUSIC_MODULE: "true"
+  
+  # Deployment Mode
+  DEPLOYMENT_MODE: "integrated"

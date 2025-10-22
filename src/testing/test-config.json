@@ -1,0 +1,133 @@
+{
+  "default_timeout": 30000,
+  "retry_failed_tests": true,
+  "max_retries": 3,
+  "alert_on_failure": true,
+  "report_path": "/Users/benkennon/Jarvis/data/test-reports",
+  "test_suites": [
+    {
+      "name": "ai-dawg-health",
+      "description": "Health checks for all AI DAWG services",
+      "schedule": "*/5 * * * *",
+      "enabled": true,
+      "endpoints": [
+        {
+          "name": "Backend Health",
+          "url": "http://localhost:3000/health",
+          "method": "GET",
+          "expectedStatus": 200,
+          "validation": {
+            "contentType": "application/json",
+            "requiredFields": ["status"]
+          }
+        },
+        {
+          "name": "Vocal Coach Health",
+          "url": "http://localhost:8000/health",
+          "method": "GET",
+          "expectedStatus": 200,
+          "validation": {
+            "contentType": "application/json",
+            "requiredFields": ["status"]
+          }
+        },
+        {
+          "name": "Producer Health",
+          "url": "http://localhost:8001/health",
+          "method": "GET",
+          "expectedStatus": 200,
+          "validation": {
+            "contentType": "application/json",
+            "requiredFields": ["status"]
+          }
+        },
+        {
+          "name": "AI Brain Health",
+          "url": "http://localhost:8002/health",
+          "method": "GET",
+          "expectedStatus": 200,
+          "validation": {
+            "contentType": "application/json",
+            "requiredFields": ["status"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "ai-dawg-api",
+      "description": "Core API endpoint tests",
+      "schedule": "0 * * * *",
+      "enabled": true,
+      "endpoints": [
+        {
+          "name": "Get Genres",
+          "url": "http://localhost:3000/api/v1/genres",
+          "method": "GET",
+          "expectedStatus": 200,
+          "validation": {
+            "contentType": "application/json"
+          }
+        },
+        {
+          "name": "Get User Profile",
+          "url": "http://localhost:3000/api/v1/profile",
+          "method": "GET",
+          "expectedStatus": 401,
+          "validation": {
+            "contentType": "application/json"
+          }
+        }
+      ]
+    },
+    {
+      "name": "vocal-coach-integration",
+      "description": "Vocal Coach AI integration tests",
+      "schedule": "0 */2 * * *",
+      "enabled": true,
+      "endpoints": [
+        {
+          "name": "Analyze Vocal Sample",
+          "url": "http://localhost:8000/analyze",
+          "method": "POST",
+          "expectedStatus": 200,
+          "headers": {
+            "Content-Type": "application/json"
+          },
+          "body": {
+            "audio_url": "test_sample.wav"
+          },
+          "validation": {
+            "contentType": "application/json",
+            "requiredFields": ["analysis", "recommendations"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "producer-integration",
+      "description": "Producer AI integration tests",
+      "schedule": "0 */2 * * *",
+      "enabled": true,
+      "endpoints": [
+        {
+          "name": "Generate Beat",
+          "url": "http://localhost:8001/generate",
+          "method": "POST",
+          "expectedStatus": 200,
+          "headers": {
+            "Content-Type": "application/json"
+          },
+          "body": {
+            "genre": "hip-hop",
+            "tempo": 90,
+            "duration": 30
+          },
+          "validation": {
+            "contentType": "application/json",
+            "requiredFields": ["audio_url", "metadata"]
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Build outputs
+dist/
+build/
+*.tsbuildinfo
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Environment files - exclude ALL .env files except .env.example
+.env
+.env.*
+!.env.example
+.env.local
+.env.production
+.env.development
+.env.test
+.env.backup
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+coverage/
+.nyc_output/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# External dependencies (already in ai-dawg-v0.1)
+external/
+
+# Local Netlify folder
+.netlify
+SUPERADMIN_CREDENTIALS.txt

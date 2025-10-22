@@ -1,0 +1,20 @@
+{
+  "scripts": {
+    "test": "npm run test:all",
+    "test:all": "ts-node scripts/run-all-tests.ts",
+    "test:unit": "npm run test:unit:vitest && npm run test:unit:jest",
+    "test:unit:vitest": "vitest run --coverage",
+    "test:unit:jest": "jest --coverage",
+    "test:unit:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --debug",
+    "test:api": "playwright test --project=api",
+    "test:automation": "ts-node tests/automation/run-automation-tests.ts",
+    "test:journeys": "ts-node tests/journeys/run-journey-tests.ts",
+    "test:daily-report": "ts-node scripts/slack-daily-report.ts",
+    "test:parallel": "TEST_MODE=parallel ts-node scripts/run-all-tests.ts",
+    "test:coverage": "vitest run --coverage && jest --coverage",
+    "test:clean": "rm -rf coverage test-results playwright-report logs/tests/*.log"
+  }
+}

@@ -1,0 +1,277 @@
+{
+  "title": "AI DAWG: Your First Song",
+  "duration": 180,
+  "product": "ai-dawg",
+  "narration": [
+    {
+      "text": "Welcome to AI DAWG, where creating professional music is as easy as having a conversation. In the next three minutes, we'll create your first complete song from scratch.",
+      "timing": 0
+    },
+    {
+      "text": "First, let's start a new project. Click the 'New Song' button to open the AI DAWG studio. This is where all the magic happens.",
+      "timing": 8
+    },
+    {
+      "text": "Now, let's tell AI DAWG what kind of song we want. I'll type 'Create a chill hip-hop track about summer vibes and good times with friends.' The AI understands natural language, so just describe your vision.",
+      "timing": 18
+    },
+    {
+      "text": "Watch as AI DAWG's lyric assistant springs into action. It's analyzing your prompt and generating creative lyrics that match your theme. In seconds, you've got a complete verse and chorus.",
+      "timing": 32
+    },
+    {
+      "text": "These lyrics look great, but feel free to edit anything you'd like. AI DAWG gives you full creative control. For now, let's keep these and move on to selecting our beat.",
+      "timing": 45
+    },
+    {
+      "text": "Click on 'Browse Beats' to explore thousands of professionally produced instrumentals. We can filter by genre, mood, and tempo. Let's choose this smooth hip-hop beat - perfect for our summer vibe.",
+      "timing": 58
+    },
+    {
+      "text": "Now for the exciting part - choosing your voice. AI DAWG has a library of AI-generated voices, or you can use your own cloned voice. Let's select this smooth male rap voice that fits our style.",
+      "timing": 72
+    },
+    {
+      "text": "Everything's ready. Hit the 'Generate Track' button and let AI DAWG work its magic. The AI is now synthesizing vocals, mixing them with the beat, and producing your song.",
+      "timing": 86
+    },
+    {
+      "text": "And there it is! In less than 30 seconds, you've got a complete, professional-sounding track. Click play to hear your creation. Notice how natural the vocals sound, perfectly in sync with the beat.",
+      "timing": 105
+    },
+    {
+      "text": "Love it? You can download it immediately in high-quality WAV or MP3 format. Share it on social media, send it to friends, or use it in your projects.",
+      "timing": 120
+    },
+    {
+      "text": "But we're not done yet. AI DAWG lets you refine your track. Want to adjust the vocal style? Click 'Regenerate Vocals' and try different voice options. Want to change the tempo? Use the tempo slider.",
+      "timing": 135
+    },
+    {
+      "text": "You can also add effects like reverb, autotune, or compression using the mixing panel. These professional tools make your track radio-ready.",
+      "timing": 150
+    },
+    {
+      "text": "And that's it! In just three minutes, you went from an idea to a complete, shareable song. No musical training required, no expensive equipment, just your creativity and AI DAWG's powerful AI.",
+      "timing": 163
+    }
+  ],
+  "actions": [
+    {
+      "type": "wait",
+      "timing": 6,
+      "description": "Wait for intro narration"
+    },
+    {
+      "type": "click",
+      "selector": "[data-testid='new-song-button']",
+      "timing": 14,
+      "description": "Click 'New Song' button"
+    },
+    {
+      "type": "wait",
+      "timing": 16,
+      "description": "Wait for studio to load"
+    },
+    {
+      "type": "click",
+      "selector": "#lyric-prompt-input",
+      "timing": 20,
+      "description": "Focus on lyric prompt input"
+    },
+    {
+      "type": "type",
+      "selector": "#lyric-prompt-input",
+      "text": "Create a chill hip-hop track about summer vibes and good times with friends",
+      "timing": 22,
+      "description": "Type song description"
+    },
+    {
+      "type": "click",
+      "selector": "[data-testid='generate-lyrics-button']",
+      "timing": 30,
+      "description": "Click 'Generate Lyrics' button"
+    },
+    {
+      "type": "wait",
+      "timing": 35,
+      "description": "Wait for lyrics generation"
+    },
+    {
+      "type": "scroll",
+      "timing": 48,
+      "description": "Scroll through generated lyrics"
+    },
+    {
+      "type": "click",
+      "selector": "[data-testid='browse-beats-button']",
+      "timing": 60,
+      "description": "Click 'Browse Beats' button"
+    },
+    {
+      "type": "wait",
+      "timing": 63,
+      "description": "Wait for beat library to load"
+    },
+    {
+      "type": "click",
+      "selector": "[data-testid='beat-card-summer-hiphop']",
+      "timing": 68,
+      "description": "Select summer hip-hop beat"
+    },
+    {
+      "type": "click",
+      "selector": "[data-testid='voice-selector']",
+      "timing": 75,
+      "description": "Open voice selector"
+    },
+    {
+      "type": "click",
+      "selector": "[data-testid='voice-smooth-male-rap']",
+      "timing": 80,
+      "description": "Select smooth male rap voice"
+    },
+    {
+      "type": "click",
+      "selector": "[data-testid='generate-track-button']",
+      "timing": 90,
+      "description": "Click 'Generate Track' button"
+    },
+    {
+      "type": "wait",
+      "timing": 95,
+      "description": "Wait for track generation (loading animation)"
+    },
+    {
+      "type": "click",
+      "selector": "[data-testid='play-button']",
+      "timing": 108,
+      "description": "Click play button to preview track"
+    },
+    {
+      "type": "wait",
+      "timing": 115,
+      "description": "Listen to track preview"
+    },
+    {
+      "type": "hover",
+      "selector": "[data-testid='download-button']",
+      "timing": 123,
+      "description": "Hover over download button"
+    },
+    {
+      "type": "click",
+      "selector": "[data-testid='mixing-panel-toggle']",
+      "timing": 138,
+      "description": "Open mixing panel"
+    },
+    {
+      "type": "hover",
+      "selector": "[data-testid='reverb-slider']",
+      "timing": 152,
+      "description": "Hover over reverb effect"
+    },
+    {
+      "type": "scroll",
+      "timing": 157,
+      "description": "Scroll through mixing options"
+    },
+    {
+      "type": "wait",
+      "timing": 175,
+      "description": "Final overview of completed track"
+    }
+  ],
+  "callouts": [
+    {
+      "text": "No musical experience needed!",
+      "position": { "x": 50, "y": 15 },
+      "timing": 5,
+      "duration": 4
+    },
+    {
+      "text": "Start fresh or use templates",
+      "position": { "x": 70, "y": 40 },
+      "timing": 14,
+      "duration": 3
+    },
+    {
+      "text": "AI understands natural language",
+      "position": { "x": 45, "y": 50 },
+      "timing": 25,
+      "duration": 5
+    },
+    {
+      "text": "Professional lyrics in seconds",
+      "position": { "x": 60, "y": 35 },
+      "timing": 38,
+      "duration": 4
+    },
+    {
+      "text": "Full editing control",
+      "position": { "x": 40, "y": 60 },
+      "timing": 50,
+      "duration": 3
+    },
+    {
+      "text": "1000+ beats to choose from",
+      "position": { "x": 55, "y": 25 },
+      "timing": 63,
+      "duration": 4
+    },
+    {
+      "text": "Filter by genre, mood & tempo",
+      "position": { "x": 75, "y": 30 },
+      "timing": 66,
+      "duration": 3
+    },
+    {
+      "text": "Clone your own voice or use AI voices",
+      "position": { "x": 50, "y": 45 },
+      "timing": 77,
+      "duration": 5
+    },
+    {
+      "text": "One-click generation",
+      "position": { "x": 65, "y": 70 },
+      "timing": 90,
+      "duration": 3
+    },
+    {
+      "text": "High-quality audio processing",
+      "position": { "x": 45, "y": 20 },
+      "timing": 97,
+      "duration": 4
+    },
+    {
+      "text": "Realistic AI vocals",
+      "position": { "x": 30, "y": 55 },
+      "timing": 110,
+      "duration": 4
+    },
+    {
+      "text": "Download in multiple formats",
+      "position": { "x": 70, "y": 15 },
+      "timing": 123,
+      "duration": 4
+    },
+    {
+      "text": "Regenerate anytime",
+      "position": { "x": 40, "y": 40 },
+      "timing": 140,
+      "duration": 3
+    },
+    {
+      "text": "Pro mixing tools included",
+      "position": { "x": 60, "y": 65 },
+      "timing": 153,
+      "duration": 5
+    },
+    {
+      "text": "From idea to track in 3 minutes!",
+      "position": { "x": 50, "y": 50 },
+      "timing": 170,
+      "duration": 5
+    }
+  ]
+}

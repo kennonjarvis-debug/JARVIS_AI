@@ -1,0 +1,681 @@
+name: Jarvis V2 CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - 'release/**'
+  pull_request:
+    branches:
+      - main
+      - develop
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+      skip_tests:
+        description: 'Skip tests (emergency deploy only)'
+        required: false
+        type: boolean
+        default: false
+
+env:
+  NODE_VERSION: '18.x'
+  JARVIS_API_PORT: 3001
+  HEALTH_CHECK_RETRIES: 3
+  DEPLOYMENT_TIMEOUT: 600
+
+jobs:
+  # Job 1: Install Dependencies & Cache
+  setup:
+    name: Setup & Dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Cache node_modules
+        uses: actions/cache@v3
+        id: npm-cache
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
+
+      - name: Install dependencies
+        if: steps.npm-cache.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - name: Verify installation
+        run: |
+          node --version
+          npm --version
+          npm list --depth=0
+
+  # Job 2: Lint & Type Check
+  lint:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Restore dependencies
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Run ESLint
+        run: npm run lint || true
+
+      - name: TypeScript type check
+        run: npm run typecheck
+
+  # Job 3: Unit Tests
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: setup
+    if: ${{ !inputs.skip_tests }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Restore dependencies
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Run unit tests
+        run: npm run test:unit
+        env:
+          NODE_ENV: test
+
+      - name: Generate coverage report
+        run: npm run test:coverage
+        continue-on-error: true
+
+      - name: Upload coverage to artifact
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage/
+
+  # Job 4: Integration Tests
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: setup
+    if: ${{ !inputs.skip_tests }}
+    services:
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Restore dependencies
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Run integration tests
+        run: npm run test:integration
+        env:
+          NODE_ENV: test
+          REDIS_URL: redis://localhost:6379
+
+  # Job 5: E2E Tests
+  e2e-tests:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: [unit-tests, integration-tests]
+    if: ${{ !inputs.skip_tests }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Restore dependencies
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Run E2E tests
+        run: npm run test:e2e
+        env:
+          NODE_ENV: test
+
+      - name: Upload E2E test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: e2e-results
+          path: test-results/
+
+  # Job 6: Security Scan
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Run npm audit
+        run: npm audit --audit-level=moderate
+        continue-on-error: true
+
+      - name: Run security tests
+        run: npm run test:security
+        continue-on-error: true
+
+  # Job 7: Build Application
+  build:
+    name: Build Application
+    runs-on: ubuntu-latest
+    needs: [lint, unit-tests, integration-tests]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Restore dependencies
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Build application
+        run: npm run build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: |
+            dist/
+            package.json
+            package-lock.json
+
+  # Job 8: Check Jarvis Health Before Deploy
+  health-check:
+    name: Pre-Deploy Health Check
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main' || github.event_name == 'release'
+    outputs:
+      vitality: ${{ steps.health.outputs.vitality }}
+      deploy_allowed: ${{ steps.health.outputs.deploy_allowed }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check Jarvis vitality
+        id: health
+        run: |
+          # Check if Jarvis API is accessible
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:${{ env.JARVIS_API_PORT }}/api/v1/jarvis/status || echo "000")
+
+          if [ "$RESPONSE" = "200" ]; then
+            VITALITY=$(curl -s http://localhost:${{ env.JARVIS_API_PORT }}/api/v1/jarvis/status | jq -r '.vitality // 0')
+            echo "vitality=$VITALITY" >> $GITHUB_OUTPUT
+
+            if [ "$VITALITY" -ge 60 ]; then
+              echo "deploy_allowed=true" >> $GITHUB_OUTPUT
+              echo "✅ Jarvis vitality: $VITALITY - Deploy allowed"
+            else
+              echo "deploy_allowed=false" >> $GITHUB_OUTPUT
+              echo "❌ Jarvis vitality: $VITALITY - Deploy blocked (threshold: 60)"
+              exit 1
+            fi
+          else
+            echo "⚠️ Jarvis API not accessible (HTTP $RESPONSE) - Proceeding with caution"
+            echo "vitality=0" >> $GITHUB_OUTPUT
+            echo "deploy_allowed=true" >> $GITHUB_OUTPUT
+          fi
+
+  # Job 9: Deploy to Staging/Production
+  deploy:
+    name: Deploy to ${{ inputs.environment || 'staging' }}
+    runs-on: ubuntu-latest
+    needs: [build, health-check, e2e-tests]
+    if: github.ref == 'refs/heads/main' || github.event_name == 'release' || github.event_name == 'workflow_dispatch'
+    environment:
+      name: ${{ inputs.environment || 'staging' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION || 'us-east-1' }}
+
+      - name: Deploy to EC2
+        run: |
+          echo "🚀 Deploying to ${{ inputs.environment || 'staging' }}"
+
+          # Create deployment package
+          tar -czf deployment.tar.gz dist/ package.json package-lock.json
+
+          # Upload to S3
+          aws s3 cp deployment.tar.gz s3://${{ secrets.DEPLOYMENT_BUCKET }}/releases/jarvis-v2-${{ github.sha }}.tar.gz
+
+          # SSH to EC2 and deploy
+          echo "${{ secrets.EC2_SSH_KEY }}" > deploy_key.pem
+          chmod 600 deploy_key.pem
+
+          ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+            set -e
+
+            # Download latest build
+            aws s3 cp s3://${{ secrets.DEPLOYMENT_BUCKET }}/releases/jarvis-v2-${{ github.sha }}.tar.gz /tmp/
+
+            # Backup current version
+            if [ -d /opt/jarvis ]; then
+              sudo cp -r /opt/jarvis /opt/jarvis-backup-$(date +%Y%m%d-%H%M%S)
+            fi
+
+            # Extract new version
+            sudo mkdir -p /opt/jarvis
+            sudo tar -xzf /tmp/jarvis-v2-${{ github.sha }}.tar.gz -C /opt/jarvis
+
+            # Install dependencies
+            cd /opt/jarvis
+            npm ci --production
+
+            # Restart Jarvis service
+            sudo systemctl restart jarvis
+
+            # Wait for service to start
+            sleep 10
+
+            # Verify deployment
+            curl -f http://localhost:3001/health || exit 1
+
+            echo "✅ Deployment successful"
+          EOF
+
+          rm -f deploy_key.pem
+
+      - name: Run post-deploy health check
+        run: |
+          echo "🏥 Running post-deployment health check..."
+
+          ssh -i deploy_key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+            RETRIES=0
+            MAX_RETRIES=${{ env.HEALTH_CHECK_RETRIES }}
+
+            while [ $RETRIES -lt $MAX_RETRIES ]; do
+              STATUS=$(curl -s http://localhost:3001/api/v1/jarvis/status)
+              VITALITY=$(echo $STATUS | jq -r '.vitality // 0')
+
+              if [ "$VITALITY" -ge 60 ]; then
+                echo "✅ Health check passed - Vitality: $VITALITY"
+                exit 0
+              fi
+
+              RETRIES=$((RETRIES + 1))
+              echo "⏳ Retry $RETRIES/$MAX_RETRIES - Current vitality: $VITALITY"
+              sleep 5
+            done
+
+            echo "❌ Health check failed after $MAX_RETRIES attempts"
+            exit 1
+          EOF
+
+      - name: Update ngrok tunnel (if applicable)
+        run: |
+          if [ -n "${{ secrets.NGROK_AUTH_TOKEN }}" ]; then
+            echo "🌐 Updating ngrok tunnel..."
+            ssh -i deploy_key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+              # Restart ngrok to refresh tunnel
+              pkill ngrok || true
+              ngrok http 3001 --authtoken=${{ secrets.NGROK_AUTH_TOKEN }} --log=stdout > /tmp/ngrok.log 2>&1 &
+
+              sleep 5
+
+              # Get new ngrok URL
+              NGROK_URL=$(curl -s http://localhost:4040/api/tunnels | jq -r '.tunnels[0].public_url')
+              echo "📍 New ngrok URL: $NGROK_URL"
+            EOF
+          fi
+
+  # Job 10: Sync Adaptive Memory to S3
+  sync-memory:
+    name: Sync Adaptive Memory to S3
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: success()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION || 'us-east-1' }}
+
+      - name: Sync memory to S3
+        run: |
+          echo "💾 Syncing adaptive memory to S3..."
+
+          # Sync from EC2 to S3
+          ssh -i deploy_key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+            TIMESTAMP=$(date +%Y-%m-%d-%H-%M-%S)
+            BACKUP_BUCKET="${{ secrets.S3_BACKUP_BUCKET }}"
+
+            # Sync memory folder
+            aws s3 sync /opt/jarvis/memory/ s3://${BACKUP_BUCKET}/memory/${TIMESTAMP}/ \
+              --exclude "*.tmp" --exclude ".DS_Store"
+
+            # Sync adaptive folder
+            aws s3 sync /opt/jarvis/adaptive/ s3://${BACKUP_BUCKET}/adaptive/${TIMESTAMP}/ \
+              --exclude "*.tmp"
+
+            # Sync logs folder (last 7 days)
+            find /opt/jarvis/logs -type f -mtime -7 | while read log; do
+              aws s3 cp "$log" s3://${BACKUP_BUCKET}/logs/${TIMESTAMP}/
+            done
+
+            echo "✅ Memory sync complete: s3://${BACKUP_BUCKET}/${TIMESTAMP}/"
+          EOF
+
+      - name: Verify S3 bucket encryption
+        run: |
+          BUCKET="${{ secrets.S3_BACKUP_BUCKET }}"
+          ENCRYPTION=$(aws s3api get-bucket-encryption --bucket $BUCKET 2>&1 || echo "NOT_ENCRYPTED")
+
+          if echo "$ENCRYPTION" | grep -q "AES256\|aws:kms"; then
+            echo "✅ S3 bucket encryption verified"
+          else
+            echo "⚠️ WARNING: S3 bucket may not be encrypted"
+          fi
+
+  # Job 11: Send Notifications
+  notify:
+    name: Send Notifications
+    runs-on: ubuntu-latest
+    needs: [deploy, sync-memory]
+    if: always()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Prepare notification payload
+        id: payload
+        run: |
+          DEPLOY_STATUS="${{ needs.deploy.result }}"
+          SYNC_STATUS="${{ needs.sync-memory.result }}"
+          TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
+
+          if [ "$DEPLOY_STATUS" = "success" ] && [ "$SYNC_STATUS" = "success" ]; then
+            STATUS_EMOJI="✅"
+            STATUS_COLOR="#36a64f"
+            STATUS_TEXT="SUCCESS"
+          elif [ "$DEPLOY_STATUS" = "failure" ] || [ "$SYNC_STATUS" = "failure" ]; then
+            STATUS_EMOJI="❌"
+            STATUS_COLOR="#ff0000"
+            STATUS_TEXT="FAILED"
+          else
+            STATUS_EMOJI="⚠️"
+            STATUS_COLOR="#ffaa00"
+            STATUS_TEXT="PARTIAL"
+          fi
+
+          echo "status_emoji=$STATUS_EMOJI" >> $GITHUB_OUTPUT
+          echo "status_color=$STATUS_COLOR" >> $GITHUB_OUTPUT
+          echo "status_text=$STATUS_TEXT" >> $GITHUB_OUTPUT
+          echo "timestamp=$TIMESTAMP" >> $GITHUB_OUTPUT
+
+      - name: Send Slack notification
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          payload: |
+            {
+              "text": "${{ steps.payload.outputs.status_emoji }} Jarvis V2 Deployment ${{ steps.payload.outputs.status_text }}",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "${{ steps.payload.outputs.status_emoji }} Jarvis V2 Deployment Report"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Status:*\n${{ steps.payload.outputs.status_text }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Environment:*\n${{ inputs.environment || 'staging' }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Commit:*\n<${{ github.event.head_commit.url }}|${{ github.sha }}>"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Author:*\n${{ github.actor }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Vitality:*\n${{ needs.health-check.outputs.vitality || 'N/A' }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Timestamp:*\n${{ steps.payload.outputs.timestamp }}"
+                    }
+                  ]
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Results:*\n• Deploy: ${{ needs.deploy.result }}\n• Memory Sync: ${{ needs.sync-memory.result }}\n• Tests: ${{ needs.e2e-tests.result || 'skipped' }}"
+                  }
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "View Workflow"
+                      },
+                      "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                    }
+                  ]
+                }
+              ]
+            }
+
+      - name: Send Gmail notification
+        run: |
+          # Using sendmail or SMTP to send email notification
+          # This requires SMTP credentials to be configured
+
+          if [ -n "${{ secrets.SMTP_HOST }}" ]; then
+            cat > /tmp/email.txt << EOF
+          From: ${{ secrets.SMTP_FROM }}
+          To: ${{ secrets.NOTIFY_EMAIL }}
+          Subject: ${{ steps.payload.outputs.status_emoji }} Jarvis V2 Deployment ${{ steps.payload.outputs.status_text }}
+
+          Jarvis V2 Deployment Report
+          ===========================
+
+          Status: ${{ steps.payload.outputs.status_text }}
+          Environment: ${{ inputs.environment || 'staging' }}
+          Commit: ${{ github.sha }}
+          Author: ${{ github.actor }}
+          Timestamp: ${{ steps.payload.outputs.timestamp }}
+
+          Results:
+          - Deploy: ${{ needs.deploy.result }}
+          - Memory Sync: ${{ needs.sync-memory.result }}
+          - Tests: ${{ needs.e2e-tests.result || 'skipped' }}
+
+          Vitality: ${{ needs.health-check.outputs.vitality || 'N/A' }}
+
+          View workflow: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          EOF
+
+            curl --url "smtp://${{ secrets.SMTP_HOST }}:${{ secrets.SMTP_PORT }}" \
+              --ssl-reqd \
+              --mail-from "${{ secrets.SMTP_FROM }}" \
+              --mail-rcpt "${{ secrets.NOTIFY_EMAIL }}" \
+              --user "${{ secrets.SMTP_USER }}:${{ secrets.SMTP_PASSWORD }}" \
+              --upload-file /tmp/email.txt
+
+            echo "📧 Email notification sent"
+          fi
+
+  # Job 12: Create Deploy History Log
+  log-deployment:
+    name: Log Deployment History
+    runs-on: ubuntu-latest
+    needs: [deploy, sync-memory, notify]
+    if: always()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create deployment log
+        run: |
+          mkdir -p logs/deploy-history
+
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          LOG_FILE="logs/deploy-history/deploy-${TIMESTAMP//:/-}.json"
+
+          cat > $LOG_FILE << EOF
+          {
+            "deployment_id": "${{ github.run_id }}",
+            "timestamp": "$TIMESTAMP",
+            "status": "${{ needs.deploy.result }}",
+            "environment": "${{ inputs.environment || 'staging' }}",
+            "commit": {
+              "sha": "${{ github.sha }}",
+              "message": "${{ github.event.head_commit.message }}",
+              "author": "${{ github.actor }}",
+              "url": "${{ github.event.head_commit.url }}"
+            },
+            "health": {
+              "pre_deploy_vitality": ${{ needs.health-check.outputs.vitality || 0 }},
+              "deploy_allowed": ${{ needs.health-check.outputs.deploy_allowed || false }}
+            },
+            "jobs": {
+              "lint": "${{ needs.lint.result }}",
+              "unit_tests": "${{ needs.unit-tests.result }}",
+              "integration_tests": "${{ needs.integration-tests.result }}",
+              "e2e_tests": "${{ needs.e2e-tests.result }}",
+              "security_scan": "${{ needs.security-scan.result }}",
+              "build": "${{ needs.build.result }}",
+              "deploy": "${{ needs.deploy.result }}",
+              "sync_memory": "${{ needs.sync-memory.result }}",
+              "notify": "${{ needs.notify.result }}"
+            },
+            "metadata": {
+              "workflow_url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+              "triggered_by": "${{ github.event_name }}",
+              "branch": "${{ github.ref_name }}",
+              "skip_tests": ${{ inputs.skip_tests || false }}
+            }
+          }
+          EOF
+
+          echo "📝 Deployment log created: $LOG_FILE"
+
+      - name: Upload deployment log
+        uses: actions/upload-artifact@v3
+        with:
+          name: deployment-log
+          path: logs/deploy-history/
+
+      - name: Sync logs to S3
+        if: success()
+        run: |
+          aws s3 sync logs/deploy-history/ s3://${{ secrets.S3_BACKUP_BUCKET }}/deploy-history/ \
+            --exclude "*.tmp"

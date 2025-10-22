@@ -1,0 +1,385 @@
+// Jarvis Control Plane - Prisma Schema
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Circuit Breaker State (for multi-instance coordination)
+model CircuitBreakerState {
+  id              String   @id @default(uuid())
+  serviceName     String   @unique
+  state           String   // CLOSED, OPEN, HALF_OPEN
+  failureCount    Int      @default(0)
+  successCount    Int      @default(0)
+  lastFailureTime DateTime?
+  nextAttemptTime DateTime?
+  updatedAt       DateTime @updatedAt
+
+  @@map("circuit_breaker_state")
+}
+
+// Task Execution History (for autonomous learning)
+model TaskHistory {
+  id            String   @id @default(uuid())
+  taskId        String
+  domain        String
+  action        String
+  decision      String
+  success       Boolean
+  duration      Int
+  resourcesUsed Json
+  impactScore   Float
+  userFeedback  String?
+  error         String?
+  metadata      Json?
+  executedAt    DateTime @default(now())
+
+  @@index([domain, action])
+  @@index([executedAt])
+  @@index([success])
+  @@map("task_history")
+}
+
+// AI Usage Tracking (for cost optimization)
+model AIUsage {
+  id            String   @id @default(uuid())
+  provider      String
+  model         String
+  inputTokens   Int
+  outputTokens  Int
+  cost          Float
+  duration      Int
+  taskType      String?
+  complexity    String?
+  correlationId String?
+  userId        String?
+  timestamp     DateTime @default(now())
+
+  @@index([provider, model])
+  @@index([timestamp])
+  @@index([correlationId])
+  @@map("ai_usage")
+}
+
+// Music Project Versions
+model MusicProjectVersion {
+  id             String   @id @default(uuid())
+  projectId      String
+  version        String
+  commitMessage  String
+  author         String
+  snapshot       Json
+  parentVersion  String?
+  tags           String[]
+  timestamp      DateTime @default(now())
+
+  @@index([projectId])
+  @@index([projectId, version])
+  @@map("music_project_versions")
+}
+
+// Health Metrics
+model HealthMetric {
+  id          String   @id @default(uuid())
+  serviceName String
+  metricType  String
+  value       Float
+  timestamp   DateTime @default(now())
+
+  @@index([serviceName, metricType])
+  @@index([timestamp])
+  @@map("health_metrics")
+}
+
+// Agent Performance Snapshots
+model AgentPerformanceSnapshot {
+  id             String   @id @default(uuid())
+  domain         String
+  totalTasks     Int
+  successCount   Int
+  failureCount   Int
+  avgDuration    Float
+  avgImpactScore Float
+  costIncurred   Float
+  tasksPerHour   Float
+  snapshotDate   DateTime @default(now())
+
+  @@index([domain])
+  @@index([snapshotDate])
+  @@map("agent_performance_snapshots")
+}
+
+// ==========================================
+// USER & SUBSCRIPTION MANAGEMENT
+// ==========================================
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  name          String?
+  googleId      String?   @unique
+  role          UserRole  @default(USER)
+
+  // Subscription info
+  subscription  Subscription?
+
+  // Usage tracking
+  usageStats    UsageStats?
+
+  // Metadata
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastLoginAt   DateTime?
+
+  // Relationships
+  observatories Observatory[]
+  projects      Project[]
+  apiKeys       ApiKey[]
+
+  @@index([email])
+  @@index([role])
+  @@map("users")
+}
+
+enum UserRole {
+  USER          // Regular user
+  SUPERADMIN    // Full access to all accounts + system
+  ADMIN         // Can manage users but not system
+}
+
+model Subscription {
+  id                    String              @id @default(uuid())
+  userId                String              @unique
+  user                  User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Plan details
+  product               Product             // jarvis or aidawg
+  planTier              PlanTier
+
+  // Billing
+  status                SubscriptionStatus  @default(TRIAL)
+  stripeCustomerId      String?             @unique
+  stripeSubscriptionId  String?             @unique
+  stripePriceId         String?
+
+  // Trial
+  trialEndsAt           DateTime?
+  trialStartedAt        DateTime?
+
+  // Subscription period
+  currentPeriodStart    DateTime?
+  currentPeriodEnd      DateTime?
+  cancelAtPeriodEnd     Boolean             @default(false)
+  canceledAt            DateTime?
+
+  // Usage limits (based on plan)
+  aiRequestsPerDay      Int                 @default(10)
+  observatoriesLimit    Int                 @default(1)
+  songsPerMonth         Int?
+  voiceCharsPerMonth    Int?
+  storageGB             Int?
+
+  // Metadata
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([product])
+  @@map("subscriptions")
+}
+
+enum Product {
+  JARVIS
+  AIDAWG
+}
+
+enum PlanTier {
+  FREE_TRIAL
+  STARTER       // Jarvis $29, AI DAWG Creator $19
+  PROFESSIONAL  // Jarvis $99, AI DAWG Pro $49
+  ENTERPRISE    // Jarvis $299, AI DAWG Studio $149
+}
+
+enum SubscriptionStatus {
+  TRIAL
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  PAUSED
+  EXPIRED
+}
+
+model UsageStats {
+  id                    String    @id @default(uuid())
+  userId                String    @unique
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Daily AI usage
+  aiRequestsToday       Int       @default(0)
+  lastAIRequestReset    DateTime  @default(now())
+
+  // Monthly AI DAWG usage
+  songsThisMonth        Int       @default(0)
+  voiceCharsThisMonth   Int       @default(0)
+  lastMonthlyReset      DateTime  @default(now())
+
+  // Storage (AI DAWG)
+  storageUsedGB         Float     @default(0)
+
+  // Total lifetime stats
+  totalAIRequests       Int       @default(0)
+  totalSongsGenerated   Int       @default(0)
+  totalCostAccrued      Float     @default(0) // Our internal costs
+
+  // Metadata
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("usage_stats")
+}
+
+model UsageLog {
+  id            String    @id @default(uuid())
+  userId        String
+
+  // Request details
+  requestType   String    // "ai_request", "song_generation", "voice_clone"
+  model         String?
+  provider      String?
+
+  // Tokens/units
+  inputTokens   Int?
+  outputTokens  Int?
+  characters    Int?
+
+  // Cost
+  cost          Float     @default(0)
+
+  // Metadata
+  timestamp     DateTime  @default(now())
+
+  @@index([userId])
+  @@index([timestamp])
+  @@index([requestType])
+  @@map("usage_logs")
+}
+
+model Observatory {
+  id            String    @id @default(uuid())
+  name          String
+  description   String?
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Configuration
+  integrations  Json
+  active        Boolean   @default(true)
+
+  // Metadata
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([active])
+  @@map("observatories")
+}
+
+model Project {
+  id            String    @id @default(uuid())
+  name          String
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Project data
+  tracks        Json
+  metadata      Json
+
+  // Storage
+  storageSizeGB Float     @default(0)
+
+  // Metadata
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastOpenedAt  DateTime?
+
+  @@index([userId])
+  @@index([lastOpenedAt])
+  @@map("projects")
+}
+
+model ApiKey {
+  id            String    @id @default(uuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name          String
+  key           String    @unique
+  active        Boolean   @default(true)
+
+  // Permissions
+  scopes        String[]
+
+  // Usage tracking
+  lastUsedAt    DateTime?
+  requestCount  Int       @default(0)
+
+  // Metadata
+  createdAt     DateTime  @default(now())
+  expiresAt     DateTime?
+
+  @@index([userId])
+  @@index([key])
+  @@index([active])
+  @@map("api_keys")
+}
+
+// ==========================================
+// RATE LIMITING
+// ==========================================
+
+// Rate limit violations tracking (for analytics and ban enforcement)
+model RateLimitViolation {
+  id          String   @id @default(uuid())
+  userId      String?
+  ipAddress   String?
+  endpoint    String
+  limit       Int
+  attempted   Int
+  timestamp   DateTime @default(now())
+
+  @@index([userId])
+  @@index([ipAddress])
+  @@index([timestamp])
+  @@map("rate_limit_violations")
+}
+
+// Whitelisted IPs (bypass rate limiting)
+model WhitelistedIP {
+  id        String   @id @default(uuid())
+  ip        String   @unique
+  reason    String?
+  addedBy   String
+  createdAt DateTime @default(now())
+
+  @@index([ip])
+  @@map("whitelisted_ips")
+}
+
+// Temporary rate limit bypasses (for debugging/support)
+model RateLimitBypass {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  reason    String
+  createdBy String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("rate_limit_bypasses")
+}

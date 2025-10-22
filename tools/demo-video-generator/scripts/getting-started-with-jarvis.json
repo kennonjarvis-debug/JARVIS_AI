@@ -1,0 +1,352 @@
+{
+  "title": "Getting Started with Jarvis",
+  "duration": 180,
+  "product": "jarvis",
+  "narration": [
+    {
+      "text": "Meet Jarvis, your AI-powered personal assistant that's about to revolutionize how you work. In just three minutes, you'll be up and running with your new AI companion.",
+      "timing": 0
+    },
+    {
+      "text": "First, let's create your account. Click the 'Get Started' button and enter your email. Jarvis uses secure authentication to protect your data.",
+      "timing": 10
+    },
+    {
+      "text": "Welcome to your Jarvis dashboard! This is mission control for your AI assistant. On the left, you'll see your conversation history. The center is your chat interface. And on the right, you have quick actions and settings.",
+      "timing": 25
+    },
+    {
+      "text": "Let's start with a simple question. I'll type 'What can you help me with?' Watch how Jarvis responds with a personalized overview of its capabilities.",
+      "timing": 40
+    },
+    {
+      "text": "Notice how Jarvis doesn't just list features - it learns about you and tailors responses to your needs. This is AI that adapts to your workflow.",
+      "timing": 55
+    },
+    {
+      "text": "Now let's try something more practical. Ask Jarvis to create a task. Type 'Remind me to review the quarterly report tomorrow at 2pm.'",
+      "timing": 68
+    },
+    {
+      "text": "Instantly, Jarvis creates a task, schedules it, and adds it to your task list. You can see it appear in the tasks panel on the right. Click on it to see the details.",
+      "timing": 82
+    },
+    {
+      "text": "Here's where Jarvis gets really powerful - voice commands. Click the microphone icon and try speaking to Jarvis. Say 'What's on my schedule for tomorrow?'",
+      "timing": 95
+    },
+    {
+      "text": "Jarvis processes your voice in real-time, understands context, and responds naturally. It's like having a conversation with a knowledgeable colleague.",
+      "timing": 108
+    },
+    {
+      "text": "You can also upload documents and images. Let me drag this PDF into the chat. Watch as Jarvis analyzes it and offers to summarize the key points.",
+      "timing": 120
+    },
+    {
+      "text": "Within seconds, Jarvis has read the entire document and provides a concise summary with actionable insights. This saves hours of manual reading.",
+      "timing": 135
+    },
+    {
+      "text": "Want to customize Jarvis? Click the settings icon. Here you can adjust the AI's personality, set your preferences, and configure integrations with your favorite tools.",
+      "timing": 148
+    },
+    {
+      "text": "And that's just the beginning. You now have a powerful AI assistant ready to help with research, writing, planning, coding, and so much more. Start exploring and discover what Jarvis can do for you!",
+      "timing": 163
+    }
+  ],
+  "actions": [
+    {
+      "type": "wait",
+      "timing": 5,
+      "description": "Wait for intro"
+    },
+    {
+      "type": "click",
+      "selector": "[data-testid='get-started-button']",
+      "timing": 12,
+      "description": "Click 'Get Started' button"
+    },
+    {
+      "type": "type",
+      "selector": "#email-input",
+      "text": "user@example.com",
+      "timing": 15,
+      "description": "Enter email address"
+    },
+    {
+      "type": "click",
+      "selector": "[data-testid='signup-button']",
+      "timing": 18,
+      "description": "Click signup button"
+    },
+    {
+      "type": "wait",
+      "timing": 20,
+      "description": "Wait for dashboard to load"
+    },
+    {
+      "type": "hover",
+      "selector": "[data-testid='conversation-history']",
+      "timing": 28,
+      "description": "Highlight conversation history panel"
+    },
+    {
+      "type": "hover",
+      "selector": "[data-testid='chat-interface']",
+      "timing": 32,
+      "description": "Highlight chat interface"
+    },
+    {
+      "type": "hover",
+      "selector": "[data-testid='quick-actions-panel']",
+      "timing": 36,
+      "description": "Highlight quick actions panel"
+    },
+    {
+      "type": "click",
+      "selector": "#chat-input",
+      "timing": 42,
+      "description": "Focus on chat input"
+    },
+    {
+      "type": "type",
+      "selector": "#chat-input",
+      "text": "What can you help me with?",
+      "timing": 44,
+      "description": "Type first question"
+    },
+    {
+      "type": "click",
+      "selector": "[data-testid='send-button']",
+      "timing": 48,
+      "description": "Send message"
+    },
+    {
+      "type": "wait",
+      "timing": 50,
+      "description": "Wait for AI response"
+    },
+    {
+      "type": "scroll",
+      "timing": 60,
+      "description": "Scroll through response"
+    },
+    {
+      "type": "click",
+      "selector": "#chat-input",
+      "timing": 70,
+      "description": "Focus on chat input again"
+    },
+    {
+      "type": "type",
+      "selector": "#chat-input",
+      "text": "Remind me to review the quarterly report tomorrow at 2pm",
+      "timing": 72,
+      "description": "Type task creation request"
+    },
+    {
+      "type": "click",
+      "selector": "[data-testid='send-button']",
+      "timing": 78,
+      "description": "Send task request"
+    },
+    {
+      "type": "wait",
+      "timing": 80,
+      "description": "Wait for task creation"
+    },
+    {
+      "type": "hover",
+      "selector": "[data-testid='tasks-panel']",
+      "timing": 85,
+      "description": "Highlight tasks panel"
+    },
+    {
+      "type": "click",
+      "selector": "[data-testid='task-item-0']",
+      "timing": 88,
+      "description": "Click on created task"
+    },
+    {
+      "type": "click",
+      "selector": "[data-testid='voice-input-button']",
+      "timing": 97,
+      "description": "Click microphone for voice input"
+    },
+    {
+      "type": "wait",
+      "timing": 100,
+      "description": "Simulate voice input"
+    },
+    {
+      "type": "wait",
+      "timing": 105,
+      "description": "Wait for voice processing"
+    },
+    {
+      "type": "wait",
+      "timing": 112,
+      "description": "Wait for voice response"
+    },
+    {
+      "type": "hover",
+      "selector": "[data-testid='file-upload-zone']",
+      "timing": 122,
+      "description": "Highlight file upload area"
+    },
+    {
+      "type": "click",
+      "selector": "[data-testid='file-upload-zone']",
+      "timing": 125,
+      "description": "Simulate file upload"
+    },
+    {
+      "type": "wait",
+      "timing": 128,
+      "description": "Wait for file processing"
+    },
+    {
+      "type": "wait",
+      "timing": 138,
+      "description": "Wait for document analysis"
+    },
+    {
+      "type": "scroll",
+      "timing": 142,
+      "description": "Scroll through summary"
+    },
+    {
+      "type": "click",
+      "selector": "[data-testid='settings-button']",
+      "timing": 150,
+      "description": "Open settings"
+    },
+    {
+      "type": "wait",
+      "timing": 152,
+      "description": "Wait for settings to open"
+    },
+    {
+      "type": "scroll",
+      "timing": 156,
+      "description": "Scroll through settings options"
+    },
+    {
+      "type": "click",
+      "selector": "[data-testid='close-settings']",
+      "timing": 160,
+      "description": "Close settings"
+    },
+    {
+      "type": "wait",
+      "timing": 170,
+      "description": "Final overview"
+    }
+  ],
+  "callouts": [
+    {
+      "text": "Your AI assistant in 3 minutes",
+      "position": { "x": 50, "y": 10 },
+      "timing": 3,
+      "duration": 4
+    },
+    {
+      "text": "Secure authentication",
+      "position": { "x": 55, "y": 45 },
+      "timing": 15,
+      "duration": 3
+    },
+    {
+      "text": "Conversation history - never lose context",
+      "position": { "x": 20, "y": 30 },
+      "timing": 28,
+      "duration": 4
+    },
+    {
+      "text": "Chat with AI in real-time",
+      "position": { "x": 50, "y": 50 },
+      "timing": 33,
+      "duration": 3
+    },
+    {
+      "text": "Quick actions & shortcuts",
+      "position": { "x": 80, "y": 35 },
+      "timing": 37,
+      "duration": 3
+    },
+    {
+      "text": "Natural language understanding",
+      "position": { "x": 45, "y": 65 },
+      "timing": 52,
+      "duration": 5
+    },
+    {
+      "text": "AI learns and adapts to you",
+      "position": { "x": 60, "y": 25 },
+      "timing": 58,
+      "duration": 4
+    },
+    {
+      "text": "Automatic task creation",
+      "position": { "x": 70, "y": 50 },
+      "timing": 83,
+      "duration": 4
+    },
+    {
+      "text": "Smart scheduling",
+      "position": { "x": 85, "y": 40 },
+      "timing": 86,
+      "duration": 3
+    },
+    {
+      "text": "Voice commands powered by AI",
+      "position": { "x": 40, "y": 20 },
+      "timing": 98,
+      "duration": 5
+    },
+    {
+      "text": "Real-time voice processing",
+      "position": { "x": 55, "y": 35 },
+      "timing": 110,
+      "duration": 4
+    },
+    {
+      "text": "Drag & drop any file",
+      "position": { "x": 50, "y": 60 },
+      "timing": 123,
+      "duration": 3
+    },
+    {
+      "text": "AI reads and understands documents",
+      "position": { "x": 45, "y": 40 },
+      "timing": 130,
+      "duration": 5
+    },
+    {
+      "text": "Instant summaries with insights",
+      "position": { "x": 60, "y": 55 },
+      "timing": 137,
+      "duration": 4
+    },
+    {
+      "text": "Customize to your needs",
+      "position": { "x": 75, "y": 25 },
+      "timing": 152,
+      "duration": 4
+    },
+    {
+      "text": "Connect your favorite tools",
+      "position": { "x": 70, "y": 45 },
+      "timing": 156,
+      "duration": 3
+    },
+    {
+      "text": "Unlimited potential awaits!",
+      "position": { "x": 50, "y": 50 },
+      "timing": 172,
+      "duration": 5
+    }
+  ]
+}

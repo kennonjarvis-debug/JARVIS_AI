@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jarvis Cost Monitoring Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h2 {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            padding: 10px;
+            background: #f7f9fc;
+            border-radius: 5px;
+        }
+
+        .metric-label {
+            font-weight: 600;
+            color: #555;
+        }
+
+        .metric-value {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .status-ok {
+            color: #10b981;
+        }
+
+        .status-warning {
+            color: #f59e0b;
+        }
+
+        .status-critical {
+            color: #ef4444;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e5e7eb;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981 0%, #f59e0b 50%, #ef4444 100%);
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+
+        .alert-ok {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .alert-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .alert-critical {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .breakdown {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .breakdown-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background: #f7f9fc;
+            border-radius: 5px;
+            border-left: 4px solid;
+        }
+
+        .breakdown-gemini {
+            border-left-color: #10b981;
+        }
+
+        .breakdown-openai {
+            border-left-color: #3b82f6;
+        }
+
+        .breakdown-anthropic {
+            border-left-color: #8b5cf6;
+        }
+
+        .refresh-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background: white;
+            color: #667eea;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.2s;
+        }
+
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .loading {
+            text-align: center;
+            color: white;
+            font-size: 1.5em;
+            margin: 50px 0;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💰 Jarvis Cost Monitoring Dashboard</h1>
+
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Loading cost data...</p>
+        </div>
+
+        <div id="dashboard" style="display: none;">
+            <!-- Budget Progress -->
+            <div class="card">
+                <h2>Monthly Budget Progress</h2>
+                <div class="progress-bar">
+                    <div id="budget-progress" class="progress-fill" style="width: 0%">
+                        0%
+                    </div>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Projected Monthly Cost</span>
+                    <span id="projected-cost" class="metric-value">$0.00</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Monthly Budget</span>
+                    <span id="monthly-budget" class="metric-value">$50.00</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Savings vs Full Cloud</span>
+                    <span class="metric-value status-ok">~$165/month</span>
+                </div>
+            </div>
+
+            <!-- Current Usage -->
+            <div class="cards">
+                <div class="card">
+                    <h2>Today's Usage</h2>
+                    <div class="metric">
+                        <span class="metric-label">Total Requests</span>
+                        <span id="total-requests" class="metric-value">0</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Gemini Requests</span>
+                        <span id="gemini-requests" class="metric-value">0</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Free Tier Remaining</span>
+                        <span id="free-tier-remaining" class="metric-value status-ok">1,500</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Today's Cost</span>
+                        <span id="today-cost" class="metric-value">$0.00</span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Routing Strategy</h2>
+                    <div class="breakdown">
+                        <div class="breakdown-item breakdown-gemini">
+                            <span>Gemini Flash (Free Tier)</span>
+                            <strong id="strategy-gemini">70%</strong>
+                        </div>
+                        <div class="breakdown-item breakdown-openai">
+                            <span>GPT-4o Mini ($0.15/M)</span>
+                            <strong id="strategy-gpt">20%</strong>
+                        </div>
+                        <div class="breakdown-item breakdown-anthropic">
+                            <span>Claude Sonnet 4.5 ($3/M)</span>
+                            <strong id="strategy-claude">10%</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cost Breakdown -->
+            <div class="card">
+                <h2>Monthly Cost Breakdown</h2>
+                <div class="breakdown">
+                    <div class="breakdown-item breakdown-gemini">
+                        <span>Gemini (after free tier)</span>
+                        <strong id="breakdown-gemini">$0.00</strong>
+                    </div>
+                    <div class="breakdown-item breakdown-openai">
+                        <span>OpenAI GPT-4o Mini</span>
+                        <strong id="breakdown-openai">$0.00</strong>
+                    </div>
+                    <div class="breakdown-item breakdown-anthropic">
+                        <span>Anthropic Claude</span>
+                        <strong id="breakdown-anthropic">$0.00</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alerts -->
+            <div id="alerts-container">
+                <!-- Alerts will be dynamically added here -->
+            </div>
+
+            <button class="refresh-btn" onclick="loadData()">🔄 Refresh Data</button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+
+        async function loadData() {
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/costs/summary`);
+                const result = await response.json();
+
+                if (!result.success) {
+                    throw new Error(result.error || 'Failed to load data');
+                }
+
+                const data = result.data;
+
+                // Hide loading, show dashboard
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+
+                // Update budget progress
+                const budgetPercentage = Math.min(data.projection.percentageOfBudget, 100);
+                document.getElementById('budget-progress').style.width = budgetPercentage + '%';
+                document.getElementById('budget-progress').textContent = budgetPercentage.toFixed(1) + '%';
+                document.getElementById('projected-cost').textContent = '$' + data.projection.estimatedMonthlyCost.toFixed(2);
+                document.getElementById('monthly-budget').textContent = '$' + data.projection.budget;
+
+                // Update current usage
+                document.getElementById('total-requests').textContent = data.current.totalRequests;
+                document.getElementById('gemini-requests').textContent = data.current.geminiDailyCount;
+                document.getElementById('free-tier-remaining').textContent = data.current.geminiFreeTierRemaining;
+                document.getElementById('today-cost').textContent = '$' + data.current.costs.totalCost.toFixed(2);
+
+                // Update strategy
+                document.getElementById('strategy-gemini').textContent = data.current.strategy.geminiPercentage + '%';
+                document.getElementById('strategy-gpt').textContent = data.current.strategy.gptMiniPercentage + '%';
+                document.getElementById('strategy-claude').textContent = data.current.strategy.claudePercentage + '%';
+
+                // Update breakdown
+                document.getElementById('breakdown-gemini').textContent = '$' + data.projection.breakdown.gemini.toFixed(2);
+                document.getElementById('breakdown-openai').textContent = '$' + data.projection.breakdown.openai.toFixed(2);
+                document.getElementById('breakdown-anthropic').textContent = '$' + data.projection.breakdown.anthropic.toFixed(2);
+
+                // Load and display alerts
+                await loadAlerts();
+
+            } catch (error) {
+                console.error('Error loading data:', error);
+                document.getElementById('loading').innerHTML = `
+                    <p style="color: #ef4444;">❌ Error loading data: ${error.message}</p>
+                    <button class="refresh-btn" onclick="loadData()">Retry</button>
+                `;
+            }
+        }
+
+        async function loadAlerts() {
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/costs/alerts`);
+                const result = await response.json();
+
+                if (!result.success) return;
+
+                const alertsContainer = document.getElementById('alerts-container');
+                alertsContainer.innerHTML = '';
+
+                if (result.data.alerts.length === 0) {
+                    alertsContainer.innerHTML = `
+                        <div class="alert alert-ok">
+                            ✅ All systems operating within budget. No alerts.
+                        </div>
+                    `;
+                } else {
+                    result.data.alerts.forEach(alert => {
+                        const alertClass = result.data.status === 'critical' ? 'alert-critical' :
+                                          result.data.status === 'warning' ? 'alert-warning' : 'alert-ok';
+                        alertsContainer.innerHTML += `
+                            <div class="alert ${alertClass}">
+                                ${alert}
+                            </div>
+                        `;
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading alerts:', error);
+            }
+        }
+
+        // Auto-refresh every 30 seconds
+        setInterval(loadData, 30000);
+
+        // Load data on page load
+        loadData();
+    </script>
+</body>
+</html>

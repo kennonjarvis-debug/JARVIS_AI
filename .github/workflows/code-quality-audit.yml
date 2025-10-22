@@ -1,0 +1,150 @@
+name: Code Quality Audit
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'src/**'
+      - 'package.json'
+      - 'tsconfig.json'
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'src/**'
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '22'
+
+jobs:
+  audit:
+    name: Run Code Quality Audits
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Size Audit
+        id: size-audit
+        run: |
+          echo "## 📊 Size Audit Results" >> $GITHUB_STEP_SUMMARY
+          npm run audit:size | tee size-audit.log
+
+          # Extract key metrics and add to summary
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          cat size-audit.log >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+        continue-on-error: true
+
+      - name: Run Dead Code Audit
+        id: deadcode-audit
+        run: |
+          echo "## ⚠️ Dead Code Audit Results" >> $GITHUB_STEP_SUMMARY
+          npm run audit:deadcode | tee deadcode-audit.log || true
+
+          # Extract key findings
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          cat deadcode-audit.log >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+          # Exit with 0 even if dead code found (informational only)
+          exit 0
+
+      - name: Upload Audit Reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: audit-reports
+          path: |
+            size-audit.log
+            deadcode-audit.log
+          retention-days: 30
+
+      - name: Comment PR with Results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            let sizeAudit = '';
+            let deadcodeAudit = '';
+
+            try {
+              sizeAudit = fs.readFileSync('size-audit.log', 'utf8');
+            } catch (e) {
+              sizeAudit = 'Size audit failed to run';
+            }
+
+            try {
+              deadcodeAudit = fs.readFileSync('deadcode-audit.log', 'utf8');
+            } catch (e) {
+              deadcodeAudit = 'Dead code audit failed to run';
+            }
+
+            // Truncate if too long for comment
+            const maxLength = 5000;
+            if (sizeAudit.length > maxLength) {
+              sizeAudit = sizeAudit.substring(0, maxLength) + '\n\n... (truncated, see full report in artifacts)';
+            }
+            if (deadcodeAudit.length > maxLength) {
+              deadcodeAudit = deadcodeAudit.substring(0, maxLength) + '\n\n... (truncated, see full report in artifacts)';
+            }
+
+            const body = `## 🔍 Code Quality Audit Report
+
+            <details>
+            <summary>📊 Size Audit</summary>
+
+            \`\`\`
+            ${sizeAudit}
+            \`\`\`
+
+            </details>
+
+            <details>
+            <summary>⚠️ Dead Code Audit</summary>
+
+            \`\`\`
+            ${deadcodeAudit}
+            \`\`\`
+
+            </details>
+
+            ---
+
+            **Note**: Dead code findings are informational only. Manual review recommended before removal.
+
+            Full audit reports are available in the workflow artifacts.
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "✅ Code quality audits complete!"
+          echo ""
+          echo "📊 Audit reports uploaded as artifacts"
+          echo "⚠️  Review findings in the workflow summary above"

@@ -1,0 +1,38 @@
+{
+  "allowed_commands": [
+    "cd",
+    "source",
+    "python",
+    "python3",
+    "node",
+    "npm",
+    "tsx",
+    "ls",
+    "ps",
+    "curl",
+    "lsof",
+    "kill"
+  ],
+  "allowed_patterns": [
+    "cd /Users/benkennon/ai-dawg-v0.1/*",
+    "source */venv/bin/activate",
+    "python *server.py",
+    "curl http://localhost:*",
+    "lsof -ti:*",
+    "kill -9 *"
+  ],
+  "requires_approval": [
+    "git push",
+    "git push --force",
+    "rm -rf",
+    "docker stop",
+    "docker rm",
+    "npm install",
+    "pip install"
+  ],
+  "blocked_commands": [
+    "sudo",
+    "chmod 777",
+    "chown"
+  ]
+}

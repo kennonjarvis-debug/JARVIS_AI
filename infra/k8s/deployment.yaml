@@ -1,0 +1,215 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jarvis-control-plane
+  namespace: jarvis
+  labels:
+    app: jarvis-control-plane
+    version: v2.0.0
+spec:
+  replicas: 2  # High availability
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: jarvis-control-plane
+  template:
+    metadata:
+      labels:
+        app: jarvis-control-plane
+        version: v2.0.0
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "4000"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: jarvis-sa
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        fsGroup: 1001
+      
+      # Init container to wait for dependencies
+      initContainers:
+        - name: wait-for-postgres
+          image: busybox:1.35
+          command: ['sh', '-c']
+          args:
+            - |
+              until nc -z postgres.jarvis 5432; do
+                echo "Waiting for PostgreSQL...";
+                sleep 2;
+              done;
+              echo "PostgreSQL is ready!";
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1001
+        
+        - name: wait-for-redis
+          image: busybox:1.35
+          command: ['sh', '-c']
+          args:
+            - |
+              until nc -z redis.jarvis 6379; do
+                echo "Waiting for Redis...";
+                sleep 2;
+              done;
+              echo "Redis is ready!";
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1001
+      
+      containers:
+        - name: jarvis
+          image: jarvis-control-plane:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 4000
+              protocol: TCP
+          
+          env:
+            # Load from ConfigMap
+            - name: NODE_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: jarvis-config
+                  key: NODE_ENV
+            - name: PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: jarvis-config
+                  key: PORT
+            - name: LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: jarvis-config
+                  key: LOG_LEVEL
+            - name: AI_DAWG_BACKEND_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: jarvis-config
+                  key: AI_DAWG_BACKEND_URL
+            - name: AUTONOMOUS_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  name: jarvis-config
+                  key: AUTONOMOUS_ENABLED
+            
+            # Load secrets
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: jarvis-secrets
+                  key: OPENAI_API_KEY
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: jarvis-secrets
+                  key: ANTHROPIC_API_KEY
+            - name: GOOGLE_AI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: jarvis-secrets
+                  key: GOOGLE_AI_API_KEY
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: jarvis-secrets
+                  key: JWT_SECRET
+            - name: DATABASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: jarvis-config
+                  key: DATABASE_URL
+            - name: REDIS_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: jarvis-config
+                  key: REDIS_URL
+          
+          # Resource limits
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "2Gi"
+              cpu: "1000m"
+          
+          # Health checks
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+          
+          # Startup probe (for slow starts)
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 0
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 30
+          
+          # Volume mounts
+          volumeMounts:
+            - name: jarvis-data
+              mountPath: /app/data
+            - name: jarvis-logs
+              mountPath: /app/logs
+            - name: jarvis-config-volume
+              mountPath: /app/config
+              readOnly: true
+          
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            runAsNonRoot: true
+            runAsUser: 1001
+            capabilities:
+              drop:
+                - ALL
+      
+      volumes:
+        - name: jarvis-data
+          persistentVolumeClaim:
+            claimName: jarvis-data-pvc
+        - name: jarvis-logs
+          persistentVolumeClaim:
+            claimName: jarvis-logs-pvc
+        - name: jarvis-config-volume
+          configMap:
+            name: jarvis-config
+      
+      # Pod anti-affinity for high availability
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - jarvis-control-plane
+                topologyKey: kubernetes.io/hostname

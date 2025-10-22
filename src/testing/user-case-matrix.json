@@ -1,0 +1,441 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2025-10-09",
+  "totalUserCases": 47,
+  "systems": {
+    "jarvis": {
+      "userRoles": [
+        {
+          "role": "Operations Manager",
+          "journeys": [
+            {
+              "journey": "Monitor AI DAWG Health",
+              "priority": "high",
+              "steps": [
+                {
+                  "step": "Login to JARVIS Dashboard",
+                  "userCases": [
+                    "Valid credentials login",
+                    "Invalid credentials rejection",
+                    "Session timeout after 30 minutes",
+                    "Multi-factor authentication",
+                    "Password reset flow",
+                    "Remember me functionality",
+                    "Account lockout after 5 failed attempts"
+                  ]
+                },
+                {
+                  "step": "View Service Health Dashboard",
+                  "userCases": [
+                    "All services healthy display",
+                    "Some services down display",
+                    "All services down display",
+                    "Real-time updates (30s refresh)",
+                    "Historical uptime charts (7 days, 30 days)",
+                    "Service dependency visualization",
+                    "Latency metrics per service"
+                  ]
+                },
+                {
+                  "step": "Investigate Service Failure",
+                  "userCases": [
+                    "Click on failed service",
+                    "View error logs (last 100 entries)",
+                    "See recent restart attempts (with timestamps)",
+                    "Check health check history (last 24 hours)",
+                    "View related alerts",
+                    "Export logs to CSV",
+                    "Filter logs by severity"
+                  ]
+                },
+                {
+                  "step": "Manually Restart Service",
+                  "userCases": [
+                    "Restart single service",
+                    "Restart multiple services in order",
+                    "Restart service with dependencies",
+                    "Restart failure handling",
+                    "Restart confirmation dialog",
+                    "Restart with custom parameters",
+                    "Scheduled restart"
+                  ]
+                },
+                {
+                  "step": "Verify Service Recovery",
+                  "userCases": [
+                    "Service comes back healthy within 30s",
+                    "Service fails to restart (max attempts exceeded)",
+                    "Service partially recovers (degraded state)",
+                    "Verify data integrity post-restart",
+                    "Check for data loss",
+                    "Monitor performance after restart",
+                    "Alert on successful recovery"
+                  ]
+                }
+              ]
+            },
+            {
+              "journey": "Track Business Metrics",
+              "priority": "high",
+              "steps": [
+                {
+                  "step": "Navigate to Metrics Dashboard",
+                  "userCases": [
+                    "Dashboard loads successfully",
+                    "Dashboard load failure (timeout)",
+                    "Slow dashboard load (>5s)",
+                    "Dashboard with no data",
+                    "Dashboard with partial data"
+                  ]
+                },
+                {
+                  "step": "View Cost Breakdown",
+                  "userCases": [
+                    "Current month costs",
+                    "Cost by AI provider (OpenAI, Claude, Gemini)",
+                    "Cost trends over time (daily, weekly, monthly)",
+                    "Cost projections (next 30 days)",
+                    "Cost alerts (budget exceeded)",
+                    "Cost per user",
+                    "Cost optimization recommendations"
+                  ]
+                },
+                {
+                  "step": "Analyze User Activity",
+                  "userCases": [
+                    "Active users count (real-time)",
+                    "Session duration averages",
+                    "New user growth (daily, weekly)",
+                    "User retention rates (7-day, 30-day)",
+                    "Peak usage times",
+                    "User churn analysis",
+                    "Feature usage breakdown"
+                  ]
+                },
+                {
+                  "step": "Generate Business Report",
+                  "userCases": [
+                    "Generate PDF report",
+                    "Generate CSV export",
+                    "Schedule recurring reports (daily, weekly, monthly)",
+                    "Email report to stakeholders",
+                    "Report generation failure",
+                    "Custom date range reports",
+                    "Report templates"
+                  ]
+                }
+              ]
+            },
+            {
+              "journey": "Set Up Alerts",
+              "priority": "medium",
+              "steps": [
+                {
+                  "step": "Configure Alert Rules",
+                  "userCases": [
+                    "Create new alert rule",
+                    "Edit existing alert rule",
+                    "Delete alert rule",
+                    "Test alert rule",
+                    "Alert rule with multiple conditions",
+                    "Alert rule with complex logic (AND/OR)"
+                  ]
+                },
+                {
+                  "step": "Configure Notification Channels",
+                  "userCases": [
+                    "Add email notification",
+                    "Add Slack notification",
+                    "Add SMS notification",
+                    "Add webhook notification",
+                    "Test notification delivery",
+                    "Notification failure handling"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "role": "Backend Developer",
+          "journeys": [
+            {
+              "journey": "Deploy New AI DAWG Version",
+              "priority": "high",
+              "steps": [
+                {
+                  "step": "Execute Blue-Green Deployment",
+                  "userCases": [
+                    "Deploy to green environment",
+                    "Run health checks on green",
+                    "Switch traffic to green",
+                    "Monitor for errors",
+                    "Rollback if issues detected"
+                  ]
+                }
+              ]
+            },
+            {
+              "journey": "Debug Production Issue",
+              "priority": "high",
+              "steps": [
+                {
+                  "step": "Trace Request Through Services",
+                  "userCases": [
+                    "View request trace with correlation ID",
+                    "See all service hops",
+                    "Identify slow service",
+                    "View error details",
+                    "Export trace for analysis"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "aiDawg": {
+      "userRoles": [
+        {
+          "role": "Music Producer",
+          "journeys": [
+            {
+              "journey": "Create New Song",
+              "priority": "high",
+              "steps": [
+                {
+                  "step": "Create Project",
+                  "userCases": [
+                    "Create project with valid name",
+                    "Create project with empty name (validation error)",
+                    "Create project with special characters",
+                    "Create project while offline (queue for later)",
+                    "Create project with duplicate name (append number)",
+                    "Create project with custom settings (BPM, key, time signature)",
+                    "Create project from template"
+                  ]
+                },
+                {
+                  "step": "Add Tracks",
+                  "userCases": [
+                    "Add audio track",
+                    "Add MIDI track",
+                    "Add maximum tracks (100)",
+                    "Add track with custom color",
+                    "Add track with custom name",
+                    "Add track with effects preset",
+                    "Duplicate existing track"
+                  ]
+                },
+                {
+                  "step": "Record Vocals",
+                  "userCases": [
+                    "Record with microphone (normal quality)",
+                    "Record without microphone (error handling)",
+                    "Record with low latency (<10ms)",
+                    "Record with high latency (>100ms, warning)",
+                    "Record with interrupted connection (save buffer)",
+                    "Record multiple takes (playlist recording)",
+                    "Record with metronome enabled",
+                    "Record with punch in/out at specific times",
+                    "Record with effects (reverb, compression) enabled",
+                    "Record with auto-tuning enabled"
+                  ]
+                },
+                {
+                  "step": "Generate Beat",
+                  "userCases": [
+                    "Generate trap beat (140 BPM)",
+                    "Generate hip-hop beat (90 BPM)",
+                    "Generate EDM beat (128 BPM)",
+                    "Generate beat with invalid BPM (validation error)",
+                    "Generate beat while offline (queue for later)",
+                    "Generate beat with custom parameters (complexity, variation)",
+                    "Generate multiple variations of same beat",
+                    "Cancel beat generation mid-process",
+                    "Generate beat with seed for reproducibility",
+                    "Generate beat exceeding quota (upgrade prompt)"
+                  ]
+                },
+                {
+                  "step": "Edit Audio",
+                  "userCases": [
+                    "Trim clip from start",
+                    "Trim clip from end",
+                    "Split clip at playhead",
+                    "Fade in (0-5s)",
+                    "Fade out (0-5s)",
+                    "Adjust gain (-12dB to +12dB)",
+                    "Apply EQ preset",
+                    "Apply compression",
+                    "Copy/paste clip",
+                    "Delete clip",
+                    "Undo operation (up to 100 actions)",
+                    "Redo operation"
+                  ]
+                },
+                {
+                  "step": "Mix & Master",
+                  "userCases": [
+                    "Adjust volume faders (0-127)",
+                    "Pan tracks (left -100 to right +100)",
+                    "Apply EQ (parametric, 4-band)",
+                    "Apply compression (threshold, ratio, attack, release)",
+                    "Add reverb (room, hall, plate)",
+                    "Bus routing (send to bus)",
+                    "Master channel effects (limiter, maximizer)",
+                    "Export mix (WAV 24-bit, 48kHz)"
+                  ]
+                },
+                {
+                  "step": "Save & Export",
+                  "userCases": [
+                    "Save project",
+                    "Auto-save every 5 minutes",
+                    "Save as new version",
+                    "Export to WAV (16-bit, 24-bit, 32-bit float)",
+                    "Export to MP3 (128kbps, 192kbps, 320kbps)",
+                    "Export to MIDI",
+                    "Export stems (separate tracks)",
+                    "Cloud sync to AWS S3",
+                    "Export failure (disk full)",
+                    "Export with metadata (artist, title, genre)"
+                  ]
+                }
+              ]
+            },
+            {
+              "journey": "Use Vocal Coach",
+              "priority": "high",
+              "steps": [
+                {
+                  "step": "Receive Real-time Feedback",
+                  "userCases": [
+                    "Pitch feedback (<100ms latency)",
+                    "Pitch accuracy calculation (%)",
+                    "In-tune detection (±15 cents)",
+                    "Out-of-tune warning (visual + audio)",
+                    "Rhythm feedback (on-beat / off-beat)",
+                    "Timing accuracy (%)",
+                    "Performance score (0-100)",
+                    "Feedback messages (\"Great pitch!\", \"Watch timing\")",
+                    "Confidence score (0-1)",
+                    "Real-time pitch curve visualization"
+                  ]
+                },
+                {
+                  "step": "Review Performance Analysis",
+                  "userCases": [
+                    "View pitch accuracy chart",
+                    "View rhythm accuracy chart",
+                    "See notes that were off-pitch",
+                    "See timing issues",
+                    "Compare to target notes",
+                    "View improvement over time",
+                    "Export analysis report (PDF)"
+                  ]
+                }
+              ]
+            },
+            {
+              "journey": "Collaborate with Others",
+              "priority": "medium",
+              "steps": [
+                {
+                  "step": "Share Project",
+                  "userCases": [
+                    "Share via link (public/private)",
+                    "Share with specific users (email invite)",
+                    "Set permissions (view, comment, edit)",
+                    "Revoke access",
+                    "Track who viewed/edited"
+                  ]
+                },
+                {
+                  "step": "Real-time Editing",
+                  "userCases": [
+                    "See other users' cursors",
+                    "See live edits from collaborators",
+                    "Conflict resolution (last write wins)",
+                    "Undo other users' changes",
+                    "Chat with collaborators"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "role": "Beginner User",
+          "journeys": [
+            {
+              "journey": "Onboarding & First Song",
+              "priority": "high",
+              "steps": [
+                {
+                  "step": "Sign Up",
+                  "userCases": [
+                    "Sign up with email + password",
+                    "Sign up with Google OAuth",
+                    "Sign up with Apple ID",
+                    "Invalid email format (validation)",
+                    "Duplicate email (account exists)",
+                    "Password requirements (min 8 chars, 1 uppercase, 1 number)",
+                    "Email verification required",
+                    "Welcome email sent"
+                  ]
+                },
+                {
+                  "step": "Complete Tutorial",
+                  "userCases": [
+                    "View tutorial video (embedded YouTube)",
+                    "Skip tutorial (can access later)",
+                    "Complete interactive walkthrough (5 steps)",
+                    "Tutorial step navigation (next, prev, skip)",
+                    "Tutorial completion tracking (progress bar)",
+                    "Reward for completing tutorial (free credits)"
+                  ]
+                },
+                {
+                  "step": "Use Template",
+                  "userCases": [
+                    "Browse templates (by genre, mood)",
+                    "Preview template (listen to demo)",
+                    "Load template into project",
+                    "Customize template (change instruments, BPM)",
+                    "Save customized template for reuse"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "coverage": {
+    "totalUserCases": 150,
+    "coveredByTests": 0,
+    "coveragePercentage": 0,
+    "lastTestRun": null
+  },
+  "priorities": {
+    "high": 85,
+    "medium": 45,
+    "low": 20
+  },
+  "tags": {
+    "authentication": 10,
+    "recording": 15,
+    "ai-generation": 12,
+    "monitoring": 18,
+    "business-metrics": 14,
+    "collaboration": 8,
+    "export": 10,
+    "onboarding": 8,
+    "security": 12,
+    "performance": 10,
+    "edge-cases": 0
+  }
+}

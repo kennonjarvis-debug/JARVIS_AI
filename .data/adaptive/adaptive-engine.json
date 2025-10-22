@@ -1,0 +1,30 @@
+{
+  "models": [],
+  "patterns": [],
+  "decisions": [],
+  "config": {
+    "enabled": false,
+    "learningRate": 0.7,
+    "confidenceThreshold": 0.75,
+    "maxPatternsPerDomain": 100,
+    "retentionDays": 90,
+    "autoAdapt": false,
+    "domains": [
+      "chat",
+      "system",
+      "music",
+      "code",
+      "workflows"
+    ],
+    "excludedPatterns": []
+  },
+  "state": {
+    "isLearning": false,
+    "activeModels": 0,
+    "totalPatterns": 0,
+    "lastAdaptation": null,
+    "lastInsight": null,
+    "performanceScore": 0,
+    "autonomyLevel": "supervised"
+  }
+}

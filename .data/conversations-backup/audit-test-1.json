@@ -1,0 +1,30 @@
+{
+  "id": "audit-test-1",
+  "messages": [
+    {
+      "id": "04e110b5-2777-433d-ba5b-977a60b762a3",
+      "conversationId": "audit-test-1",
+      "source": "web",
+      "role": "user",
+      "content": "Test from system audit",
+      "timestamp": "2025-10-08T19:50:06.201Z"
+    },
+    {
+      "id": "66afe32f-ddea-4d1c-abc2-a17e3cb1c41b",
+      "conversationId": "audit-test-1",
+      "source": "web",
+      "role": "assistant",
+      "content": "I'm Jarvis, your AI assistant. I received your message: \"Test from system audit\"\n\nCurrently, I'm running in demo mode as the AI DAWG backend connection is being established. Once connected, I'll be able to:\n\n- Generate music tracks\n- Analyze business metrics\n- Control system workflows\n- Provide intelligent insights\n\nHow can I assist you today?",
+      "timestamp": "2025-10-08T19:50:08.782Z"
+    }
+  ],
+  "participants": {
+    "web": {
+      "connected": true,
+      "lastSeen": "2025-10-08T19:50:08.782Z"
+    }
+  },
+  "metadata": {},
+  "created": "2025-10-08T19:50:06.201Z",
+  "updated": "2025-10-08T19:50:08.782Z"
+}
