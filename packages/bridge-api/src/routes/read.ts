@@ -46,7 +46,8 @@ export async function readFile(req: Request, res: Response): Promise<void> {
     try {
       sanitizedPath = sanitizePath(filePath);
     } catch (error) {
-      Logger.warn('Path sanitization failed', error, {
+      Logger.warn('Path sanitization failed', {
+        error: error instanceof Error ? error.message : String(error),
         ip: req.ip,
         path: filePath,
       });

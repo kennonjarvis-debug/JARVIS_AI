@@ -52,7 +52,8 @@ export async function runCommand(req: Request, res: Response): Promise<void> {
     try {
       sanitizedCmd = sanitizeCommand(cmd);
     } catch (error) {
-      Logger.warn('Command sanitization failed', error, {
+      Logger.warn('Command sanitization failed', {
+        error: error instanceof Error ? error.message : String(error),
         ip: req.ip,
         cmd,
       });
