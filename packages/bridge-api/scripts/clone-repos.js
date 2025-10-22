@@ -50,11 +50,8 @@ function setupRepo(repo) {
     execCommand(`git clone ${repo.url} ${repo.path}`);
   }
 
-  // Install dependencies
-  if (fs.existsSync(path.join(repo.path, 'package.json'))) {
-    console.log(`  Installing dependencies...`);
-    execCommand('pnpm install --frozen-lockfile', repo.path);
-  }
+  // Skip installing dependencies - not needed for file operations
+  // The bridge API only needs to read/write files, not run the repos
 
   console.log(`  ✅ ${repo.name} ready!`);
 }
