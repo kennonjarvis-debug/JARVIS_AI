@@ -1,0 +1,11 @@
+[phases.setup]
+nixPkgs = ['nodejs_18', 'npm-9_x']
+
+[phases.install]
+cmds = ['npm install -g pnpm', 'pnpm install']
+
+[phases.build]
+cmds = ['pnpm build']
+
+[start]
+cmd = 'node scripts/clone-repos.js && node dist/index.js'
