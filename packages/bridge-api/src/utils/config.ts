@@ -33,6 +33,7 @@ const DEFAULT_ALLOWED_PATHS = [
   process.env.HOME || '/Users',
   '/tmp',
   '/var/tmp',
+  '/app/repos',  // Railway cloned repositories
 ];
 
 export const config: BridgeConfig = {

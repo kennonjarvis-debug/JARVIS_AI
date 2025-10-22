@@ -96,7 +96,7 @@ paths:
                 path:
                   type: string
                   description: Path of the file to read
-                  example: "/Users/benkennon/JARVIS_AI/README.md"
+                  example: "/app/repos/JARVIS_AI/README.md"
       responses:
         '200':
           description: File content
