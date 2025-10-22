@@ -8,6 +8,8 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { logger } from '../../utils/logger.js';
+import { ActivityMonitorService } from '../../services/activity-monitor.service.js';
+import { analyticsService } from '../../services/analytics.service.js';
 
 const prisma = new PrismaClient();
 
@@ -149,13 +151,40 @@ export async function updateConsentPreferences(req: Request, res: Response) {
     // If functional consent is revoked, disable activity monitoring
     if (!preferences.functional) {
       logger.info('Disabling activity monitoring due to consent revocation', { userId });
-      // TODO: Call activity monitor service to disable for this user
+
+      try {
+        // Stop activity monitoring for this user
+        // Note: This stops monitoring globally - in a multi-user system,
+        // you'd want per-user monitoring state
+        const activityMonitor = ActivityMonitorService.getInstance();
+
+        if (activityMonitor.isMonitoring()) {
+          await activityMonitor.stopMonitoring();
+          logger.info('Activity monitoring stopped for user', { userId });
+        }
+      } catch (error: any) {
+        logger.error('Failed to stop activity monitoring', {
+          userId,
+          error: error.message
+        });
+        // Don't fail consent update if monitoring stop fails
+      }
     }
 
     // If analytics consent is revoked, stop analytics tracking
     if (!preferences.analytics) {
       logger.info('Disabling analytics tracking due to consent revocation', { userId });
-      // TODO: Disable analytics for this user
+
+      try {
+        await analyticsService.disableForUser(userId);
+        logger.info('Analytics disabled for user', { userId });
+      } catch (error: any) {
+        logger.error('Failed to disable analytics', {
+          userId,
+          error: error.message
+        });
+        // Don't fail consent update if analytics disable fails
+      }
     }
 
     logger.info('Consent preferences updated', {

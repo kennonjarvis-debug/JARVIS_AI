@@ -8,6 +8,7 @@
 
 import { logger } from '../utils/logger.js';
 import type { AIResponse } from './smart-ai-router.js';
+import Redis from 'ioredis';
 
 export interface CostEntry {
   timestamp: string;
@@ -37,9 +38,43 @@ export interface DailyCostSummary {
 export class AICostTracker {
   private entries: CostEntry[] = [];
   private dailySummaries: Map<string, DailyCostSummary> = new Map();
+  private redis: Redis | null = null;
+
+  private readonly REDIS_KEY_ENTRIES = 'ai:cost:entries';
+  private readonly REDIS_KEY_SUMMARIES = 'ai:cost:summaries';
 
   constructor() {
     logger.info('AICostTracker initialized');
+
+    // Initialize Redis connection if configured
+    if (process.env.REDIS_URL || process.env.REDIS_HOST) {
+      try {
+        this.redis = new Redis(
+          process.env.REDIS_URL || {
+            host: process.env.REDIS_HOST || 'localhost',
+            port: parseInt(process.env.REDIS_PORT || '6379'),
+            password: process.env.REDIS_PASSWORD,
+            db: parseInt(process.env.REDIS_DB || '0')
+          }
+        );
+
+        this.redis.on('error', (error) => {
+          logger.error('Redis connection error', { error: error.message });
+        });
+
+        this.redis.on('connect', () => {
+          logger.info('Redis connected for AI cost tracking');
+        });
+
+        logger.info('Redis initialized for cost tracking');
+      } catch (error: any) {
+        logger.error('Failed to initialize Redis', { error: error.message });
+        this.redis = null;
+      }
+    } else {
+      logger.warn('Redis not configured - cost data will not persist across restarts');
+    }
+
     this.loadFromStorage();
   }
 
@@ -250,30 +285,80 @@ export class AICostTracker {
   }
 
   /**
-   * Save cost data to storage (file-based for now, can migrate to Redis)
+   * Save cost data to Redis for persistence
    */
   private async saveToStorage(): Promise<void> {
+    if (!this.redis) {
+      return;
+    }
+
     try {
-      // TODO: Implement Redis storage for persistence
-      // For now, keep in memory only
-      logger.debug('Cost data saved to storage', {
-        entriesCount: this.entries.length,
+      // Save entries (keep last 1000 for performance)
+      const recentEntries = this.entries.slice(-1000);
+      await this.redis.set(
+        this.REDIS_KEY_ENTRIES,
+        JSON.stringify(recentEntries),
+        'EX',
+        86400 * 30 // Expire after 30 days
+      );
+
+      // Save daily summaries as hash
+      const summariesObject = Object.fromEntries(this.dailySummaries);
+      await this.redis.set(
+        this.REDIS_KEY_SUMMARIES,
+        JSON.stringify(summariesObject),
+        'EX',
+        86400 * 90 // Expire after 90 days
+      );
+
+      logger.debug('Cost data saved to Redis', {
+        entriesCount: recentEntries.length,
         summariesCount: this.dailySummaries.size,
       });
     } catch (error: any) {
-      logger.error('Failed to save cost data:', error);
+      logger.error('Failed to save cost data to Redis', {
+        error: error.message
+      });
     }
   }
 
   /**
-   * Load cost data from storage
+   * Load cost data from Redis
    */
   private async loadFromStorage(): Promise<void> {
+    if (!this.redis) {
+      logger.debug('Redis not configured - starting with empty cost data');
+      return;
+    }
+
     try {
-      // TODO: Implement Redis loading
-      logger.debug('Cost data loaded from storage');
+      // Load entries
+      const entriesData = await this.redis.get(this.REDIS_KEY_ENTRIES);
+      if (entriesData) {
+        this.entries = JSON.parse(entriesData);
+        logger.info('Loaded cost entries from Redis', {
+          count: this.entries.length
+        });
+      }
+
+      // Load daily summaries
+      const summariesData = await this.redis.get(this.REDIS_KEY_SUMMARIES);
+      if (summariesData) {
+        const summariesObject = JSON.parse(summariesData);
+        this.dailySummaries = new Map(Object.entries(summariesObject));
+        logger.info('Loaded daily summaries from Redis', {
+          count: this.dailySummaries.size
+        });
+      }
+
+      logger.debug('Cost data loaded from Redis');
     } catch (error: any) {
-      logger.error('Failed to load cost data:', error);
+      logger.error('Failed to load cost data from Redis', {
+        error: error.message
+      });
+      // Continue with empty data if load fails
+      this.entries = [];
+      this.dailySummaries = new Map();
     }
   }
 

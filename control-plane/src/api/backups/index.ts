@@ -17,6 +17,7 @@ import { BackupSchedulerService } from '../../services/backup-scheduler.service.
 import { BackupVerificationService } from '../../services/backup-verification.service.js';
 import { BackupMonitorService } from '../../services/backup-monitor.service.js';
 import { S3BackupService } from '../../services/s3-backup.service.js';
+import { requireAdmin } from '../../middleware/admin-auth.middleware.js';
 
 const router = Router();
 
@@ -139,12 +140,12 @@ router.get('/:id/download', async (req: Request, res: Response) => {
  * POST /api/backups/:id/restore
  * Restore from backup (admin only)
  */
-router.post('/:id/restore', async (req: Request, res: Response) => {
+router.post('/:id/restore', requireAdmin, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { type, dry_run } = req.body;
 
-    // TODO: Add admin authentication check
+    // Admin authentication verified by middleware
 
     // This should be a background job
     res.json({
@@ -232,11 +233,11 @@ router.get('/schedule/status', async (req: Request, res: Response) => {
  * PUT /api/backups/schedule
  * Update backup schedule (admin only)
  */
-router.put('/schedule', async (req: Request, res: Response) => {
+router.put('/schedule', requireAdmin, async (req: Request, res: Response) => {
   try {
     const { daily, weekly, monthly, cleanup } = req.body;
 
-    // TODO: Add admin authentication check
+    // Admin authentication verified by middleware
 
     await schedulerService.updateSchedule({
       daily,
@@ -262,22 +263,39 @@ router.put('/schedule', async (req: Request, res: Response) => {
  * DELETE /api/backups/:id
  * Delete backup (admin only)
  */
-router.delete('/:id', async (req: Request, res: Response) => {
+router.delete('/:id', requireAdmin, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
-    // TODO: Add admin authentication check
-    // TODO: Implement backup deletion
+    // Admin authentication verified by middleware
+
+    // Verify backup exists before attempting deletion
+    const backup = await backupService.getBackup(id);
+
+    if (!backup) {
+      return res.status(404).json({
+        success: false,
+        error: 'Backup not found',
+        message: `No backup found with ID: ${id}`
+      });
+    }
+
+    // Delete backup
+    await backupService.deleteBackup(id);
+
+    console.log(`[BackupAPI] Backup ${id} deleted by admin`);
 
     res.json({
       success: true,
-      message: 'Backup deleted',
+      message: 'Backup deleted successfully',
+      backupId: id
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[BackupAPI] Delete backup failed', error);
     res.status(500).json({
       success: false,
       error: 'Failed to delete backup',
+      message: error.message
     });
   }
 });

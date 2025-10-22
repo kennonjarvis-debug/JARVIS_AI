@@ -11,8 +11,12 @@ import { logger } from '../../utils/logger.js';
 import { unlink, rmdir } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
+import { getStripeService } from '../../services/stripe.service.js';
+import { getS3DeletionService } from '../../services/s3-deletion.service.js';
 
 const prisma = new PrismaClient();
+const stripeService = getStripeService();
+const s3DeletionService = getS3DeletionService();
 
 interface DeletionRequest {
   userId: string;
@@ -96,13 +100,30 @@ export async function deleteUserAccount(req: Request, res: Response) {
 
       // Cancel Stripe subscription if exists
       if (user.subscription.stripeSubscriptionId) {
-        // TODO: Integrate with Stripe to cancel subscription
-        logger.info('Stripe subscription cancellation required', {
-          subscriptionId: user.subscription.stripeSubscriptionId
-        });
+        try {
+          // Cancel immediately on account deletion
+          await stripeService.cancelSubscription(
+            user.subscription.stripeSubscriptionId,
+            true // immediately = true
+          );
+
+          logger.info('Stripe subscription cancelled successfully', {
+            userId,
+            subscriptionId: user.subscription.stripeSubscriptionId
+          });
+        } catch (error: any) {
+          logger.error('Failed to cancel Stripe subscription', {
+            userId,
+            subscriptionId: user.subscription.stripeSubscriptionId,
+            error: error.message
+          });
+
+          // Log error but continue with deletion
+          // Stripe subscription may need manual cancellation
+        }
       }
 
-      // Update subscription status
+      // Update subscription status in database
       await prisma.subscription.update({
         where: { userId },
         data: {
@@ -308,19 +329,20 @@ async function scheduleDelayedDeletion(userId: string, reason?: string): Promise
 }
 
 /**
- * Delete user files from storage
+ * Delete user files from storage (local and S3)
  */
 async function deleteUserFiles(userId: string): Promise<number> {
   let filesDeleted = 0;
 
   try {
+    // Delete local files
     // Delete activity monitoring recordings
     const activityPath = join(process.env.HOME || '', 'Jarvis', 'data', 'activity-logs', userId);
     if (existsSync(activityPath)) {
       // Recursively delete directory
       await rmdir(activityPath, { recursive: true });
       filesDeleted += 1;
-      logger.info('Deleted activity logs directory', { userId });
+      logger.info('Deleted local activity logs directory', { userId });
     }
 
     // Delete project files if stored locally
@@ -328,16 +350,40 @@ async function deleteUserFiles(userId: string): Promise<number> {
     if (existsSync(projectsPath)) {
       await rmdir(projectsPath, { recursive: true });
       filesDeleted += 1;
-      logger.info('Deleted projects directory', { userId });
+      logger.info('Deleted local projects directory', { userId });
     }
 
-    // TODO: Delete from cloud storage (S3, etc.)
-    // This would require integration with your cloud storage provider
+    // Delete from cloud storage (S3)
+    if (s3DeletionService.isConfigured()) {
+      logger.info('Deleting user files from S3', { userId });
+
+      const s3Result = await s3DeletionService.deleteUserFiles(userId);
+
+      filesDeleted += s3Result.deletedFiles;
+
+      logger.info('S3 deletion completed', {
+        userId,
+        deletedFiles: s3Result.deletedFiles,
+        deletedBytes: s3Result.deletedBytes,
+        errors: s3Result.errors.length
+      });
+
+      // Log S3 errors but don't fail deletion
+      if (s3Result.errors.length > 0) {
+        logger.error('S3 deletion had errors', {
+          userId,
+          errors: s3Result.errors
+        });
+      }
+    } else {
+      logger.warn('S3 not configured - skipping cloud storage deletion', { userId });
+    }
 
   } catch (error: any) {
     logger.error('Error deleting user files', {
       userId,
-      error: error.message
+      error: error.message,
+      stack: error.stack
     });
   }
 
