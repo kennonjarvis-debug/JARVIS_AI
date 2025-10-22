@@ -2,7 +2,7 @@
 nixPkgs = ['nodejs_18', 'npm-9_x']
 
 [phases.install]
-cmds = ['npm install -g pnpm', 'pnpm install']
+cmds = ['npm install -g pnpm && pnpm install']
 
 [phases.build]
 cmds = ['pnpm build']
