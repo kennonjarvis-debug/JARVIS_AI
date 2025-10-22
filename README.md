@@ -263,3 +263,4 @@ See `docs/API_CONTRACT.md` for the expected API contract.
 ## License
 
 MIT
+- **control-plane**: Merged from `jarvis-control-plane` (Wed Oct 22 09:54:42 MST 2025)
