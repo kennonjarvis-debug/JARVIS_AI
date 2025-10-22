@@ -1,0 +1,10 @@
+packages:
+  - 'web'
+  - 'api'
+  - 'deploy'
+  - 'shared/*'
+  - '*-engine'
+  - 'control-plane'
+  - 'frontend'
+  - 'observatory'
+  - 'agents'
