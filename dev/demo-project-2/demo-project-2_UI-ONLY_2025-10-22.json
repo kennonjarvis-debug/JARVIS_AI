@@ -1,0 +1,84 @@
+{
+  "id": "71561e46-7809-4f52-827a-8acc34bc2420",
+  "name": "demo-project-2 (UI Only)",
+  "created_at": "2025-10-22 23:06:05.479744+00",
+  "updated_at": "2025-10-22 23:06:05.479744+00",
+  "data": {
+    "tracks": [
+      {
+        "id": "track-1",
+        "name": "Lead Vocals",
+        "type": "audio",
+        "volume": 0.85,
+        "pan": 0,
+        "muted": false,
+        "solo": false,
+        "clips": [],
+        "effects": []
+      },
+      {
+        "id": "track-2",
+        "name": "Background Vocals",
+        "type": "audio",
+        "volume": 0.65,
+        "pan": -0.2,
+        "muted": false,
+        "solo": false,
+        "clips": [],
+        "effects": []
+      },
+      {
+        "id": "track-3",
+        "name": "Drums",
+        "type": "midi",
+        "volume": 0.9,
+        "pan": 0,
+        "muted": false,
+        "solo": false,
+        "clips": [],
+        "effects": []
+      },
+      {
+        "id": "track-4",
+        "name": "Bass",
+        "type": "midi",
+        "volume": 0.8,
+        "pan": 0,
+        "muted": false,
+        "solo": false,
+        "clips": [],
+        "effects": []
+      },
+      {
+        "id": "track-5",
+        "name": "Guitar",
+        "type": "audio",
+        "volume": 0.75,
+        "pan": 0.3,
+        "muted": false,
+        "solo": false,
+        "clips": [],
+        "effects": []
+      },
+      {
+        "id": "track-6",
+        "name": "Keys",
+        "type": "midi",
+        "volume": 0.7,
+        "pan": -0.3,
+        "muted": false,
+        "solo": false,
+        "clips": [],
+        "effects": []
+      }
+    ],
+    "tempo": 120,
+    "timeSignature": [
+      4,
+      4
+    ],
+    "effects": [],
+    "automation": [],
+    "clips": []
+  }
+}

@@ -178,6 +178,54 @@ export class ModuleRouter {
       }
     }
 
+    // Route browser automation requests to local browser automation service
+    if (command.module === 'browser') {
+      logger.info(`Routing ${command.module}.${command.action} to local browser automation service`);
+
+      // Import browser automation service dynamically
+      const { browserAutomationService } = await import('../services/browser-automation.service.js');
+
+      try {
+        switch (command.action) {
+          case 'automate':
+          case 'open':
+          case 'inspect':
+            const result = await browserAutomationService.executeAutomation({
+              url: command.params.url,
+              actions: command.params.actions,
+              waitForSelector: command.params.waitForSelector,
+              timeout: command.params.timeout,
+              headless: command.params.headless,
+              captureNetwork: command.params.captureNetwork !== false,
+              captureConsole: command.params.captureConsole !== false,
+              captureScreenshot: command.params.captureScreenshot,
+              viewport: command.params.viewport,
+              userAgent: command.params.userAgent
+            });
+
+            return {
+              success: result.success,
+              data: result,
+              timestamp: new Date().toISOString()
+            };
+
+          default:
+            return {
+              success: false,
+              error: `Unknown browser action: ${command.action}`,
+              timestamp: new Date().toISOString()
+            };
+        }
+      } catch (error: any) {
+        logger.error(`Browser automation failed: ${error.message}`);
+        return {
+          success: false,
+          error: error.message,
+          timestamp: new Date().toISOString()
+        };
+      }
+    }
+
     // Default: route through AI DAWG Backend
     let lastError: Error | null = null;
 

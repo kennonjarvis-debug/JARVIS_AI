@@ -5,6 +5,27 @@ struct ContentView: View {
     @State private var selectedTab = 0
 
     var body: some View {
+        // Temporary debug view to test rendering
+        VStack {
+            Text("JARVIS")
+                .font(.largeTitle)
+                .foregroundColor(.white)
+            Text("Connecting to Railway...")
+                .foregroundColor(.white.opacity(0.7))
+            Text("Backend: \(AppConfig.backendURL)")
+                .font(.caption)
+                .foregroundColor(.white.opacity(0.5))
+                .padding()
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.black)
+        .onAppear {
+            print("✅ ContentView appeared - rendering debug view")
+            print("📍 Backend URL: \(AppConfig.backendURL)")
+        }
+
+        /*
+        // Original TabView - uncomment once rendering works
         TabView(selection: $selectedTab) {
             ChatView()
                 .tabItem {
@@ -31,6 +52,7 @@ struct ContentView: View {
                     .padding(.bottom, 60)
             }
         }
+        */
     }
 }
 

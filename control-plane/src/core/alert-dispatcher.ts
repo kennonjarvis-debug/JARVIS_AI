@@ -197,6 +197,8 @@ export class AlertDispatcher extends EventEmitter {
       priority,
       sound,
       timestamp: new Date(alert.timestamp).getTime() / 1000
+    }, {
+      timeout: 10000
     });
   }
 
@@ -224,7 +226,8 @@ export class AlertDispatcher extends EventEmitter {
         'Priority': priority,
         'Tags': `${severityTag},jarvis,${alert.service}`,
         'Actions': `view, View Dashboard, ${process.env.DASHBOARD_URL || 'http://localhost:5001'}`
-      }
+      },
+      timeout: 10000
     });
   }
 
@@ -294,6 +297,8 @@ export class AlertDispatcher extends EventEmitter {
         footer: 'Jarvis Monitoring System',
         ts: new Date(alert.timestamp).getTime() / 1000
       }]
+    }, {
+      timeout: 10000
     });
   }
 
@@ -318,7 +323,8 @@ export class AlertDispatcher extends EventEmitter {
       headers: {
         'Content-Type': 'application/json',
         'X-Jarvis-Alert': 'true'
-      }
+      },
+      timeout: 10000
     });
   }
 

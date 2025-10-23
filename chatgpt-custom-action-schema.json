@@ -1,0 +1,346 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "JARVIS Control Plane API",
+    "description": "AI-powered control plane for browser automation, music generation, and more",
+    "version": "2.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://control-plane-production-e966.up.railway.app",
+      "description": "JARVIS Control Plane (Railway Production)"
+    }
+  ],
+  "paths": {
+    "/api/v1/execute": {
+      "post": {
+        "operationId": "executeModule",
+        "summary": "Execute a module action (browser, music, marketing, etc.)",
+        "description": "Universal endpoint for executing any JARVIS module action. Supports browser automation, music generation, marketing automation, and more.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "module": {
+                    "type": "string",
+                    "description": "Module name",
+                    "enum": ["browser", "music", "marketing", "engagement", "testing"],
+                    "example": "browser"
+                  },
+                  "action": {
+                    "type": "string",
+                    "description": "Action to perform",
+                    "example": "inspect"
+                  },
+                  "params": {
+                    "type": "object",
+                    "description": "Module-specific parameters",
+                    "properties": {
+                      "url": {
+                        "type": "string",
+                        "description": "URL to navigate to (required for browser module)",
+                        "example": "https://example.com"
+                      },
+                      "captureConsole": {
+                        "type": "boolean",
+                        "description": "Capture JavaScript console logs",
+                        "default": true
+                      },
+                      "captureNetwork": {
+                        "type": "boolean",
+                        "description": "Capture network requests",
+                        "default": false
+                      },
+                      "captureScreenshot": {
+                        "type": "boolean",
+                        "description": "Take a screenshot of the page",
+                        "default": false
+                      },
+                      "headless": {
+                        "type": "boolean",
+                        "description": "Run browser in headless mode",
+                        "default": true
+                      },
+                      "timeout": {
+                        "type": "integer",
+                        "description": "Timeout in milliseconds",
+                        "default": 30000
+                      },
+                      "actions": {
+                        "type": "array",
+                        "description": "Browser actions to perform (click, type, wait, scroll, evaluate)",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "enum": ["click", "type", "wait", "scroll", "evaluate"]
+                            },
+                            "selector": {
+                              "type": "string",
+                              "description": "CSS selector (for click/type actions)"
+                            },
+                            "value": {
+                              "description": "Value for the action (text for type, milliseconds for wait)"
+                            },
+                            "code": {
+                              "type": "string",
+                              "description": "JavaScript code to execute (for evaluate action)"
+                            }
+                          }
+                        }
+                      },
+                      "viewport": {
+                        "type": "object",
+                        "description": "Custom viewport size",
+                        "properties": {
+                          "width": {
+                            "type": "integer",
+                            "example": 1920
+                          },
+                          "height": {
+                            "type": "integer",
+                            "example": 1080
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "required": ["module", "action", "params"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "Whether the operation succeeded"
+                    },
+                    "data": {
+                      "type": "object",
+                      "description": "Result data",
+                      "properties": {
+                        "url": {
+                          "type": "string",
+                          "description": "The URL that was accessed"
+                        },
+                        "consoleLogs": {
+                          "type": "array",
+                          "description": "Captured console logs",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": ["log", "info", "warn", "error", "debug"]
+                              },
+                              "text": {
+                                "type": "string"
+                              },
+                              "timestamp": {
+                                "type": "integer"
+                              }
+                            }
+                          }
+                        },
+                        "networkLogs": {
+                          "type": "array",
+                          "description": "Captured network requests",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "method": {
+                                "type": "string"
+                              },
+                              "url": {
+                                "type": "string"
+                              },
+                              "status": {
+                                "type": "integer"
+                              },
+                              "timestamp": {
+                                "type": "integer"
+                              }
+                            }
+                          }
+                        },
+                        "screenshot": {
+                          "type": "string",
+                          "description": "Base64 encoded PNG screenshot"
+                        },
+                        "metadata": {
+                          "type": "object",
+                          "properties": {
+                            "duration": {
+                              "type": "integer",
+                              "description": "Duration in milliseconds"
+                            },
+                            "timestamp": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            "correlationId": {
+                              "type": "string",
+                              "description": "Request correlation ID"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Missing required parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "error": {
+                      "type": "string",
+                      "example": "Missing required field"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - Invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Invalid authentication token"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests - Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Too many authentication failures"
+                    },
+                    "retryAfter": {
+                      "type": "integer",
+                      "description": "Seconds to wait before retrying"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "operationId": "healthCheck",
+        "summary": "Check if the JARVIS Control Plane is running",
+        "description": "Returns the health status of the control plane",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "healthy": {
+                      "type": "boolean"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {},
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "token",
+        "description": "Enter your JARVIS authentication token (default: test-token)"
+      }
+    }
+  },
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# Large data directories
+data/
+recordings/
+logs/
+
+# Testing
+coverage/
+tests/
+.nyc_output/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Git
+.git/
+.gitignore
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+
+# Documentation
+*.md
+!README.md
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.log
+
+# Environment files
+.env.*
+!.env.example
+
+# Other
+.claude/
+.monitoring/
+examples/
+tools/
+python/
+JarvisApp-iOS/
+prompts/
+dashboard/
+web/
+infra/
+scripts/

@@ -10,8 +10,9 @@ import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import axios from 'axios';
+import { v4 as uuidv4 } from 'uuid';
 import { config } from '../utils/config.js';
-import { logger } from '../utils/logger.js';
+import { logger, withCorrelationId } from '../utils/logger.js';
 import { ModuleRouter } from './module-router.js';
 import { HealthAggregator } from './health-aggregator.js';
 import { websocketHub } from './websocket-hub.js';
@@ -19,6 +20,7 @@ import { businessOperator } from './business-operator.js';
 import { businessIntelligence } from './business-intelligence.js';
 import { circuitBreakerManager } from './circuit-breaker.js';
 import businessRoutes from '../business/routes.js';
+import { browserAutomationService } from '../services/browser-automation.service.js';
 
 const app = express();
 const moduleRouter = new ModuleRouter();
@@ -50,12 +52,35 @@ app.use('/api/', limiter);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Correlation ID middleware - Generate unique request ID for tracing
+app.use((req: Request, res: Response, next: NextFunction) => {
+  const requestId = (req.headers['x-request-id'] as string) || uuidv4();
+  (req as any).requestId = requestId;
+  (req as any).logger = withCorrelationId(requestId);
+  res.setHeader('X-Request-ID', requestId);
+  next();
+});
+
 // Request logging and business intelligence tracking
 app.use((req: Request, res: Response, next: NextFunction) => {
   const start = Date.now();
+  const requestLogger = (req as any).logger || logger;
+
+  requestLogger.info(`→ ${req.method} ${req.path}`, {
+    method: req.method,
+    path: req.path,
+    ip: req.ip || req.socket.remoteAddress,
+    userAgent: req.headers['user-agent']
+  });
+
   res.on('finish', () => {
     const duration = Date.now() - start;
-    logger.info(`${req.method} ${req.path} ${res.statusCode} - ${duration}ms`);
+    requestLogger.info(`← ${req.method} ${req.path} ${res.statusCode} - ${duration}ms`, {
+      method: req.method,
+      path: req.path,
+      statusCode: res.statusCode,
+      duration
+    });
 
     // Track in business intelligence
     businessIntelligence.trackRequest(
@@ -69,12 +94,20 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
+// Rate limiting for authentication failures
+const authFailureTracker = new Map<string, { count: number; lastAttempt: number }>();
+const AUTH_RATE_LIMIT_MAX = 5; // Max failed attempts
+const AUTH_RATE_LIMIT_WINDOW = 60000; // 1 minute window
+
 // Authentication middleware
 const authenticate = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
   const token = authHeader?.replace('Bearer ', '');
+  const clientIp = req.ip || req.socket.remoteAddress || 'unknown';
 
+  // Check if token is missing
   if (!token) {
+    logger.warn(`[Auth] Missing token from ${clientIp} - ${req.method} ${req.path}`);
     return res.status(401).json({
       success: false,
       error: 'Missing authentication token',
@@ -82,12 +115,45 @@ const authenticate = (req: Request, res: Response, next: NextFunction) => {
     });
   }
 
-  if (token !== config.authToken && config.nodeEnv !== 'development') {
+  // Check rate limiting for this IP
+  const now = Date.now();
+  const tracker = authFailureTracker.get(clientIp);
+
+  if (tracker) {
+    // Reset tracker if window has expired
+    if (now - tracker.lastAttempt > AUTH_RATE_LIMIT_WINDOW) {
+      authFailureTracker.delete(clientIp);
+    } else if (tracker.count >= AUTH_RATE_LIMIT_MAX) {
+      logger.error(`[Auth] Rate limit exceeded for ${clientIp} - ${tracker.count} failed attempts`);
+      return res.status(429).json({
+        success: false,
+        error: 'Too many authentication failures',
+        message: 'Please wait before trying again',
+        retryAfter: Math.ceil((AUTH_RATE_LIMIT_WINDOW - (now - tracker.lastAttempt)) / 1000)
+      });
+    }
+  }
+
+  // Validate token (no development mode bypass)
+  if (token !== config.authToken) {
+    // Track failed attempt
+    const existing = authFailureTracker.get(clientIp);
+    authFailureTracker.set(clientIp, {
+      count: existing ? existing.count + 1 : 1,
+      lastAttempt: now
+    });
+
+    logger.error(`[Auth] Invalid token from ${clientIp} - ${req.method} ${req.path} - Attempts: ${authFailureTracker.get(clientIp)?.count}`);
+
     return res.status(403).json({
       success: false,
       error: 'Invalid authentication token'
     });
   }
+
+  // Successful authentication - clear any failure tracking
+  authFailureTracker.delete(clientIp);
+  logger.debug(`[Auth] Authenticated ${clientIp} - ${req.method} ${req.path}`);
 
   next();
 };
@@ -164,6 +230,70 @@ app.post('/api/v1/execute', authenticate, async (req: Request, res: Response) =>
     res.status(500).json({
       success: false,
       error: 'Execution failed',
+      message: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+/**
+ * Browser Automation
+ * POST /api/v1/browser/automate
+ * Automates browser actions and collects console logs, network data
+ */
+app.post('/api/v1/browser/automate', authenticate, async (req: Request, res: Response) => {
+  try {
+    const { url, actions, waitForSelector, timeout, headless, captureNetwork, captureConsole, captureScreenshot, viewport, userAgent } = req.body;
+    const requestLogger = (req as any).logger || logger;
+    const correlationId = (req as any).requestId;
+
+    if (!url) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required field',
+        message: 'url is required'
+      });
+    }
+
+    requestLogger.info(`[Browser Automation] Request to automate: ${url}`);
+
+    const result = await browserAutomationService.executeAutomation({
+      url,
+      actions,
+      waitForSelector,
+      timeout,
+      headless,
+      captureNetwork,
+      captureConsole,
+      captureScreenshot,
+      viewport,
+      userAgent,
+      correlationId
+    });
+
+    if (result.success) {
+      requestLogger.info(`[Browser Automation] Completed successfully for ${url}`);
+      res.json({
+        success: true,
+        data: result,
+        timestamp: new Date().toISOString()
+      });
+    } else {
+      requestLogger.error(`[Browser Automation] Failed for ${url}: ${result.error}`);
+      res.status(500).json({
+        success: false,
+        error: 'Browser automation failed',
+        message: result.error,
+        data: result,
+        timestamp: new Date().toISOString()
+      });
+    }
+  } catch (error: any) {
+    const requestLogger = (req as any).logger || logger;
+    requestLogger.error(`[Browser Automation] Error: ${error.message}`);
+    res.status(500).json({
+      success: false,
+      error: 'Browser automation error',
       message: error.message,
       timestamp: new Date().toISOString()
     });

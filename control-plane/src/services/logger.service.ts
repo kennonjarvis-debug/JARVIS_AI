@@ -97,8 +97,8 @@ transports.push(
   })
 );
 
-// Create logger instance
-const logger = winston.createLogger({
+// Create winston logger instance
+const winstonLogger = winston.createLogger({
   level: process.env.LOG_LEVEL || 'info',
   levels,
   format: logFormat,
@@ -126,7 +126,7 @@ export class Logger {
   error(message: string, error?: Error | any, meta?: Record<string, any>) {
     const [msg, combinedMeta] = this.formatMessage(message, meta);
     if (error instanceof Error) {
-      logger.error(msg, {
+      winstonLogger.error(msg, {
         ...combinedMeta,
         error: {
           message: error.message,
@@ -135,30 +135,30 @@ export class Logger {
         },
       });
     } else if (error) {
-      logger.error(msg, { ...combinedMeta, error });
+      winstonLogger.error(msg, { ...combinedMeta, error });
     } else {
-      logger.error(msg, combinedMeta);
+      winstonLogger.error(msg, combinedMeta);
     }
   }
 
   warn(message: string, meta?: Record<string, any>) {
     const [msg, combinedMeta] = this.formatMessage(message, meta);
-    logger.warn(msg, combinedMeta);
+    winstonLogger.warn(msg, combinedMeta);
   }
 
   info(message: string, meta?: Record<string, any>) {
     const [msg, combinedMeta] = this.formatMessage(message, meta);
-    logger.info(msg, combinedMeta);
+    winstonLogger.info(msg, combinedMeta);
   }
 
   http(message: string, meta?: Record<string, any>) {
     const [msg, combinedMeta] = this.formatMessage(message, meta);
-    logger.http(msg, combinedMeta);
+    winstonLogger.http(msg, combinedMeta);
   }
 
   debug(message: string, meta?: Record<string, any>) {
     const [msg, combinedMeta] = this.formatMessage(message, meta);
-    logger.debug(msg, combinedMeta);
+    winstonLogger.debug(msg, combinedMeta);
   }
 
   // Create a child logger with additional context

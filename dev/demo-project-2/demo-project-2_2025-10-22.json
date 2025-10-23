@@ -1,0 +1,161 @@
+{
+  "id": "71561e46-7809-4f52-827a-8acc34bc2420",
+  "user_id": "11111111-1111-1111-1111-111111111111",
+  "name": "demo-project-2",
+  "data": {
+    "clips": [],
+    "tempo": 120,
+    "tracks": [
+      {
+        "id": "track-1",
+        "pan": 0,
+        "name": "Lead Vocals",
+        "solo": false,
+        "type": "audio",
+        "clips": [
+          {
+            "id": "clip-1",
+            "name": "Verse 1",
+            "start": 0,
+            "duration": 4
+          }
+        ],
+        "muted": false,
+        "volume": 0.85,
+        "effects": [
+          {
+            "wet": 0.3,
+            "type": "reverb",
+            "roomSize": 0.5
+          },
+          {
+            "low": 0,
+            "mid": 2,
+            "high": 1,
+            "type": "eq"
+          }
+        ]
+      },
+      {
+        "id": "track-2",
+        "pan": -0.2,
+        "name": "Background Vocals",
+        "solo": false,
+        "type": "audio",
+        "clips": [],
+        "muted": false,
+        "volume": 0.65,
+        "effects": []
+      },
+      {
+        "id": "track-3",
+        "pan": 0,
+        "name": "Drums",
+        "solo": false,
+        "type": "midi",
+        "clips": [
+          {
+            "id": "clip-2",
+            "name": "Drum Pattern",
+            "notes": [
+              {
+                "time": 0,
+                "pitch": 36,
+                "duration": 0.5
+              },
+              {
+                "time": 1,
+                "pitch": 38,
+                "duration": 0.5
+              },
+              {
+                "time": 0.5,
+                "pitch": 42,
+                "duration": 0.25
+              }
+            ],
+            "start": 0,
+            "duration": 16
+          }
+        ],
+        "muted": false,
+        "volume": 0.9,
+        "effects": []
+      },
+      {
+        "id": "track-4",
+        "pan": 0,
+        "name": "Bass",
+        "solo": false,
+        "type": "midi",
+        "clips": [],
+        "muted": false,
+        "volume": 0.8,
+        "effects": []
+      },
+      {
+        "id": "track-5",
+        "pan": 0.3,
+        "name": "Guitar",
+        "solo": false,
+        "type": "audio",
+        "clips": [],
+        "muted": false,
+        "volume": 0.75,
+        "effects": []
+      },
+      {
+        "id": "track-6",
+        "pan": -0.3,
+        "name": "Keys",
+        "solo": false,
+        "type": "midi",
+        "clips": [],
+        "muted": false,
+        "volume": 0.7,
+        "effects": []
+      }
+    ],
+    "effects": [
+      {
+        "type": "masterCompressor",
+        "ratio": 4,
+        "attack": 0.003,
+        "release": 0.25,
+        "threshold": -6
+      }
+    ],
+    "automation": [
+      {
+        "points": [
+          {
+            "time": 0,
+            "value": 0.5
+          },
+          {
+            "time": 2,
+            "value": 0.85
+          },
+          {
+            "time": 10,
+            "value": 0.85
+          },
+          {
+            "time": 12,
+            "value": 0.3
+          }
+        ],
+        "trackId": "track-1",
+        "parameter": "volume"
+      }
+    ],
+    "timeSignature": [
+      4,
+      4
+    ]
+  },
+  "created_at": "2025-10-22 23:06:05.479744+00",
+  "updated_at": "2025-10-22 23:06:05.479744+00",
+  "is_public": false,
+  "share_token": null
+}

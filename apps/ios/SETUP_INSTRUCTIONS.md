@@ -104,15 +104,22 @@ Create Git repository: ✓ (optional)
 
 ## Step 4: Configure Backend Connection
 
-### 4.1 Update Backend URL
-Edit `Models.swift` line 52:
-```swift
-// Local backend
-static let backendURL = "ws://localhost:4000"
+### 4.1 Backend URL (UPDATED - Railway Production)
+The iOS app is now configured to use Railway production by default!
 
-// OR Cloud backend
-static let backendURL = "wss://your-backend.com"
+**Production (Default):**
+```swift
+static let backendURL = "wss://control-plane-production-e966.up.railway.app"
 ```
+
+**For Local Development:**
+To test locally, add environment variable in Xcode:
+```
+Product > Scheme > Edit Scheme > Run > Arguments > Environment Variables
+Add: BACKEND_URL = ws://localhost:5001
+```
+
+Note: Local development uses port **5001** (not 4000)
 
 ### 4.2 Add OpenAI API Key
 Option A: Environment Variable
@@ -201,8 +208,9 @@ Solution: Add framework: Target > Build Phases > Link Binary With Libraries
 ```
 Problem: "WebSocket connection failed"
 Solution:
-- Check backend is running: lsof -i :4000
-- Check URL in Models.swift
+- Production: Verify Railway is up at https://control-plane-production-e966.up.railway.app/health
+- Local: Check backend is running: lsof -i :5001
+- Check URL in Models.swift (or set BACKEND_URL environment variable)
 - For localhost, enable NSExceptionAllowsInsecureHTTPLoads in Info.plist
 
 Problem: "Microphone permission denied"

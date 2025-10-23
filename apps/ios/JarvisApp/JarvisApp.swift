@@ -10,6 +10,7 @@ struct JarvisApp: App {
             ContentView()
                 .environmentObject(appState)
                 .onAppear {
+                    print("🚀 JarvisApp: WindowGroup appeared, setting up services...")
                     // Initialize services
                     setupServices()
                 }
@@ -41,14 +42,17 @@ class AppState: ObservableObject {
     let audioService = AudioService()
     let wakeWordService = WakeWordService()
     let transcriptionService = TranscriptionService()
-    let cloudSyncService = CloudSyncService()
+    // Temporarily disabled until we add CloudKit entitlements
+    // let cloudSyncService = CloudSyncService()
 
     init() {
+        print("🔧 AppState: Initializing...")
         // Load saved conversations
         loadConversations()
 
         // Setup service callbacks
         setupServiceBindings()
+        print("✅ AppState: Initialization complete")
     }
 
     private func loadConversations() {

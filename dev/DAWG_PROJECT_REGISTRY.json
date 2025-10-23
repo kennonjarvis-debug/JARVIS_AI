@@ -1,0 +1,23 @@
+[
+  {
+    "projectId": "71561e46-7809-4f52-827a-8acc34bc2420",
+    "projectName": "demo-project-2",
+    "exportLocation": "/Users/benkennon/JARVIS_AI/dev/demo-project-2",
+    "files": {
+      "full": "demo-project-2_2025-10-22.json",
+      "uiOnly": "demo-project-2_UI-ONLY_2025-10-22.json",
+      "mock": "demo-project-2_MOCK.json"
+    },
+    "metadata": {
+      "tracks": 6,
+      "tempo": 120,
+      "timeSignature": [
+        4,
+        4
+      ],
+      "effects": 1,
+      "automation": 1,
+      "exportedAt": "2025-10-22T23:14:43.797Z"
+    }
+  }
+]

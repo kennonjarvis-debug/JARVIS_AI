@@ -75,7 +75,11 @@ struct ChatCompletionResponse: Codable {
 
 // MARK: - App Configuration
 struct AppConfig {
-    static let backendURL = ProcessInfo.processInfo.environment["BACKEND_URL"] ?? "ws://localhost:4000"
+    // Backend URL - Use environment variable or fall back to production
+    // For local development: ws://localhost:5001/ws
+    // For production: wss://control-plane-production-e966.up.railway.app/ws
+    static let backendURL = ProcessInfo.processInfo.environment["BACKEND_URL"] ?? "wss://control-plane-production-e966.up.railway.app/ws"
+
     static let openAIAPIKey = ProcessInfo.processInfo.environment["OPENAI_API_KEY"] ?? ""
     static let wakeWord = "hey jarvis"
 

@@ -11,6 +11,7 @@ import { logger } from './utils/logger.js';
 import { config } from './utils/config.js';
 import MCPServer from './integrations/claude/mcp-server.js';
 import { businessOperator } from './core/business-operator.js';
+import { startClaude } from './services/claude.service.js';
 
 // ASCII Art Banner
 const banner = `
@@ -43,6 +44,10 @@ async function main() {
     // Start API Gateway
     logger.info('Starting API Gateway...');
     startGateway();
+
+    // Initialize Claude AI Service
+    logger.info('Initializing Claude AI Service...');
+    startClaude();
 
     // Initialize Claude MCP Server (stub for now)
     if (process.env.ENABLE_MCP === 'true') {
