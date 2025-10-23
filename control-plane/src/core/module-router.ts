@@ -209,6 +209,30 @@ export class ModuleRouter {
               timestamp: new Date().toISOString()
             };
 
+          case 'evaluate':
+            // Execute JavaScript code in browser context
+            const evaluateResult = await browserAutomationService.executeAutomation({
+              url: command.params.url,
+              actions: [{
+                type: 'evaluate',
+                code: command.params.code,
+                selector: command.params.selector
+              }],
+              timeout: command.params.timeout,
+              headless: command.params.headless !== false,
+              captureNetwork: command.params.captureNetwork,
+              captureConsole: command.params.captureConsole,
+              captureScreenshot: command.params.captureScreenshot,
+              viewport: command.params.viewport,
+              userAgent: command.params.userAgent
+            });
+
+            return {
+              success: evaluateResult.success,
+              data: evaluateResult,
+              timestamp: new Date().toISOString()
+            };
+
           default:
             return {
               success: false,
